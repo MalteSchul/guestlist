@@ -2,11 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.orm import Session
 
 from app.auth.tokens import InvalidToken, validate_access_token
 from app.config import get_settings
-from app.db import get_session
+from app.db import SessionDep
 from app.models import User
 from app.services.users import get_or_create_user_for_login
 
@@ -24,7 +23,7 @@ def _unauthorized(detail: str) -> HTTPException:
 
 
 def current_user(
-    session: Annotated[Session, Depends(get_session)],
+    session: SessionDep,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
 ) -> User:
     if get_settings().auth_dev_bypass:

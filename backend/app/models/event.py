@@ -2,14 +2,15 @@
 
 import uuid
 from datetime import datetime
+from typing import Literal, get_args
 
 from sqlalchemy import CheckConstraint, ForeignKey, false, true
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base, Timestamps, Translated, UuidPk, check_in
+from app.models.base import Base, Timestamps, Translated, UuidPk, check_in, owned_children
 
-LANGUAGES = ("de", "en")
-QUESTION_KINDS = ("choice", "text")
+Language = Literal["de", "en"]
+QuestionKind = Literal["choice", "text"]
 
 
 class Event(Timestamps, Base):
@@ -26,8 +27,15 @@ class Event(Timestamps, Base):
     keep_data: Mapped[bool] = mapped_column(server_default=false())
     guest_list_enabled: Mapped[bool] = mapped_column(server_default=false())
 
+    sections: Mapped[list["EventSection"]] = owned_children(
+        lambda: [EventSection.position, EventSection.created_at]
+    )
+    questions: Mapped[list["EventQuestion"]] = owned_children(
+        lambda: [EventQuestion.position, EventQuestion.created_at]
+    )
+
     __table_args__ = (
-        check_in("default_language", LANGUAGES),
+        check_in("default_language", get_args(Language)),
         CheckConstraint("ends_at IS NULL OR ends_at >= starts_at", name="ends_after_start"),
     )
 
@@ -59,8 +67,12 @@ class EventQuestion(Timestamps, Base):
     required: Mapped[bool] = mapped_column(server_default=false())
     position: Mapped[int]
 
+    options: Mapped[list["EventQuestionOption"]] = owned_children(
+        lambda: [EventQuestionOption.position, EventQuestionOption.created_at]
+    )
+
     __table_args__ = (
-        check_in("kind", QUESTION_KINDS),
+        check_in("kind", get_args(QuestionKind)),
         CheckConstraint("kind = 'choice' OR NOT multiple", name="multiple_only_for_choice"),
     )
 

@@ -3,7 +3,7 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -17,6 +17,7 @@ from app.models import (
     PersonAnswerOption,
     User,
 )
+from tests.helpers import check_deferred_constraints
 
 
 @pytest.fixture
@@ -49,11 +50,6 @@ def test_email_unique_regardless_of_case(session: Session):
     session.add(User(email="anna@example.com", display_name="Anna 2"))
     with pytest.raises(IntegrityError, match="uq_users_lower_email"):
         session.flush()
-
-
-def check_deferred_constraints(session: Session) -> None:
-    """Run the checks a commit would run; tests never commit."""
-    session.execute(text("SET CONSTRAINTS ALL IMMEDIATE"))
 
 
 def test_deleting_a_picked_option_is_blocked(session: Session, picked_option):

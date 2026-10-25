@@ -7,7 +7,8 @@ TEST_DATABASE_URL = os.environ.get(
 )
 os.environ.update(ENVIRONMENT="local", DATABASE_URL=TEST_DATABASE_URL, AUTH_DEV_BYPASS="true")
 
-from collections.abc import Iterator  # noqa: E402
+import uuid  # noqa: E402
+from collections.abc import Callable, Iterator  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 import pytest  # noqa: E402
@@ -17,8 +18,10 @@ from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import Connection, create_engine, text  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
+from app.auth.dependencies import current_user  # noqa: E402
 from app.db import get_session  # noqa: E402
 from app.main import app  # noqa: E402
+from app.models import EventRole, User  # noqa: E402
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -57,7 +60,25 @@ def session(connection: Connection) -> Iterator[Session]:
 
 @pytest.fixture
 def client(session: Session) -> Iterator[TestClient]:
+    """Logged in as the dev user (dev bypass)."""
     app.dependency_overrides[get_session] = lambda: session
     with TestClient(app) as client:
         yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def log_in_as(session: Session, client: TestClient) -> Callable[..., User]:
+    """Switch the client to a new user, optionally with a role on an event."""
+
+    def switch(email: str, event_id: str | None = None, role: str | None = None) -> User:
+        user = User(email=email, display_name=email)
+        session.add(user)
+        session.flush()
+        if event_id and role:
+            session.add(EventRole(event_id=uuid.UUID(event_id), user_id=user.id, role=role))
+            session.flush()
+        app.dependency_overrides[current_user] = lambda: user
+        return user
+
+    return switch

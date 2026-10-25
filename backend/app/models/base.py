@@ -1,10 +1,11 @@
 import uuid
+from collections.abc import Callable
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from sqlalchemy import CheckConstraint, DateTime, MetaData, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Fixed constraint names, so Alembic migrations are predictable (see data-model.md).
 NAMING_CONVENTION = {
@@ -43,3 +44,11 @@ def check_in(column: str, values: tuple[str, ...]) -> CheckConstraint:
     """Allowed values as text + CHECK instead of a Postgres enum (D22)."""
     allowed = ", ".join(f"'{v}'" for v in values)
     return CheckConstraint(f"{column} IN ({allowed})", name=column)
+
+
+def owned_children(order_by: Callable[[], list[Any]]) -> Any:
+    """A parent's ordered children. They're deleted with the parent: by Postgres (ON DELETE
+    CASCADE) when not loaded, by the ORM when they are, and when removed from the list."""
+    return relationship(
+        order_by=order_by, cascade="all, delete-orphan", passive_deletes=True, lazy="selectin"
+    )

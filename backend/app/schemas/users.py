@@ -1,11 +1,9 @@
 import uuid
 
-from pydantic import BaseModel, ConfigDict
+from app.schemas.common import Schema
 
 
-class UserOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class UserOut(Schema):
     id: uuid.UUID
     email: str
     display_name: str

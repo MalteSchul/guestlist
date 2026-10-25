@@ -145,10 +145,10 @@ guestlist/
 │   │   ├── main.py              creates the FastAPI app, mounts routers
 │   │   ├── config.py            settings from environment variables
 │   │   ├── db.py                engine + session
-│   │   ├── auth/                OIDC token validation, current user, role checks
+│   │   ├── auth/                OIDC token validation, current user
 │   │   ├── models/              ③ SQLAlchemy tables
 │   │   ├── schemas/             ① Pydantic request/response models = the API contract
-│   │   ├── services/            ② business rules, one module per area
+│   │   ├── services/            ② business rules and role checks, one module per area
 │   │   ├── routers/             thin HTTP layer: guest, admin, health
 │   │   └── jobs/                cleanup (90-day retention)
 │   ├── migrations/              Alembic

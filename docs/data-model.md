@@ -213,8 +213,17 @@ first and gives a friendly message (D24).
 
 ## Rules that live in the service layer (not the database)
 
-To be designed when the services are built:
-- an event always keeps at least one owner
+Built (`backend/app/services/`):
+- roles: viewer reads, admin edits, owner also deletes the event; the creator becomes owner;
+  events you have no role on look like they don't exist (404)
+- children (sections, questions, options) are only looked up under their own event or question,
+  so an ID from another event is "not found"
+- DE/EN text has only `de`/`en` keys (schema), and at least the event's `default_language` is
+  filled in (service)
+- an option someone picked can't be deleted, only set inactive (D24)
+
+Still to build:
+- an event always keeps at least one owner (once roles can be changed)
 - answers are only accepted until `rsvp_deadline`, otherwise until `starts_at`
 - a `choice` question with `multiple = false` gets at most one option, and every option belongs
   to its question
@@ -223,4 +232,3 @@ To be designed when the services are built:
   any `question_id` outside that set
 - a contact is invited at most once per event
 - a contact group and its contacts belong to the same user
-- DE/EN text has only `de`/`en` keys, and at least the event's `default_language` is filled in
