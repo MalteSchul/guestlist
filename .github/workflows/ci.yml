@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.2  # no moving major tag; Dependabot bumps it
         with:
           version: "0.12.21"
           enable-cache: true
