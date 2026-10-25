@@ -20,7 +20,7 @@ new one that replaces it, not by silently editing the old one.
 | P11 | uv, ruff, pytest | Fast, one lockfile, one lint/format tool |
 | P12 | Public repository | Branch protection is free on public repos. Nothing secret lives in the repo |
 | P13 | Every change goes through a pull request into `main`: green CI required, squash merge only, no bypass, branch deleted after merge | `main` is always tested, one commit per change |
-| P14 | CI pushes the backend image to GHCR on every merge to `main` (`sha-<commit>` + `main` tags); deploying comes with `infra/` | Images exist before the infrastructure does |
+| P14 | CI pushes both images to GHCR on every merge to `main` (`sha-<commit>` + `main` tags); deploying comes with `infra/` | Images exist before the infrastructure does |
 
 ## Architecture
 
@@ -43,6 +43,8 @@ new one that replaces it, not by silently editing the old one.
 | A15 | Role checks live in the services (`require_role`), not in routers. No role on an event → 404, too low → 403 | Every path to a use case checks them. IDs reveal nothing |
 | A16 | Services raise `NotFound`/`Forbidden`/`Conflict`/`Invalid`; one handler in `main.py` turns them into 404/403/409/422 | Services never import FastAPI |
 | A17 | Updates are `PUT` with the whole object, no `PATCH` | One schema for create and update, and no "is null an update or missing?" question |
+| A18 | Lightweight frontend for now: routing by hand, `useState`/`useEffect` instead of a data library, one plain CSS file, `tsc` as the only check (no ESLint yet), no login screen (dev bypass) | Few pages so far. Each can be added when it starts to hurt |
+| A19 | TypeScript stays on 5.x | `openapi-typescript` 7 supports TypeScript 5 only |
 
 ## Data model
 
