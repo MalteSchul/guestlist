@@ -1,13 +1,14 @@
 """1. Who manages: people who log in and what they may do. Guests never appear here."""
 
 import uuid
+from typing import Literal, get_args
 
 from sqlalchemy import ForeignKey, Index, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, Timestamps, UuidPk, check_in
 
-ROLES = ("owner", "admin", "viewer")
+Role = Literal["owner", "admin", "viewer"]
 
 
 class User(Timestamps, Base):
@@ -48,4 +49,4 @@ class EventRole(Timestamps, Base):
     )
     role: Mapped[str]
 
-    __table_args__ = (check_in("role", ROLES),)
+    __table_args__ = (check_in("role", get_args(Role)),)

@@ -2,13 +2,14 @@
 
 import uuid
 from datetime import datetime
+from typing import Literal, get_args
 
 from sqlalchemy import ForeignKey, UniqueConstraint, false, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, Timestamps, UuidPk, check_in
 
-ATTENDANCE = ("pending", "yes", "no", "maybe")
+Attendance = Literal["pending", "yes", "no", "maybe"]
 
 
 class Invite(Timestamps, Base):
@@ -41,7 +42,7 @@ class Person(Timestamps, Base):
     attendance_public: Mapped[bool] = mapped_column(server_default=false())
     position: Mapped[int]
 
-    __table_args__ = (check_in("attendance", ATTENDANCE),)
+    __table_args__ = (check_in("attendance", get_args(Attendance)),)
 
 
 class PersonAnswer(Timestamps, Base):

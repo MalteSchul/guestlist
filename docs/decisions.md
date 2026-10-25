@@ -40,6 +40,9 @@ new one that replaces it, not by silently editing the old one.
 | A12 | Guest links: tokens from `secrets.token_urlsafe(32)`, `Referrer-Policy: no-referrer`, `/i/<token>` masked in access logs | The token is the only secret; URLs leak through referrers and logs |
 | A13 | Local auth: dev bypass (`AUTH_DEV_BYPASS=true`), every admin request is a fixed dev user. Refused at startup unless `ENVIRONMENT=local`; `ENVIRONMENT` has no default | Build and test without a tenant or network. Turning it on in production would take two mistakes |
 | A14 | A new login whose email matches an existing user joins that user | Same person, several login identities. Only safe while every accepted provider verifies emails; check again before adding one |
+| A15 | Role checks live in the services (`require_role`), not in routers. No role on an event → 404, too low → 403 | Every path to a use case checks them. IDs reveal nothing |
+| A16 | Services raise `NotFound`/`Forbidden`/`Conflict`/`Invalid`; one handler in `main.py` turns them into 404/403/409/422 | Services never import FastAPI |
+| A17 | Updates are `PUT` with the whole object, no `PATCH` | One schema for create and update, and no "is null an update or missing?" question |
 
 ## Data model
 
@@ -70,6 +73,7 @@ new one that replaces it, not by silently editing the old one.
 | D23 | `persons.attendance_changed_at`, set by the service on every attendance change (replaces the "when" part of D19) | `updated_at` also moves when an admin renames or reorders a person. Answer times are already in `person_answers.updated_at` |
 | D24 | `person_answer_options → event_question_options` is `NO ACTION DEFERRABLE INITIALLY DEFERRED` (corrects the plain `NO ACTION` in data-model.md) | Tests showed plain `NO ACTION` blocks deleting a question or event: Postgres checks after each internal cascade statement, not after the outer one |
 | D25 | Two extra CHECKs: `ends_at >= starts_at`, `multiple` only for `choice` | Cheap invariants, so they belong in the database (A6) |
+| D26 | A question's `kind` and `multiple` are fixed once it exists; to change them, delete and recreate | Existing answers would no longer fit the question |
 
 ## Open
 
