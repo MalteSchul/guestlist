@@ -41,6 +41,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/events/{event_id}/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Invites */
+        get: operations["list_invites_api_admin_events__event_id__invites_get"];
+        put?: never;
+        /** Create Invite */
+        post: operations["create_invite_api_admin_events__event_id__invites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/events/{event_id}/invites/{invite_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Invite */
+        delete: operations["delete_invite_api_admin_events__event_id__invites__invite_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/events/{event_id}/questions": {
         parameters: {
             query?: never;
@@ -163,6 +198,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/guest/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Invite */
+        get: operations["get_invite_api_guest_invite_get"];
+        /** Save Response */
+        put: operations["save_response_api_guest_invite_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -184,6 +237,33 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnswerIn */
+        AnswerIn: {
+            /**
+             * Option Ids
+             * @default []
+             */
+            option_ids: string[];
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Text Value */
+            text_value?: string | null;
+        };
+        /** AnswerOut */
+        AnswerOut: {
+            /** Option Ids */
+            option_ids: string[];
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Text Value */
+            text_value: string | null;
+        };
         /** EventIn */
         EventIn: {
             /**
@@ -273,10 +353,108 @@ export interface components {
             starts_at: string;
             title: components["schemas"]["Translated"];
         };
+        /** GuestEvent */
+        GuestEvent: {
+            /**
+             * Answers Close At
+             * Format: date-time
+             */
+            answers_close_at: string;
+            /** Answers Open */
+            answers_open: boolean;
+            /**
+             * Default Language
+             * @enum {string}
+             */
+            default_language: "de" | "en";
+            description: components["schemas"]["Translated"] | null;
+            /** Ends At */
+            ends_at: string | null;
+            /** Location */
+            location: string | null;
+            /** Questions */
+            questions: components["schemas"]["GuestQuestion"][];
+            /** Sections */
+            sections: components["schemas"]["SectionOut"][];
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            title: components["schemas"]["Translated"];
+        };
+        /** GuestInviteOut */
+        GuestInviteOut: {
+            /** Comment */
+            comment: string | null;
+            event: components["schemas"]["GuestEvent"];
+            /** Name */
+            name: string;
+            /** Persons */
+            persons: components["schemas"]["PersonOut"][];
+        };
+        /** GuestQuestion */
+        GuestQuestion: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "choice" | "text";
+            label: components["schemas"]["Translated"];
+            /** Multiple */
+            multiple: boolean;
+            /** Options */
+            options: components["schemas"]["OptionOut"][];
+            /**
+             * Position
+             * @default 0
+             */
+            position: number;
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+        };
+        /** GuestResponseIn */
+        GuestResponseIn: {
+            /** Comment */
+            comment?: string | null;
+            /** Persons */
+            persons: components["schemas"]["PersonResponseIn"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** InviteIn */
+        InviteIn: {
+            /** Name */
+            name: string;
+            /** Persons */
+            persons: string[];
+        };
+        /** InviteOut */
+        InviteOut: {
+            /** Comment */
+            comment: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Persons */
+            persons: components["schemas"]["PersonOut"][];
+            /** Token */
+            token: string;
         };
         /** OptionIn */
         OptionIn: {
@@ -310,6 +488,43 @@ export interface components {
              * @default 0
              */
             position: number;
+        };
+        /** PersonOut */
+        PersonOut: {
+            /** Answers */
+            answers: components["schemas"]["AnswerOut"][];
+            /**
+             * Attendance
+             * @enum {string}
+             */
+            attendance: "pending" | "yes" | "no" | "maybe";
+            /** Attendance Changed At */
+            attendance_changed_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /** PersonResponseIn */
+        PersonResponseIn: {
+            /**
+             * Answers
+             * @default []
+             */
+            answers: components["schemas"]["AnswerIn"][];
+            /**
+             * Attendance
+             * @enum {string}
+             */
+            attendance: "pending" | "yes" | "no" | "maybe";
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
         };
         /**
          * QuestionIn
@@ -580,6 +795,102 @@ export interface operations {
             header?: never;
             path: {
                 event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_invites_api_admin_events__event_id__invites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_invite_api_admin_events__event_id__invites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_invite_api_admin_events__event_id__invites__invite_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+                invite_id: string;
             };
             cookie?: never;
         };
@@ -925,6 +1236,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"];
+                };
+            };
+        };
+    };
+    get_invite_api_guest_invite_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Invite-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuestInviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_response_api_guest_invite_put: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Invite-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuestResponseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuestInviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

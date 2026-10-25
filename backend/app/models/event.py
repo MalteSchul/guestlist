@@ -1,7 +1,7 @@
 """3. The event: what the host sets up."""
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal, get_args
 
 from sqlalchemy import CheckConstraint, ForeignKey, false, true
@@ -38,6 +38,15 @@ class Event(Timestamps, Base):
         check_in("default_language", get_args(Language)),
         CheckConstraint("ends_at IS NULL OR ends_at >= starts_at", name="ends_after_start"),
     )
+
+    @property
+    def answers_close_at(self) -> datetime:
+        """Guests can answer until the RSVP deadline, or until the event starts (D12)."""
+        return self.rsvp_deadline or self.starts_at
+
+    @property
+    def answers_open(self) -> bool:
+        return datetime.now(UTC) < self.answers_close_at
 
 
 class EventSection(Timestamps, Base):

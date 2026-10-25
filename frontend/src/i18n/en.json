@@ -5,13 +5,44 @@
   "common": {
     "loading": "Loading …",
     "error": "That didn't work.",
-    "notFound": "Not found."
+    "notFound": "Not found.",
+    "save": "Save",
+    "saving": "Saving …"
+  },
+  "guest": {
+    "yourAnswer": "Your answer, {{name}}",
+    "answerUntil": "You can answer until {{date}} and change your answer any time before then.",
+    "closed": "Answers are closed.",
+    "attendance": {
+      "yes": "Coming",
+      "maybe": "Maybe",
+      "no": "Not coming"
+    },
+    "comment": "Message to the hosts (optional)",
+    "saved": "Saved. Thank you!"
   },
   "admin": {
     "events": {
       "title": "Your events",
       "empty": "No events yet.",
       "devHint": "For now, create one through the API docs:"
+    },
+    "event": {
+      "back": "All events",
+      "totals": "Choices",
+      "totalsHint": "Counting everyone who said yes.",
+      "invites_one": "{{count}} invite",
+      "invites_other": "{{count}} invites",
+      "noInvites": "No invites yet. For now, create them through the API docs.",
+      "openLink": "Open",
+      "copyLink": "Copy link",
+      "copied": "Copied"
+    },
+    "attendance": {
+      "yes": "Coming",
+      "maybe": "Maybe",
+      "no": "Not coming",
+      "pending": "No answer"
     }
   }
 }

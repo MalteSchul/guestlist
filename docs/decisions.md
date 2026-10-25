@@ -45,6 +45,7 @@ new one that replaces it, not by silently editing the old one.
 | A17 | Updates are `PUT` with the whole object, no `PATCH` | One schema for create and update, and no "is null an update or missing?" question |
 | A18 | Lightweight frontend for now: routing by hand, `useState`/`useEffect` instead of a data library, one plain CSS file, `tsc` as the only check (no ESLint yet), no login screen (dev bypass) | Few pages so far. Each can be added when it starts to hurt |
 | A19 | TypeScript stays on 5.x | `openapi-typescript` 7 supports TypeScript 5 only |
+| A20 | The guest API takes the token in an `X-Invite-Token` header (`/api/guest/invite`), never in the URL | Only the page URL `/i/<token>` contains it, and nginx masks that. A custom header also blocks cross-site form posts |
 
 ## Data model
 
@@ -76,12 +77,15 @@ new one that replaces it, not by silently editing the old one.
 | D24 | `person_answer_options → event_question_options` is `NO ACTION DEFERRABLE INITIALLY DEFERRED` (corrects the plain `NO ACTION` in data-model.md) | Tests showed plain `NO ACTION` blocks deleting a question or event: Postgres checks after each internal cascade statement, not after the outer one |
 | D25 | Two extra CHECKs: `ends_at >= starts_at`, `multiple` only for `choice` | Cheap invariants, so they belong in the database (A6) |
 | D26 | A question's `kind` and `multiple` are fixed once it exists; to change them, delete and recreate | Existing answers would no longer fit the question |
+| D27 | Guests who say "yes" or "maybe" see the questions; required questions only bind "yes" (provisional; answers the open question) | A "maybe" may not know yet. Easy to tighten later |
+| D28 | Inactive options can't be newly picked and guests don't see them, but picks made before deactivation stay | "Hide instead of delete" shouldn't silently change answers already given |
+| D29 | For now invites are created with typed-in names, not from the address book | The address book comes later; `persons.contact_id` stays empty until then |
+| D30 | Guests save the whole state per person; answers left out are removed. Rows are updated in place | One form, one save. Unchanged answers keep their `updated_at` |
 
 ## Open
 
 - **Household vs. circle-of-friends groups:** does inviting a group create one shared link or one
   link per member? A flag on the group, or a choice when inviting?
-- **Do "maybe" guests answer the questions?**
 - **`invites.last_opened_at`** ("has the guest seen it?"): later.
 - **CSV export/import of contacts** (contacts table only): later feature.
 - **Slimmer platform (proposal, not decided):** one image (FastAPI serves the React build, no
