@@ -18,6 +18,9 @@ new one that replaces it, not by silently editing the old one.
 | P9 | One repository for frontend + backend | One pull request can change API and UI together, and the contract check runs in one place |
 | P10 | Terraform for infrastructure | Widely used, works across clouds |
 | P11 | uv, ruff, pytest | Fast, one lockfile, one lint/format tool |
+| P12 | Public repository | Branch protection is free on public repos. Nothing secret lives in the repo |
+| P13 | Every change goes through a pull request into `main`: green CI required, squash merge only, no bypass, branch deleted after merge | `main` is always tested, one commit per change |
+| P14 | CI pushes the backend image to GHCR on every merge to `main` (`sha-<commit>` + `main` tags); deploying comes with `infra/` | Images exist before the infrastructure does |
 
 ## Architecture
 
@@ -35,6 +38,8 @@ new one that replaces it, not by silently editing the old one.
 | A10 | react-i18next from the start, DE + EN | Adding it later means hunting down every hard-coded string |
 | A11 | Migrations and cleanup run as Container Apps Jobs from the backend image | No third image |
 | A12 | Guest links: tokens from `secrets.token_urlsafe(32)`, `Referrer-Policy: no-referrer`, `/i/<token>` masked in access logs | The token is the only secret; URLs leak through referrers and logs |
+| A13 | Local auth: dev bypass (`AUTH_DEV_BYPASS=true`), every admin request is a fixed dev user. Refused at startup unless `ENVIRONMENT=local`; `ENVIRONMENT` has no default | Build and test without a tenant or network. Turning it on in production would take two mistakes |
+| A14 | A new login whose email matches an existing user joins that user | Same person, several login identities. Only safe while every accepted provider verifies emails; check again before adding one |
 
 ## Data model
 
@@ -63,6 +68,8 @@ new one that replaces it, not by silently editing the old one.
 | D21 | "A contact is invited at most once per event" lives in the service layer, not the database | A database rule would need a redundant `persons.event_id`, and the app check is needed anyway for a friendly message. Can be added later with one migration |
 | D22 | Allowed values as text + CHECK, not native Postgres enums | Easier to change in migrations |
 | D23 | `persons.attendance_changed_at`, set by the service on every attendance change (replaces the "when" part of D19) | `updated_at` also moves when an admin renames or reorders a person. Answer times are already in `person_answers.updated_at` |
+| D24 | `person_answer_options → event_question_options` is `NO ACTION DEFERRABLE INITIALLY DEFERRED` (corrects the plain `NO ACTION` in data-model.md) | Tests showed plain `NO ACTION` blocks deleting a question or event: Postgres checks after each internal cascade statement, not after the outer one |
+| D25 | Two extra CHECKs: `ends_at >= starts_at`, `multiple` only for `choice` | Cheap invariants, so they belong in the database (A6) |
 
 ## Open
 
@@ -71,7 +78,6 @@ new one that replaces it, not by silently editing the old one.
 - **Do "maybe" guests answer the questions?**
 - **`invites.last_opened_at`** ("has the guest seen it?"): later.
 - **CSV export/import of contacts** (contacts table only): later feature.
-- **Local auth:** Entra test tenant or a dev bypass.
 - **Slimmer platform (proposal, not decided):** one image (FastAPI serves the React build, no
   nginx, no internal ingress; `Referrer-Policy` moves to middleware), migrations run from GitHub
   Actions before deploy, cleanup stays a Container Apps Job (GitHub disables scheduled workflows

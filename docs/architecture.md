@@ -134,7 +134,7 @@ everything the backend sends.
 |---|---|---|
 | Database | Postgres 17 in Docker (`compose.yaml`) | Neon, Frankfurt |
 | Backend / frontend | `compose.yaml` or `uv run` / `npm run dev` | Azure Container Apps |
-| Auth | Entra test tenant or dev bypass (open) | Entra External ID |
+| Auth | dev bypass (`AUTH_DEV_BYPASS=true`, A13) | Entra External ID |
 
 ## Repository layout
 

@@ -183,13 +183,22 @@ Answers are always private; only attendance can be made public.*
 | an **event** | its sections, questions, options, invites, persons and answers are deleted with it |
 | an **invite** | its persons and their answers are deleted |
 | a **question** | its options and all answers to it are deleted |
-| an **option** someone picked | **blocked** (`NO ACTION`); set it inactive instead |
+| an **option** someone picked | **blocked** at commit (deferred `NO ACTION`); set it inactive instead |
 | a **contact** | its group memberships are deleted; in events the person stays and only loses the link back (`SET NULL`) |
 | a **user** | their logins, roles, contacts and groups are deleted; events stay |
 
-`person_answer_options → event_question_options` uses `NO ACTION`, not `RESTRICT`. That way
-deleting a whole event or question still works: `NO ACTION` is only checked after the cascades
-in the same statement have finished.
+`person_answer_options → event_question_options` is `NO ACTION` **and `DEFERRABLE INITIALLY
+DEFERRED`**, so it's checked at commit. A plain `NO ACTION` isn't enough: Postgres runs every
+cascade as its own internal statement and checks right after it, so deleting a question (or the
+whole event) would fail as soon as its options are gone, before the cascade through
+`person_answers` has removed the picks. Deferred, the check runs once everything is deleted.
+A single picked option still can't be deleted; the error appears at commit, so the service checks
+first and gives a friendly message (D24).
+
+## Other checks in the database
+
+- `events`: `ends_at` is empty or not before `starts_at`
+- `event_questions`: `multiple` is only allowed for `kind = 'choice'`
 
 ## Conventions
 

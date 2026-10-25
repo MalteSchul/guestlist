@@ -1,0 +1,55 @@
+# Local development: Postgres + backend. The frontend joins once it exists.
+name: guestlist
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: guestlist
+      POSTGRES_PASSWORD: guestlist
+      POSTGRES_DB: guestlist
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    configs:
+      - source: create-test-db
+        target: /docker-entrypoint-initdb.d/create-test-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U guestlist"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  # Same as production: migrations run once from the backend image before the app starts.
+  migrate:
+    build: ./backend
+    image: guestlist-backend
+    command: ["alembic", "upgrade", "head"]
+    environment: &backend-env
+      ENVIRONMENT: local
+      DATABASE_URL: postgresql+psycopg://guestlist:guestlist@db:5432/guestlist
+      AUTH_DEV_BYPASS: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backend:
+    build: ./backend
+    image: guestlist-backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment: *backend-env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+configs:
+  create-test-db:
+    content: CREATE DATABASE guestlist_test;
+
+volumes:
+  db-data:

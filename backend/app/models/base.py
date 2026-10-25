@@ -1,0 +1,45 @@
+import uuid
+from datetime import datetime
+from typing import Annotated
+
+from sqlalchemy import CheckConstraint, DateTime, MetaData, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+# Fixed constraint names, so Alembic migrations are predictable (see data-model.md).
+NAMING_CONVENTION = {
+    "pk": "pk_%(table_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "uq": "uq_%(table_name)s_%(column_0_N_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "ix": "ix_%(column_0_label)s",
+}
+
+# DE/EN text guests see: {"de": "...", "en": "..."}. Pydantic checks the keys, not the database.
+Translated = dict[str, str]
+
+UuidPk = Annotated[uuid.UUID, mapped_column(primary_key=True, default=uuid.uuid4)]
+
+
+class Base(DeclarativeBase):
+    metadata = MetaData(naming_convention=NAMING_CONVENTION)
+    type_annotation_map = {
+        str: Text,
+        datetime: DateTime(timezone=True),
+        Translated: JSONB,
+    }
+
+
+class Timestamps:
+    """created_at + updated_at on every table (D20)."""
+
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), sort_order=100)
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now(), sort_order=100
+    )
+
+
+def check_in(column: str, values: tuple[str, ...]) -> CheckConstraint:
+    """Allowed values as text + CHECK instead of a Postgres enum (D22)."""
+    allowed = ", ".join(f"'{v}'" for v in values)
+    return CheckConstraint(f"{column} IN ({allowed})", name=column)

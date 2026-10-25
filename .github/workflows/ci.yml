@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: guestlist
+          POSTGRES_PASSWORD: guestlist
+          POSTGRES_DB: guestlist_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U guestlist"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      ENVIRONMENT: local
+      AUTH_DEV_BYPASS: "true"
+      DATABASE_URL: postgresql+psycopg://guestlist:guestlist@localhost:5432/guestlist_test
+      TEST_DATABASE_URL: postgresql+psycopg://guestlist:guestlist@localhost:5432/guestlist_test
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: "0.12.21"
+          enable-cache: true
+
+      - run: uv sync --locked
+
+      - name: Format
+        run: uv run ruff format --check .
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Models match migrations
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
+
+      - name: Tests
+        run: uv run pytest
+
+      - name: Contract has not drifted
+        run: |
+          uv run python -m scripts.export_openapi
+          if [ -n "$(git status --porcelain -- ../contract)" ]; then
+            git --no-pager diff -- ../contract
+            echo "::error::contract/openapi.json is out of date. Run 'uv run python -m scripts.export_openapi' in backend/ and commit it."
+            exit 1
+          fi
+
+  backend-image:
+    needs: backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/guestlist-backend
+          tags: |
+            type=sha,format=long
+            type=raw,value=main,enable={{is_default_branch}}
+
+      # Pull requests only build; main also pushes. Deploying waits until infra/ exists.
+      - uses: docker/build-push-action@v7
+        with:
+          context: backend
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
