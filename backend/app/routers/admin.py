@@ -18,8 +18,9 @@ from app.schemas.events import (
     SectionIn,
     SectionOut,
 )
+from app.schemas.invites import InviteIn, InviteOut
 from app.schemas.users import UserOut
-from app.services import events
+from app.services import events, invites
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -154,3 +155,25 @@ def delete_option(
     option_id: uuid.UUID,
 ) -> None:
     events.delete_option(session, user, event_id, question_id, option_id)
+
+
+# Invites
+
+
+@router.get("/events/{event_id}/invites")
+def list_invites(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> list[InviteOut]:
+    return [InviteOut.model_validate(i) for i in invites.list_invites(session, user, event_id)]
+
+
+@router.post("/events/{event_id}/invites", **CREATED)
+def create_invite(
+    session: SessionDep, user: CurrentUser, event_id: uuid.UUID, data: InviteIn
+) -> InviteOut:
+    return InviteOut.model_validate(invites.create_invite(session, user, event_id, data))
+
+
+@router.delete("/events/{event_id}/invites/{invite_id}", **NO_CONTENT)
+def delete_invite(
+    session: SessionDep, user: CurrentUser, event_id: uuid.UUID, invite_id: uuid.UUID
+) -> None:
+    invites.delete_invite(session, user, event_id, invite_id)

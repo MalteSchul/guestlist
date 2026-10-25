@@ -1,6 +1,79 @@
 {
   "components": {
     "schemas": {
+      "AnswerIn": {
+        "additionalProperties": false,
+        "properties": {
+          "option_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Option Ids",
+            "type": "array"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "text_value": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text Value"
+          }
+        },
+        "required": [
+          "question_id"
+        ],
+        "title": "AnswerIn",
+        "type": "object"
+      },
+      "AnswerOut": {
+        "additionalProperties": false,
+        "properties": {
+          "option_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Option Ids",
+            "type": "array"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "text_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text Value"
+          }
+        },
+        "required": [
+          "question_id",
+          "option_ids",
+          "text_value"
+        ],
+        "title": "AnswerOut",
+        "type": "object"
+      },
       "EventIn": {
         "additionalProperties": false,
         "properties": {
@@ -231,6 +304,216 @@
         "title": "EventSummary",
         "type": "object"
       },
+      "GuestEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "answers_close_at": {
+            "format": "date-time",
+            "title": "Answers Close At",
+            "type": "string"
+          },
+          "answers_open": {
+            "title": "Answers Open",
+            "type": "boolean"
+          },
+          "default_language": {
+            "enum": [
+              "de",
+              "en"
+            ],
+            "title": "Default Language",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Translated"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/GuestQuestion"
+            },
+            "title": "Questions",
+            "type": "array"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/SectionOut"
+            },
+            "title": "Sections",
+            "type": "array"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "title": "Starts At",
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/Translated"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "location",
+          "starts_at",
+          "ends_at",
+          "default_language",
+          "answers_close_at",
+          "answers_open",
+          "sections",
+          "questions"
+        ],
+        "title": "GuestEvent",
+        "type": "object"
+      },
+      "GuestInviteOut": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "event": {
+            "$ref": "#/components/schemas/GuestEvent"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "persons": {
+            "items": {
+              "$ref": "#/components/schemas/PersonOut"
+            },
+            "title": "Persons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "comment",
+          "event",
+          "persons"
+        ],
+        "title": "GuestInviteOut",
+        "type": "object"
+      },
+      "GuestQuestion": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "choice",
+              "text"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "$ref": "#/components/schemas/Translated"
+          },
+          "multiple": {
+            "title": "Multiple",
+            "type": "boolean"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/OptionOut"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "position": {
+            "default": 0,
+            "title": "Position",
+            "type": "integer"
+          },
+          "required": {
+            "default": false,
+            "title": "Required",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "id",
+          "kind",
+          "multiple",
+          "options"
+        ],
+        "title": "GuestQuestion",
+        "type": "object"
+      },
+      "GuestResponseIn": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "persons": {
+            "items": {
+              "$ref": "#/components/schemas/PersonResponseIn"
+            },
+            "title": "Persons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "persons"
+        ],
+        "title": "GuestResponseIn",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -242,6 +525,79 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "InviteIn": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "persons": {
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Persons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "persons"
+        ],
+        "title": "InviteIn",
+        "type": "object"
+      },
+      "InviteOut": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "persons": {
+            "items": {
+              "$ref": "#/components/schemas/PersonOut"
+            },
+            "title": "Persons",
+            "type": "array"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "token",
+          "comment",
+          "persons"
+        ],
+        "title": "InviteOut",
         "type": "object"
       },
       "OptionIn": {
@@ -294,6 +650,92 @@
           "id"
         ],
         "title": "OptionOut",
+        "type": "object"
+      },
+      "PersonOut": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerOut"
+            },
+            "title": "Answers",
+            "type": "array"
+          },
+          "attendance": {
+            "enum": [
+              "pending",
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "title": "Attendance",
+            "type": "string"
+          },
+          "attendance_changed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attendance Changed At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "attendance",
+          "attendance_changed_at",
+          "answers"
+        ],
+        "title": "PersonOut",
+        "type": "object"
+      },
+      "PersonResponseIn": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/AnswerIn"
+            },
+            "title": "Answers",
+            "type": "array"
+          },
+          "attendance": {
+            "enum": [
+              "pending",
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "title": "Attendance",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "attendance"
+        ],
+        "title": "PersonResponseIn",
         "type": "object"
       },
       "QuestionIn": {
@@ -791,6 +1233,165 @@
           }
         ],
         "summary": "Update Event",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/events/{event_id}/invites": {
+      "get": {
+        "operationId": "list_invites_api_admin_events__event_id__invites_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InviteOut"
+                  },
+                  "title": "Response List Invites Api Admin Events  Event Id  Invites Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Invites",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "create_invite_api_admin_events__event_id__invites_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Invite",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/events/{event_id}/invites/{invite_id}": {
+      "delete": {
+        "operationId": "delete_invite_api_admin_events__event_id__invites__invite_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "invite_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invite Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Invite",
         "tags": [
           "admin"
         ]
@@ -1374,6 +1975,102 @@
         "summary": "Me",
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/api/guest/invite": {
+      "get": {
+        "operationId": "get_invite_api_guest_invite_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Invite-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "X-Invite-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestInviteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Invite",
+        "tags": [
+          "guest"
+        ]
+      },
+      "put": {
+        "operationId": "save_response_api_guest_invite_put",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Invite-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "X-Invite-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuestResponseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestInviteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Response",
+        "tags": [
+          "guest"
         ]
       }
     },

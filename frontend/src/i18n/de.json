@@ -5,13 +5,44 @@
   "common": {
     "loading": "Lädt …",
     "error": "Das hat nicht geklappt.",
-    "notFound": "Nicht gefunden."
+    "notFound": "Nicht gefunden.",
+    "save": "Speichern",
+    "saving": "Speichert …"
+  },
+  "guest": {
+    "yourAnswer": "Eure Antwort, {{name}}",
+    "answerUntil": "Ihr könnt bis {{date}} antworten und eure Antwort bis dahin jederzeit ändern.",
+    "closed": "Die Antwortfrist ist vorbei.",
+    "attendance": {
+      "yes": "Komme",
+      "maybe": "Vielleicht",
+      "no": "Komme nicht"
+    },
+    "comment": "Nachricht an die Gastgeber (optional)",
+    "saved": "Gespeichert. Danke!"
   },
   "admin": {
     "events": {
       "title": "Deine Events",
       "empty": "Noch keine Events.",
       "devHint": "Lege vorerst eines über die API-Doku an:"
+    },
+    "event": {
+      "back": "Alle Events",
+      "totals": "Auswahl",
+      "totalsHint": "Gezählt werden alle, die zugesagt haben.",
+      "invites_one": "{{count}} Einladung",
+      "invites_other": "{{count}} Einladungen",
+      "noInvites": "Noch keine Einladungen. Lege sie vorerst über die API-Doku an.",
+      "openLink": "Öffnen",
+      "copyLink": "Link kopieren",
+      "copied": "Kopiert"
+    },
+    "attendance": {
+      "yes": "Zugesagt",
+      "maybe": "Vielleicht",
+      "no": "Abgesagt",
+      "pending": "Offen"
     }
   }
 }

@@ -108,7 +108,8 @@ everything the backend sends.
 ## Authentication and roles
 
 - **Guests:** the link holds a random token (`/i/<token>`). The token only gives access to that
-  one invite. No login. Because the secret sits in the URL:
+  one invite. No login. The page sends it to the API in an `X-Invite-Token` header, so API URLs
+  never contain it (A20). Because the secret sits in the page URL:
   - tokens come from `secrets.token_urlsafe(32)` (256 bits)
   - nginx sends `Referrer-Policy: no-referrer`, so the link never leaks to third-party sites
   - access logs mask the token part of `/i/<token>`

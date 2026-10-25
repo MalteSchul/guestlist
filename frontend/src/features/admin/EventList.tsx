@@ -27,7 +27,9 @@ export function EventList() {
             <ul className="cards">
               {events.map((event) => (
                 <li key={event.id} className="card">
-                  <strong>{pick(event.title, i18n.language)}</strong>
+                  <a href={`/admin/events/${event.id}`}>
+                    <strong>{pick(event.title, i18n.language)}</strong>
+                  </a>
                   <span className="muted">{formatDateTime(event.starts_at, i18n.language)}</span>
                 </li>
               ))}

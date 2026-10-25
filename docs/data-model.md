@@ -221,14 +221,17 @@ Built (`backend/app/services/`):
 - DE/EN text has only `de`/`en` keys (schema), and at least the event's `default_language` is
   filled in (service)
 - an option someone picked can't be deleted, only set inactive (D24)
+- answers are only accepted until `rsvp_deadline`, otherwise until `starts_at`
+  (`Event.answers_close_at`)
+- a person only answers questions of their own event (`event_questions.event_id` =
+  `invites.event_id`): the service loads the event's questions through the invite and rejects
+  any `question_id` outside that set; persons are only found within the invite
+- a `choice` question with `multiple = false` gets at most one option, and every option belongs
+  to its question; new picks need an active option (D28)
+- text questions take text, choice questions take options
+- a person who says "yes" answers every required question that can be answered (D27)
 
 Still to build:
 - an event always keeps at least one owner (once roles can be changed)
-- answers are only accepted until `rsvp_deadline`, otherwise until `starts_at`
-- a `choice` question with `multiple = false` gets at most one option, and every option belongs
-  to its question
-- a person only answers questions of their own event (`event_questions.event_id` =
-  `invites.event_id`): the service loads the event's questions through the invite and rejects
-  any `question_id` outside that set
 - a contact is invited at most once per event
 - a contact group and its contacts belong to the same user

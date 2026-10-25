@@ -5,9 +5,10 @@ from datetime import datetime
 from typing import Literal, get_args
 
 from sqlalchemy import ForeignKey, UniqueConstraint, false, text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, Timestamps, UuidPk, check_in
+from app.models.base import Base, Timestamps, UuidPk, check_in, owned_children
+from app.models.event import Event
 
 Attendance = Literal["pending", "yes", "no", "maybe"]
 
@@ -24,6 +25,9 @@ class Invite(Timestamps, Base):
     name: Mapped[str]
     token: Mapped[str] = mapped_column(unique=True)
     comment: Mapped[str | None]
+
+    event: Mapped[Event] = relationship()
+    persons: Mapped[list["Person"]] = owned_children(lambda: [Person.position, Person.created_at])
 
 
 class Person(Timestamps, Base):
@@ -42,6 +46,8 @@ class Person(Timestamps, Base):
     attendance_public: Mapped[bool] = mapped_column(server_default=false())
     position: Mapped[int]
 
+    answers: Mapped[list["PersonAnswer"]] = owned_children(lambda: [PersonAnswer.created_at])
+
     __table_args__ = (check_in("attendance", get_args(Attendance)),)
 
 
@@ -57,7 +63,15 @@ class PersonAnswer(Timestamps, Base):
     )
     text_value: Mapped[str | None]
 
+    picks: Mapped[list["PersonAnswerOption"]] = owned_children(
+        lambda: [PersonAnswerOption.created_at]
+    )
+
     __table_args__ = (UniqueConstraint("person_id", "question_id"),)
+
+    @property
+    def option_ids(self) -> list[uuid.UUID]:
+        return [pick.option_id for pick in self.picks]
 
 
 class PersonAnswerOption(Timestamps, Base):
