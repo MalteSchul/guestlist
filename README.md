@@ -7,18 +7,27 @@ answer without an account. See [docs/architecture.md](docs/architecture.md).
 
 `main` is protected: every change goes through a pull request, CI must be green, and PRs are
 squash-merged (decision P13). CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the
-checks below and builds the backend image; merges to `main` push it to GHCR.
+checks below and builds both images; merges to `main` push them to GHCR.
 
 ## Local development
 
-Needs Docker and [uv](https://docs.astral.sh/uv/).
+Needs Docker, [uv](https://docs.astral.sh/uv/) and Node 20.19+ (CI uses 24).
 
 ```sh
-docker compose up --build            # Postgres, migrations, backend on http://localhost:8000
+docker compose up --build    # Postgres, migrations, backend (:8000) and the nginx frontend (:8080)
 ```
 
-The admin API uses the dev bypass locally: every request is the same dev user, no login
-(decision A13). API docs: http://localhost:8000/docs
+Locally the admin API uses the dev bypass: every request is the same dev user, no login
+(decision A13). For now, hosts create events, questions and invites through the API docs:
+http://localhost:8000/docs
+
+### Frontend with hot reload
+
+```sh
+cd frontend
+npm install
+npm run dev                  # http://localhost:5173, forwards /api to the backend on :8000
+```
 
 ### Backend without compose
 
@@ -33,7 +42,7 @@ uv run uvicorn app.main:app --reload
 
 ### Checks
 
-Run from `backend/` with the database container up:
+From `backend/`, with the database container up:
 
 ```sh
 uv run ruff format --check . && uv run ruff check .
@@ -41,6 +50,19 @@ uv run pytest                                      # uses the guestlist_test dat
 uv run alembic check                               # models and migrations agree
 uv run python -m scripts.export_openapi            # regenerate contract/openapi.json
 ```
+
+From `frontend/`:
+
+```sh
+npm run generate-api                               # regenerate src/api/schema.d.ts from the contract
+npm run typecheck && npm run build
+```
+
+### Changing the API
+
+Change the schemas or routers, then regenerate both sides and commit them together:
+`uv run python -m scripts.export_openapi` (backend) and `npm run generate-api` (frontend). CI fails
+if either is out of date, and `tsc` fails if the frontend no longer fits the API.
 
 ### Changing the schema
 

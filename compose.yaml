@@ -1,4 +1,4 @@
-# Local development: Postgres + backend. The frontend joins once it exists.
+# Local development: Postgres, migrations, backend and the nginx frontend.
 name: guestlist
 
 services:
@@ -46,6 +46,16 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+
+  # The production frontend image (nginx). For development with hot reload use
+  # `npm run dev` in frontend/ instead (http://localhost:5173).
+  frontend:
+    build: ./frontend
+    image: guestlist-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
 
 configs:
   create-test-db:

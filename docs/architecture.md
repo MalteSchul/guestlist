@@ -165,7 +165,7 @@ guestlist/
 │   │   ├── features/guest/      RSVP page behind the personal link
 │   │   ├── features/admin/      events, invites, address book, dashboard
 │   │   └── components/          shared UI
-│   ├── nginx.conf               serves the build, forwards /api to the backend
+│   ├── nginx.conf.template      serves the build, forwards /api to the backend
 │   ├── package.json
 │   └── Dockerfile
 ├── contract/

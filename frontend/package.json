@@ -1,0 +1,26 @@
+{
+  "name": "guestlist-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "generate-api": "openapi-typescript ../contract/openapi.json -o src/api/schema.d.ts"
+  },
+  "dependencies": {
+    "i18next": "^26.5.11",
+    "openapi-fetch": "^0.17.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-i18next": "^17.1.9"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "~5.9.3",
+    "vite": "^8.3.5"
+  }
+}

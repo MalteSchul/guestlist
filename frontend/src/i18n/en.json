@@ -1,0 +1,17 @@
+{
+  "app": {
+    "name": "Guestlist"
+  },
+  "common": {
+    "loading": "Loading …",
+    "error": "That didn't work.",
+    "notFound": "Not found."
+  },
+  "admin": {
+    "events": {
+      "title": "Your events",
+      "empty": "No events yet.",
+      "devHint": "For now, create one through the API docs:"
+    }
+  }
+}
