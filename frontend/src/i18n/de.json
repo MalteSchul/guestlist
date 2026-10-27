@@ -63,6 +63,9 @@
         "de": "Deutsch",
         "en": "English"
       },
+      "editLanguage": "Texte auf",
+      "missing_one": "{{count}} fehlt",
+      "missing_other": "{{count}} fehlen",
       "defaultLanguage": "Hauptsprache",
       "defaultLanguageHint": "Texte in dieser Sprache sind Pflicht, die andere ist optional. Gäste können nur wechseln, wenn alles in beiden Sprachen ausgefüllt ist.",
       "title": "Titel",

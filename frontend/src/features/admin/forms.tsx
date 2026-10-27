@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ApiError, type Schemas } from "../../api/client";
@@ -24,7 +24,45 @@ export function requiredText(draft: TextDraft): Schemas["Translated"] {
   return translated(draft) ?? {};
 }
 
-/** One input per language. Only the event's default language is required (data-model.md). */
+/** The language the text fields below edit, picked with LanguageTabs. Without tabs, fields edit
+ * the event's main language (a new event: translations come later). */
+const EditingLanguage = createContext<Language | undefined>(undefined);
+
+/** One language at a time; `missing` counts the stored texts each language still lacks. */
+export function LanguageTabs({
+  initial,
+  missing,
+  children,
+}: {
+  initial: Language;
+  missing: Record<Language, number>;
+  children: ReactNode;
+}) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(initial);
+  return (
+    <>
+      <div className="edit-language" role="group" aria-label={t("admin.form.editLanguage")}>
+        <span className="muted">{t("admin.form.editLanguage")}</span>
+        {LANGUAGES.map((lang) => (
+          <button
+            key={lang}
+            type="button"
+            aria-pressed={editing === lang}
+            onClick={() => setEditing(lang)}
+          >
+            {t(`admin.form.languages.${lang}`)}
+            {missing[lang] > 0 && ` · ${t("admin.form.missing", { count: missing[lang] })}`}
+          </button>
+        ))}
+      </div>
+      <EditingLanguage.Provider value={editing}>{children}</EditingLanguage.Provider>
+    </>
+  );
+}
+
+/** Host-written text in the language being edited. Only the event's main language is required
+ * (data-model.md); while translating, the main-language text is shown for reference. */
 export function TranslatedField({
   label,
   value,
@@ -41,29 +79,27 @@ export function TranslatedField({
   multiline?: boolean;
 }) {
   const { t } = useTranslation();
+  const lang = useContext(EditingLanguage) ?? language;
+  const reference = lang !== language && value[language].trim();
+  const props = {
+    lang,
+    value: value[lang],
+    required: required && lang === language,
+    onChange: (e: { target: { value: string } }) => onChange({ ...value, [lang]: e.target.value }),
+  };
   return (
-    <fieldset className="field plain">
-      <legend>{label}</legend>
-      <div className="translations">
-        {LANGUAGES.map((lang) => {
-          const props = {
-            value: value[lang],
-            required: required && lang === language,
-            onChange: (e: { target: { value: string } }) =>
-              onChange({ ...value, [lang]: e.target.value }),
-          };
-          return (
-            <label key={lang} className="translation">
-              <span className="muted">
-                {t(`admin.form.languages.${lang}`)}
-                {props.required && " *"}
-              </span>
-              {multiline ? <textarea rows={3} {...props} /> : <input type="text" {...props} />}
-            </label>
-          );
-        })}
-      </div>
-    </fieldset>
+    <label className="field">
+      <span>
+        {label}
+        {props.required && " *"}
+      </span>
+      {multiline ? <textarea rows={3} {...props} /> : <input type="text" {...props} />}
+      {reference && (
+        <span className="hint reference">
+          {t(`admin.form.languages.${language}`)}: {reference}
+        </span>
+      )}
+    </label>
   );
 }
 

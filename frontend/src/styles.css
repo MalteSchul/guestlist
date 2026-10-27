@@ -264,19 +264,40 @@ button.danger {
   margin-bottom: 0.5rem;
 }
 
-/* One input per language; side by side when there's room. */
-.translations,
+/* Start and end side by side when there's room. */
 .columns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  gap: 0.5rem 0.75rem;
+  gap: 0 0.75rem;
 }
 
-.translation {
+/* Which language the text fields edit; stays in view while scrolling. */
+.edit-language {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.9rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.edit-language button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* The main-language text while translating. */
+.reference {
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .controls {

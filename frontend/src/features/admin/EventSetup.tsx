@@ -9,6 +9,7 @@ import { pick } from "../../i18n/text";
 import { EventForm } from "./EventForm";
 import {
   ItemControls,
+  LanguageTabs,
   moved,
   nextPosition,
   requiredText,
@@ -56,16 +57,36 @@ function Setup({ event, reload }: { event: Event; reload: () => Promise<void> })
     <>
       <h1>{t("admin.setup.title", { title: pick(event.title, i18n.language) })}</h1>
 
-      <h2>{t("admin.setup.details")}</h2>
-      <div className="card">
-        <EventForm event={event} onSubmit={update} />
-      </div>
+      <LanguageTabs
+        initial={event.default_language}
+        missing={{ de: missing(event, "de"), en: missing(event, "en") }}
+      >
+        <h2>{t("admin.setup.details")}</h2>
+        <div className="card">
+          <EventForm event={event} onSubmit={update} />
+        </div>
 
-      <Sections event={event} reload={reload} />
-      <Questions event={event} reload={reload} />
+        <Sections event={event} reload={reload} />
+        <Questions event={event} reload={reload} />
+      </LanguageTabs>
       <DeleteEvent event={event} />
     </>
   );
+}
+
+/** Texts guests see that lack this language; the same ones the guest API checks for its
+ * complete `languages` (A21). */
+function missing(event: Event, language: Language): number {
+  const texts = [
+    event.title,
+    event.description,
+    ...event.sections.flatMap((section) => [section.title, section.body]),
+    ...event.questions.flatMap((question) => [
+      question.label,
+      ...question.options.filter((option) => option.active).map((option) => option.label),
+    ]),
+  ];
+  return texts.filter((text) => text && !text[language]).length;
 }
 
 function Sections({ event, reload }: { event: Event; reload: () => Promise<void> }) {
