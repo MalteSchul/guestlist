@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ApiError, api, type Schemas, unwrap } from "../../api/client";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
+import { chosenLanguage } from "../../i18n";
 import { formatDateTime, pick } from "../../i18n/text";
 
 type Invite = Schemas["GuestInviteOut"];
@@ -21,11 +22,12 @@ export function GuestPage({ token }: { token: string }) {
   const params = { header: { "X-Invite-Token": token } };
   const invite = useLoad(() => unwrap(api.GET("/api/guest/invite", { params })), [token]);
 
-  // Start in the language the host wrote in, once; guests can switch. (Not the hook's `i18n`
-  // as a dependency: it changes with the language and would switch the guest straight back.)
+  // Start in the language the host wrote in, once, unless the guest picked one before (A21).
+  // (Not the hook's `i18n` as a dependency: it changes with the language and would switch the
+  // guest straight back.)
   const language = invite.data?.event.default_language;
   useEffect(() => {
-    if (language) void i18next.changeLanguage(language);
+    if (language && !chosenLanguage()) void i18next.changeLanguage(language);
   }, [language]);
 
   async function save(body: Schemas["GuestResponseIn"]) {

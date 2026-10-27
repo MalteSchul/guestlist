@@ -46,6 +46,7 @@ new one that replaces it, not by silently editing the old one.
 | A18 | Lightweight frontend for now: routing by hand, `useState`/`useEffect` instead of a data library, one plain CSS file, `tsc` as the only check (no ESLint yet), no login screen (dev bypass) | Few pages so far. Each can be added when it starts to hurt |
 | A19 | TypeScript stays on 5.x | `openapi-typescript` 7 supports TypeScript 5 only |
 | A20 | The guest API takes the token in an `X-Invite-Token` header (`/api/guest/invite`), never in the URL | Only the page URL `/i/<token>` contains it, and nginx masks that. A custom header also blocks cross-site form posts |
+| A21 | UI language: a choice made with the DE/EN switch is kept in `localStorage`. Without one, the guest page uses the event's `default_language` and other pages the browser language (`de*` → DE, else EN) | An explicit choice should survive a reload. Only the switch saves it, so the guest page's automatic switch doesn't stick for other events |
 
 ## Data model
 

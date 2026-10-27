@@ -5,6 +5,29 @@ import de from "./de.json";
 import en from "./en.json";
 
 export const LANGUAGES = ["de", "en"] as const;
+export type Language = (typeof LANGUAGES)[number];
+
+const STORAGE_KEY = "language";
+
+/** The language picked with the DE/EN switch, if any (A21). Storage can be blocked or empty. */
+export function chosenLanguage(): Language | undefined {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return LANGUAGES.find((language) => language === stored);
+  } catch {
+    return undefined;
+  }
+}
+
+/** Switch and remember the choice for the next visit. */
+export function chooseLanguage(language: Language) {
+  try {
+    localStorage.setItem(STORAGE_KEY, language);
+  } catch {
+    // Not remembered then; the switch still works for this visit.
+  }
+  void i18n.changeLanguage(language);
+}
 
 i18n.on("languageChanged", (language) => {
   document.documentElement.lang = language;
@@ -12,7 +35,7 @@ i18n.on("languageChanged", (language) => {
 
 void i18n.use(initReactI18next).init({
   resources: { de: { translation: de }, en: { translation: en } },
-  lng: navigator.language.toLowerCase().startsWith("de") ? "de" : "en",
+  lng: chosenLanguage() ?? (navigator.language.toLowerCase().startsWith("de") ? "de" : "en"),
   fallbackLng: "en",
   interpolation: { escapeValue: false }, // React escapes already
 });
