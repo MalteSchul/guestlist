@@ -37,7 +37,7 @@ new one that replaces it, not by silently editing the old one.
 | A9 | Roles per event in our own database | Someone can be owner of one event and viewer of another, whatever the login provider |
 | A10 | react-i18next from the start, DE + EN | Adding it later means hunting down every hard-coded string |
 | A11 | Migrations and cleanup run as Container Apps Jobs from the backend image | No third image |
-| A12 | Guest links: tokens from `secrets.token_urlsafe(32)`, `Referrer-Policy: no-referrer`, `/i/<token>` masked in access logs | The token is the only secret; URLs leak through referrers and logs |
+| A12 | Guest links: tokens from `secrets.token_urlsafe(32)` (token format replaced by A22), `Referrer-Policy: no-referrer`, `/i/<token>` masked in access logs | The token is the only secret; URLs leak through referrers and logs |
 | A13 | Local auth: dev bypass (`AUTH_DEV_BYPASS=true`), every admin request is a fixed dev user. Refused at startup unless `ENVIRONMENT=local`; `ENVIRONMENT` has no default | Build and test without a tenant or network. Turning it on in production would take two mistakes |
 | A14 | A new login whose email matches an existing user joins that user | Same person, several login identities. Only safe while every accepted provider verifies emails; check again before adding one |
 | A15 | Role checks live in the services (`require_role`), not in routers. No role on an event → 404, too low → 403 | Every path to a use case checks them. IDs reveal nothing |
@@ -47,6 +47,7 @@ new one that replaces it, not by silently editing the old one.
 | A19 | TypeScript stays on 5.x | `openapi-typescript` 7 supports TypeScript 5 only |
 | A20 | The guest API takes the token in an `X-Invite-Token` header (`/api/guest/invite`), never in the URL | Only the page URL `/i/<token>` contains it, and nginx masks that. A custom header also blocks cross-site form posts |
 | A21 | UI language: a choice made with the DE/EN switch is kept in `localStorage`; without one, the browser language (`de*` → DE, else EN). Exception: if every text a guest sees (title, description, sections, questions, active options) is only complete in one language, the guest page shows that one and hides the switch. The guest API sends these complete `languages` | An explicit choice should survive a reload. Guests never see app text in one language next to host text in the other. Only the switch saves a choice, so a forced language doesn't stick for other pages |
+| A22 | Invite tokens are 44 random base58 characters (256 bits), replacing `token_urlsafe` from A12. Existing tokens stay valid | No look-alikes like `0`/`O` or `I`/`l`, and no `-` that stops a double-click selection |
 
 ## Data model
 

@@ -12,6 +12,14 @@ from app.schemas.invites import InviteIn
 from app.services.access import require_role
 from app.services.errors import NotFound
 
+# Base58: no 0/O/I/l look-alikes and no "-", so a double-click selects the whole token.
+TOKEN_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+
+def new_token() -> str:
+    """The secret in a guest link: 44 base58 characters, 58^44 > 2^256 (A12)."""
+    return "".join(secrets.choice(TOKEN_ALPHABET) for _ in range(44))
+
 
 def list_invites(session: Session, user: User, event_id: uuid.UUID) -> Sequence[Invite]:
     require_role(session, user, event_id, "viewer")
@@ -27,7 +35,7 @@ def create_invite(session: Session, user: User, event_id: uuid.UUID, data: Invit
     invite = Invite(
         event_id=event_id,
         name=data.name,
-        token=secrets.token_urlsafe(32),  # 256 bits (A12)
+        token=new_token(),
         persons=[Person(name=name, position=i) for i, name in enumerate(data.persons)],
     )
     session.add(invite)
