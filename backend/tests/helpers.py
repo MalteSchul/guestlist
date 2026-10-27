@@ -1,4 +1,3 @@
-import secrets
 import uuid
 
 from sqlalchemy import text
@@ -12,6 +11,7 @@ from app.models import (
     PersonAnswer,
     PersonAnswerOption,
 )
+from app.services.invites import new_token
 
 
 def check_deferred_constraints(session: Session) -> None:
@@ -23,7 +23,7 @@ def pick_option(session: Session, option_id: str | uuid.UUID) -> PersonAnswer:
     """A guest on a new invite who picked this option."""
     option = session.get_one(EventQuestionOption, uuid.UUID(str(option_id)))
     question = session.get_one(EventQuestion, option.question_id)
-    invite = Invite(event_id=question.event_id, name="Test", token=secrets.token_urlsafe(32))
+    invite = Invite(event_id=question.event_id, name="Test", token=new_token())
     session.add(invite)
     session.flush()
     person = Person(invite_id=invite.id, name="Anna", position=0)

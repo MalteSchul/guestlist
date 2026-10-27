@@ -3,6 +3,8 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 
+from app.services.invites import TOKEN_ALPHABET
+
 EVENTS = "/api/admin/events"
 GUEST = "/api/guest/invite"
 
@@ -66,7 +68,8 @@ def answer(question: dict, option: int | None = None, text: str | None = None) -
 
 def test_host_creates_lists_and_deletes_invites(client: TestClient, party: dict, log_in_as):
     invite = party["invite"]
-    assert len(invite["token"]) >= 43
+    assert len(invite["token"]) == 44
+    assert set(invite["token"]) <= set(TOKEN_ALPHABET)
     assert [(p["name"], p["attendance"]) for p in invite["persons"]] == [
         ("Anna", "pending"),
         ("Ben", "pending"),

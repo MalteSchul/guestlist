@@ -110,7 +110,7 @@ everything the backend sends.
 - **Guests:** the link holds a random token (`/i/<token>`). The token only gives access to that
   one invite. No login. The page sends it to the API in an `X-Invite-Token` header, so API URLs
   never contain it (A20). Because the secret sits in the page URL:
-  - tokens come from `secrets.token_urlsafe(32)` (256 bits)
+  - tokens are 44 random base58 characters (256 bits, A22)
   - nginx sends `Referrer-Policy: no-referrer`, so the link never leaks to third-party sites
   - access logs mask the token part of `/i/<token>`
 - **Hosts:** log in through Entra External ID. The frontend uses `react-oidc-context`. The backend
