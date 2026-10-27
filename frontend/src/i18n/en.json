@@ -41,6 +41,7 @@
       "invites_other": "{{count}} invites",
       "noInvites": "No invites yet.",
       "openLink": "Open",
+      "comment": "“{{comment}}”",
       "copy": {
         "idle": "Copy link",
         "copied": "Copied",
@@ -97,12 +98,10 @@
       "addQuestion": "Add question",
       "kind": "Kind",
       "kinds": {
-        "choice": "Choice",
-        "text": "Free text",
-        "choiceOne": "Choice, one answer",
-        "choiceSeveral": "Choice, several answers"
+        "single": "Single choice",
+        "multiple": "Multiple choice",
+        "text": "Free text"
       },
-      "multiple": "Several answers allowed",
       "kindFixed": "The kind can't be changed later.",
       "required": "Required",
       "requiredHint": "Only guests who say yes have to answer it.",

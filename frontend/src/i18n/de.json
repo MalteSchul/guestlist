@@ -41,6 +41,7 @@
       "invites_other": "{{count}} Einladungen",
       "noInvites": "Noch keine Einladungen.",
       "openLink": "Öffnen",
+      "comment": "„{{comment}}“",
       "copy": {
         "idle": "Link kopieren",
         "copied": "Kopiert",
@@ -97,12 +98,10 @@
       "addQuestion": "Frage hinzufügen",
       "kind": "Art",
       "kinds": {
-        "choice": "Auswahl",
-        "text": "Freitext",
-        "choiceOne": "Auswahl, eine Antwort",
-        "choiceSeveral": "Auswahl, mehrere Antworten"
+        "single": "Einfachauswahl",
+        "multiple": "Mehrfachauswahl",
+        "text": "Freitext"
       },
-      "multiple": "Mehrere Antworten erlaubt",
       "kindFixed": "Die Art lässt sich später nicht ändern.",
       "required": "Pflichtfrage",
       "requiredHint": "Beantworten müssen sie nur Gäste, die zusagen.",

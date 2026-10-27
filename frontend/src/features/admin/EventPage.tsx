@@ -82,7 +82,10 @@ function EventDetails({
                 <ul className="totals">
                   {question.options.map((option) => (
                     <li key={option.id}>
-                      <span>{pick(option.label, lang)}</span>
+                      <span className={option.active ? undefined : "muted"}>
+                        {pick(option.label, lang)}
+                        {!option.active && ` (${t("admin.setup.hidden")})`}
+                      </span>
                       <span>{coming.filter((p) => picked(p, question.id, option.id)).length}</span>
                     </li>
                   ))}
@@ -186,7 +189,9 @@ function InviteCard({
           </li>
         ))}
       </ul>
-      {invite.comment && <p className="prose muted">„{invite.comment}“</p>}
+      {invite.comment && (
+        <p className="prose muted">{t("admin.event.comment", { comment: invite.comment })}</p>
+      )}
     </li>
   );
 }

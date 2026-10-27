@@ -92,7 +92,9 @@ function missing(event: Event, language: Language): number {
 function Sections({ event, reload }: { event: Event; reload: () => Promise<void> }) {
   const { t, i18n } = useTranslation();
   const action = useSave();
-  const [editing, setEditing] = useState<string>(); // a section's ID, or "new"
+  // Adding is its own state, so opening a new form never closes (and loses) an open editor.
+  const [editing, setEditing] = useState<string>(); // a section's ID
+  const [adding, setAdding] = useState(false);
   const { sections } = event;
   const params = (sectionId: string) => ({
     path: { event_id: event.id, section_id: sectionId },
@@ -133,7 +135,7 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
       }),
     );
     await reload();
-    setEditing(undefined);
+    setAdding(false);
   }
 
   async function change(section: Section, text: SectionText) {
@@ -176,17 +178,17 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
           ),
         )}
       </ul>
-      {editing === "new" ? (
+      {adding ? (
         <div className="card">
           <SectionForm
             language={event.default_language}
             onSubmit={add}
-            onCancel={() => setEditing(undefined)}
+            onCancel={() => setAdding(false)}
           />
         </div>
       ) : (
         <p>
-          <button type="button" onClick={() => setEditing("new")}>
+          <button type="button" onClick={() => setAdding(true)}>
             + {t("admin.setup.addSection")}
           </button>
         </p>
