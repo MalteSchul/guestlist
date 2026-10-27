@@ -32,3 +32,13 @@ updates:
     directories: [/backend, /frontend]
     schedule:
       interval: monthly
+    ignore:
+      # Odd nginx minors (1.31, 1.33, ...) are mainline; we follow stable and bump it by hand.
+      - dependency-name: nginx
+        update-types: ["version-update:semver-minor"]
+      # A new Node major also needs node-version in ci.yml; bump both together by hand.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
+      # Same for Python: requires-python and the uv-managed version move with it.
+      - dependency-name: python
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
