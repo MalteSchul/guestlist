@@ -7,7 +7,12 @@
     "error": "Das hat nicht geklappt.",
     "notFound": "Nicht gefunden.",
     "save": "Speichern",
-    "saving": "Speichert …"
+    "saving": "Speichert …",
+    "saved": "Gespeichert.",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "remove": "Entfernen"
   },
   "guest": {
     "yourAnswer": "Eure Antwort, {{name}}",
@@ -25,21 +30,95 @@
     "events": {
       "title": "Deine Events",
       "empty": "Noch keine Events.",
-      "devHint": "Lege vorerst eines über die API-Doku an:"
+      "new": "Neues Event"
     },
     "event": {
       "back": "Alle Events",
+      "edit": "Event bearbeiten",
       "totals": "Auswahl",
       "totalsHint": "Gezählt werden alle, die zugesagt haben.",
       "invites_one": "{{count}} Einladung",
       "invites_other": "{{count}} Einladungen",
-      "noInvites": "Noch keine Einladungen. Lege sie vorerst über die API-Doku an.",
+      "noInvites": "Noch keine Einladungen.",
       "openLink": "Öffnen",
       "copy": {
         "idle": "Link kopieren",
         "copied": "Kopiert",
         "failed": "Kopieren nicht möglich – nutze „Öffnen“"
-      }
+      },
+      "newInvite": "Neue Einladung",
+      "inviteName": "Name auf der Einladung",
+      "inviteNameHint": "Zum Beispiel „Familie Müller“ oder „Anna & Tom“.",
+      "persons": "Personen",
+      "personsHint": "Ein Name pro Zeile. Leer lassen für eine Person mit dem Namen der Einladung.",
+      "createInvite": "Einladung anlegen",
+      "confirmDeleteInvite": "Einladung für {{name}} löschen? Der Link funktioniert dann nicht mehr und die Antworten werden gelöscht."
+    },
+    "newEvent": {
+      "title": "Neues Event",
+      "create": "Event anlegen"
+    },
+    "form": {
+      "languages": {
+        "de": "Deutsch",
+        "en": "English"
+      },
+      "editLanguage": "Texte auf",
+      "missing_one": "{{count}} fehlt",
+      "missing_other": "{{count}} fehlen",
+      "defaultLanguage": "Hauptsprache",
+      "defaultLanguageHint": "Texte in dieser Sprache sind Pflicht, die andere ist optional. Gäste können nur wechseln, wenn alles in beiden Sprachen ausgefüllt ist.",
+      "title": "Titel",
+      "description": "Beschreibung",
+      "location": "Ort",
+      "startsAt": "Beginn",
+      "endsAt": "Ende",
+      "rsvpDeadline": "Antworten bis",
+      "rsvpDeadlineHint": "Leer lassen, dann können Gäste bis zum Beginn antworten.",
+      "keepData": "Daten nach dem Event behalten",
+      "keepDataHint": "Sonst werden Einladungen und Antworten 90 Tage nach dem Event gelöscht."
+    },
+    "setup": {
+      "title": "„{{title}}“ bearbeiten",
+      "back": "Übersicht",
+      "details": "Details",
+      "up": "Nach oben",
+      "down": "Nach unten",
+      "done": "Fertig",
+      "sections": "Infos für Gäste",
+      "sectionsHint": "Steht auf der Einladung unter der Beschreibung, z. B. Anfahrt, Dresscode oder Ablauf.",
+      "sectionTitle": "Überschrift",
+      "sectionBody": "Text",
+      "addSection": "Abschnitt hinzufügen",
+      "confirmDeleteSection": "Abschnitt „{{title}}“ löschen?",
+      "questions": "Fragen",
+      "questionsHint": "Gäste, die zusagen oder „vielleicht“ sagen, beantworten sie für jede Person.",
+      "question": "Frage",
+      "addQuestion": "Frage hinzufügen",
+      "kind": "Art",
+      "kinds": {
+        "choice": "Auswahl",
+        "text": "Freitext",
+        "choiceOne": "Auswahl, eine Antwort",
+        "choiceSeveral": "Auswahl, mehrere Antworten"
+      },
+      "multiple": "Mehrere Antworten erlaubt",
+      "kindFixed": "Die Art lässt sich später nicht ändern.",
+      "required": "Pflichtfrage",
+      "requiredHint": "Beantworten müssen sie nur Gäste, die zusagen.",
+      "confirmDeleteQuestion": "Frage „{{label}}“ löschen? Alle Antworten darauf werden mitgelöscht.",
+      "options": "Optionen",
+      "option": "Option",
+      "optionNumber": "Option {{number}}",
+      "addOption": "Option hinzufügen",
+      "hide": "Ausblenden",
+      "show": "Einblenden",
+      "hidden": "ausgeblendet",
+      "hiddenHint": "Ausgeblendete Optionen können nicht mehr gewählt werden; bereits gegebene Antworten bleiben. Gewählte Optionen lassen sich nur ausblenden, nicht löschen.",
+      "confirmDeleteOption": "Option „{{label}}“ löschen?",
+      "deleteEvent": "Event löschen",
+      "deleteEventHint": "Löscht das Event mit allen Einladungen und Antworten. Das dürfen nur Eigentümer.",
+      "confirmDeleteEvent": "„{{title}}“ mit allen Einladungen und Antworten löschen? Das lässt sich nicht rückgängig machen."
     },
     "attendance": {
       "yes": "Zugesagt",
