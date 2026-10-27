@@ -24,7 +24,17 @@
       "no": "Not coming"
     },
     "comment": "Message to the hosts (optional)",
-    "saved": "Saved. Thank you!"
+    "saved": "✓ Saved – you can change it until {{date}}.",
+    "unsaved": "Not saved yet",
+    "missing": "Please answer this",
+    "toAnswer": "Still to answer",
+    "done": "Done",
+    "change": "Change",
+    "new": "New",
+    "answered": {
+      "yes": "coming",
+      "no": "not coming"
+    }
   },
   "admin": {
     "events": {
@@ -37,6 +47,10 @@
       "edit": "Edit event",
       "totals": "Choices",
       "totalsHint": "Counting everyone who said yes.",
+      "invitesTally": "Invites",
+      "personsTally": "People",
+      "requiredOpen_one": "{{count}} required question open",
+      "requiredOpen_other": "{{count}} required questions open",
       "invites_one": "{{count}} invite",
       "invites_other": "{{count}} invites",
       "noInvites": "No invites yet.",
@@ -118,6 +132,11 @@
       "deleteEvent": "Delete event",
       "deleteEventHint": "Deletes the event with all invites and answers. Only owners can do this.",
       "confirmDeleteEvent": "Delete “{{title}}” with all invites and answers? This can't be undone."
+    },
+    "progress": {
+      "open": "No answer yet",
+      "partial": "Incomplete",
+      "done": "Complete"
     },
     "attendance": {
       "yes": "Coming",

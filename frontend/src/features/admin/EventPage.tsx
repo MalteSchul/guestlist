@@ -5,6 +5,7 @@ import { api, type Schemas, unwrap } from "../../api/client";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime, pick } from "../../i18n/text";
+import { openRequired, PROGRESS, type Progress, personProgress, summary } from "../answers";
 import { SaveBar, useSave } from "./forms";
 
 type Event = Schemas["EventOut"];
@@ -62,8 +63,18 @@ function EventDetails({
       <p className="meta">{formatDateTime(event.starts_at, lang)}</p>
 
       <p className="tally">
+        <span className="muted">{t("admin.event.invitesTally")}</span>
+        {PROGRESS.map((progress) => (
+          <span key={progress} className={`badge ${progress}`}>
+            {t(`admin.progress.${progress}`)}:{" "}
+            {invites.filter((invite) => inviteProgress(event, invite) === progress).length}
+          </span>
+        ))}
+      </p>
+      <p className="tally">
+        <span className="muted">{t("admin.event.personsTally")}</span>
         {ATTENDANCE.map((attendance) => (
-          <span key={attendance} className={`badge ${attendance}`}>
+          <span key={attendance} className="badge">
             {t(`admin.attendance.${attendance}`)}:{" "}
             {persons.filter((person) => person.attendance === attendance).length}
           </span>
@@ -155,7 +166,7 @@ function InviteCard({
   }
 
   return (
-    <li className="card">
+    <li className={`card progress ${inviteProgress(event, invite)}`}>
       <div className="row">
         <strong>{invite.name}</strong>
         <span className="row">
@@ -177,17 +188,27 @@ function InviteCard({
       </div>
       {action.error && <p className="error">{action.error}</p>}
       <ul className="persons">
-        {invite.persons.map((person) => (
-          <li key={person.id}>
-            <span className={`badge ${person.attendance}`}>
-              {t(`admin.attendance.${person.attendance}`)}
-            </span>{" "}
-            {person.name}
-            {person.answers.length > 0 && (
-              <span className="muted"> · {summary(event, person, i18n.language)}</span>
-            )}
-          </li>
-        ))}
+        {invite.persons.map((person) => {
+          // Saving "yes" needs every required answer, so this only happens when a question
+          // became required after the guest answered.
+          const open =
+            person.attendance === "yes" ? openRequired(event.questions, person.answers).length : 0;
+          return (
+            <li key={person.id}>
+              <span className={`badge ${progressOf(event, person)}`}>
+                {t(`admin.attendance.${person.attendance}`)}
+                {open > 0 && ` · ${t("admin.event.requiredOpen", { count: open })}`}
+              </span>{" "}
+              {person.name}
+              {person.answers.length > 0 && (
+                <span className="muted">
+                  {" "}
+                  · {summary(event.questions, person.answers, i18n.language)}
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ul>
       {invite.comment && (
         <p className="prose muted">{t("admin.event.comment", { comment: invite.comment })}</p>
@@ -252,23 +273,17 @@ function NewInvite({ event, onCreated }: { event: Event; onCreated: (invite: Inv
   );
 }
 
-function picked(person: Person, questionId: string, optionId: string): boolean {
-  return person.answers.some((a) => a.question_id === questionId && a.option_ids.includes(optionId));
+const progressOf = (event: Event, person: Person) =>
+  personProgress(event.questions, person.attendance, person.answers);
+
+/** Red while nobody answered, green once everyone is done, yellow in between. */
+function inviteProgress(event: Event, invite: Invite): Progress {
+  const all = invite.persons.map((person) => progressOf(event, person));
+  if (all.every((progress) => progress === "open")) return "open";
+  if (all.every((progress) => progress === "done")) return "done";
+  return "partial";
 }
 
-/** "Essen: Vegetarisch; Allergien: Nüsse" */
-function summary(event: Event, person: Person, lang: string): string {
-  return event.questions
-    .flatMap((question) => {
-      const answer = person.answers.find((a) => a.question_id === question.id);
-      if (!answer) return [];
-      const value =
-        answer.text_value ??
-        question.options
-          .filter((option) => answer.option_ids.includes(option.id))
-          .map((option) => pick(option.label, lang))
-          .join(", ");
-      return [`${pick(question.label, lang)}: ${value}`];
-    })
-    .join("; ");
+function picked(person: Person, questionId: string, optionId: string): boolean {
+  return person.answers.some((a) => a.question_id === questionId && a.option_ids.includes(optionId));
 }

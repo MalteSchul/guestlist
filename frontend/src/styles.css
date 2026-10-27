@@ -7,6 +7,7 @@
   --accent: #2f6f5e;
   --accent-text: #ffffff;
   --error: #b42318;
+  --warn: #9a6700;
   --radius: 10px;
   color-scheme: light dark;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -23,6 +24,7 @@
     --accent: #6cc3a8;
     --accent-text: #0f1f1a;
     --error: #ff8a7a;
+    --warn: #e3b341;
   }
 }
 
@@ -171,7 +173,7 @@ fieldset.plain > legend {
   padding: 0;
 }
 
-fieldset.person legend {
+fieldset.person > legend {
   font-weight: 600;
   padding: 0 0.25rem;
 }
@@ -371,6 +373,126 @@ button.danger {
   margin: 0;
 }
 
+/* Guest page: who still has to answer, who is done */
+
+h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1.75rem 0 0.6rem;
+}
+
+/* A gap shown after a save attempt, and answers not saved yet. */
+.missing,
+.unsaved {
+  color: var(--warn);
+}
+
+.field .badge {
+  margin-left: 0.5rem;
+  vertical-align: 0.1em;
+}
+
+/* Questions fold open when a guest says yes or maybe, instead of popping in. The grid row
+   animates from 0 to the content's height; the negative margin takes back the card's gap
+   while folded. Padding keeps focus rings from being clipped. */
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: -0.5rem;
+  opacity: 0;
+  transition:
+    grid-template-rows 220ms ease-out,
+    margin-top 220ms ease-out,
+    opacity 180ms ease-out;
+}
+
+.reveal.open {
+  grid-template-rows: 1fr;
+  margin-top: 0;
+  opacity: 1;
+}
+
+.reveal > fieldset.plain {
+  min-height: 0;
+  overflow: hidden;
+  margin: 0 -4px;
+  padding: 0 4px 4px;
+}
+
+/* Done persons: one card, a row each, divided like the lines of a receipt. */
+.done-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 1rem;
+  gap: 0;
+}
+
+.done-list > li {
+  padding: 0.75rem 0;
+}
+
+.done-list > li + li {
+  border-top: 1px dashed var(--border);
+}
+
+.done-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.done-row button {
+  flex: none;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+}
+
+/* A person opened again with "Change": their form inside the row, not a card in a card. */
+.done-list fieldset.person {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+
+.done-list fieldset.person > legend {
+  padding: 0 0 0.5rem;
+}
+
+/* What appears after an action fades in, so nothing jumps. */
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+.success,
+.unsaved,
+.hint.missing,
+.cards > li,
+.done-list > li {
+  animation: appear 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+  }
+
+  .success,
+  .unsaved,
+  .hint.missing,
+  .cards > li,
+  .done-list > li {
+    animation: none;
+  }
+}
+
 /* Host overview */
 
 .tally {
@@ -388,14 +510,30 @@ button.danger {
   color: var(--muted);
 }
 
-.badge.yes {
-  border-color: var(--accent);
-  color: var(--accent);
+/* How far guests are: red nothing yet, yellow not finished, green nothing left to do. Only
+   progress has a colour, so "Not coming" (done) is never shown in red. */
+.badge.open,
+.progress.open {
+  --progress: var(--error);
 }
 
-.badge.no {
-  border-color: var(--error);
-  color: var(--error);
+.badge.partial,
+.progress.partial {
+  --progress: var(--warn);
+}
+
+.badge.done,
+.progress.done {
+  --progress: var(--accent);
+}
+
+.badge:is(.open, .partial, .done) {
+  border-color: var(--progress);
+  color: var(--progress);
+}
+
+.card.progress {
+  border-left: 4px solid var(--progress);
 }
 
 .persons,
