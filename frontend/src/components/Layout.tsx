@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ApiError } from "../api/client";
-import { LANGUAGES } from "../i18n";
+import { chooseLanguage, LANGUAGES } from "../i18n";
 
 export function Layout({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
@@ -16,7 +16,7 @@ export function Layout({ children }: { children: ReactNode }) {
               key={language}
               type="button"
               aria-pressed={i18n.language === language}
-              onClick={() => void i18n.changeLanguage(language)}
+              onClick={() => chooseLanguage(language)}
             >
               {language.toUpperCase()}
             </button>
