@@ -19,6 +19,11 @@ export function chosenLanguage(): Language | undefined {
   }
 }
 
+/** The language to show when the page doesn't decide: the choice, else the browser's (A21). */
+export function preferredLanguage(): Language {
+  return chosenLanguage() ?? (navigator.language.toLowerCase().startsWith("de") ? "de" : "en");
+}
+
 /** Switch and remember the choice for the next visit. */
 export function chooseLanguage(language: Language) {
   try {
@@ -35,7 +40,7 @@ i18n.on("languageChanged", (language) => {
 
 void i18n.use(initReactI18next).init({
   resources: { de: { translation: de }, en: { translation: en } },
-  lng: chosenLanguage() ?? (navigator.language.toLowerCase().startsWith("de") ? "de" : "en"),
+  lng: preferredLanguage(),
   fallbackLng: "en",
   interpolation: { escapeValue: false }, // React escapes already
 });

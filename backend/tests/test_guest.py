@@ -101,6 +101,30 @@ def test_guest_sees_the_event_and_their_invite(client: TestClient, party: dict):
     assert [o["label"]["de"] for o in food["options"]] == ["Vegetarisch"]
 
 
+def test_guest_gets_the_languages_every_text_is_written_in(client: TestClient):
+    """The guest page shows one of these, so text isn't mixed (A21). Hidden options don't count."""
+    title = {"de": "Sommerfest", "en": "Summer party"}
+    event = client.post(EVENTS, json={"title": title, "starts_at": in_days(30)}).json()
+    url = f"{EVENTS}/{event['id']}"
+    invite = client.post(f"{url}/invites", json={"name": "Anna", "persons": ["Anna"]}).json()
+
+    def languages() -> list[str]:
+        response = client.get(GUEST, headers={"X-Invite-Token": invite["token"]})
+        return response.json()["event"]["languages"]
+
+    assert languages() == ["de", "en"]
+
+    food = {"label": {"de": "Essen", "en": "Food"}, "kind": "choice"}
+    food = client.post(f"{url}/questions", json=food | {"options": [{"label": {"de": "Fleisch"}}]})
+    food = food.json()
+    assert languages() == ["de"]
+
+    meat = food["options"][0]
+    options = f"{url}/questions/{food['id']}/options"
+    client.put(f"{options}/{meat['id']}", json={"label": meat["label"], "active": False})
+    assert languages() == ["de", "en"]
+
+
 def test_unknown_or_missing_token(client: TestClient):
     assert client.get(GUEST, headers={"X-Invite-Token": "nope"}).status_code == 404
     assert client.get(GUEST).status_code == 422

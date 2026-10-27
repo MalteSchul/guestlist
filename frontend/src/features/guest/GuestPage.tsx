@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ApiError, api, type Schemas, unwrap } from "../../api/client";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { chosenLanguage } from "../../i18n";
+import { preferredLanguage } from "../../i18n";
 import { formatDateTime, pick } from "../../i18n/text";
 
 type Invite = Schemas["GuestInviteOut"];
@@ -22,20 +22,20 @@ export function GuestPage({ token }: { token: string }) {
   const params = { header: { "X-Invite-Token": token } };
   const invite = useLoad(() => unwrap(api.GET("/api/guest/invite", { params })), [token]);
 
-  // Start in the language the host wrote in, once, unless the guest picked one before (A21).
-  // (Not the hook's `i18n` as a dependency: it changes with the language and would switch the
-  // guest straight back.)
-  const language = invite.data?.event.default_language;
+  // Written in one language only: show that one, without the switch. In both: the choice or the
+  // browser's, as on every page (A21). The forced language isn't stored as a choice.
+  const languages = invite.data?.event.languages;
+  const only = languages?.length === 1 ? languages[0] : undefined;
   useEffect(() => {
-    if (language && !chosenLanguage()) void i18next.changeLanguage(language);
-  }, [language]);
+    void i18next.changeLanguage(only ?? preferredLanguage());
+  }, [only]);
 
   async function save(body: Schemas["GuestResponseIn"]) {
     invite.setData(await unwrap(api.PUT("/api/guest/invite", { params, body })));
   }
 
   return (
-    <Layout>
+    <Layout switcher={!only}>
       <Loaded {...invite}>{(data) => <Invitation invite={data} onSave={save} />}</Loaded>
     </Layout>
   );

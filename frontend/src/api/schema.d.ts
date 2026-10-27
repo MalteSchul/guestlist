@@ -362,14 +362,15 @@ export interface components {
             answers_close_at: string;
             /** Answers Open */
             answers_open: boolean;
-            /**
-             * Default Language
-             * @enum {string}
-             */
-            default_language: "de" | "en";
             description: components["schemas"]["Translated"] | null;
             /** Ends At */
             ends_at: string | null;
+            /**
+             * Languages
+             * @description The languages every text the guest sees is written in, so the page can show one of
+             *     them without mixing (A21).
+             */
+            readonly languages: ("de" | "en")[];
             /** Location */
             location: string | null;
             /** Questions */
