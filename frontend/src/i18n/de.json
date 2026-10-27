@@ -35,8 +35,11 @@
       "invites_other": "{{count}} Einladungen",
       "noInvites": "Noch keine Einladungen. Lege sie vorerst über die API-Doku an.",
       "openLink": "Öffnen",
-      "copyLink": "Link kopieren",
-      "copied": "Kopiert"
+      "copy": {
+        "idle": "Link kopieren",
+        "copied": "Kopiert",
+        "failed": "Kopieren nicht möglich – nutze „Öffnen“"
+      }
     },
     "attendance": {
       "yes": "Zugesagt",
