@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, get_args
 
-from pydantic import Field, field_validator
+from pydantic import Field, computed_field, field_validator
 
 from app.models.event import Language
 from app.models.guests import Attendance
@@ -59,11 +59,25 @@ class GuestEvent(Schema):
     location: str | None
     starts_at: datetime
     ends_at: datetime | None
-    default_language: Language
     answers_close_at: datetime
     answers_open: bool
     sections: list[SectionOut]
     questions: list[GuestQuestion]
+
+    @computed_field
+    @property
+    def languages(self) -> list[Language]:
+        """The languages every text the guest sees is written in, so the page can show one of
+        them without mixing (A21)."""
+        texts = [self.title, self.description]
+        texts += [text for section in self.sections for text in (section.title, section.body)]
+        for question in self.questions:
+            texts += [question.label, *(option.label for option in question.options)]
+        return [
+            language
+            for language in get_args(Language)
+            if all(getattr(text, language) is not None for text in texts if text is not None)
+        ]
 
 
 class GuestInviteOut(Schema):

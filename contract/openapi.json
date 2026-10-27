@@ -316,14 +316,6 @@
             "title": "Answers Open",
             "type": "boolean"
           },
-          "default_language": {
-            "enum": [
-              "de",
-              "en"
-            ],
-            "title": "Default Language",
-            "type": "string"
-          },
           "description": {
             "anyOf": [
               {
@@ -345,6 +337,19 @@
               }
             ],
             "title": "Ends At"
+          },
+          "languages": {
+            "description": "The languages every text the guest sees is written in, so the page can show one of\nthem without mixing (A21).",
+            "items": {
+              "enum": [
+                "de",
+                "en"
+              ],
+              "type": "string"
+            },
+            "readOnly": true,
+            "title": "Languages",
+            "type": "array"
           },
           "location": {
             "anyOf": [
@@ -386,11 +391,11 @@
           "location",
           "starts_at",
           "ends_at",
-          "default_language",
           "answers_close_at",
           "answers_open",
           "sections",
-          "questions"
+          "questions",
+          "languages"
         ],
         "title": "GuestEvent",
         "type": "object"

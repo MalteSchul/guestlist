@@ -4,24 +4,27 @@ import { useTranslation } from "react-i18next";
 import { ApiError } from "../api/client";
 import { chooseLanguage, LANGUAGES } from "../i18n";
 
-export function Layout({ children }: { children: ReactNode }) {
+/** `switcher={false}` hides DE/EN, for pages that can only be shown in one language (A21). */
+export function Layout({ children, switcher = true }: { children: ReactNode; switcher?: boolean }) {
   const { t, i18n } = useTranslation();
   return (
     <>
       <header className="topbar">
         <span className="brand">{t("app.name")}</span>
-        <nav className="languages" aria-label="Language">
-          {LANGUAGES.map((language) => (
-            <button
-              key={language}
-              type="button"
-              aria-pressed={i18n.language === language}
-              onClick={() => chooseLanguage(language)}
-            >
-              {language.toUpperCase()}
-            </button>
-          ))}
-        </nav>
+        {switcher && (
+          <nav className="languages" aria-label="Language">
+            {LANGUAGES.map((language) => (
+              <button
+                key={language}
+                type="button"
+                aria-pressed={i18n.language === language}
+                onClick={() => chooseLanguage(language)}
+              >
+                {language.toUpperCase()}
+              </button>
+            ))}
+          </nav>
+        )}
       </header>
       <main>{children}</main>
     </>
