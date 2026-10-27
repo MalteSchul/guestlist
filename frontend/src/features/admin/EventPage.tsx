@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime, pick } from "../../i18n/text";
+import { SaveBar, useSave } from "./forms";
 
 type Event = Schemas["EventOut"];
 type Invite = Schemas["InviteOut"];
@@ -12,7 +13,7 @@ type Person = Schemas["PersonOut"];
 
 const ATTENDANCE = ["yes", "maybe", "no", "pending"] as const;
 
-/** Read-only for now: hosts create and change things through the API docs (A18). */
+/** The overview: who is coming, what they chose, and the invites. Setup is on EventSetup. */
 export function EventPage({ eventId }: { eventId: string }) {
   const { t } = useTranslation();
   const params = { path: { event_id: eventId } };
@@ -29,14 +30,24 @@ export function EventPage({ eventId }: { eventId: string }) {
       </p>
       <Loaded {...event}>
         {(event) => (
-          <Loaded {...invites}>{(invites) => <EventDetails event={event} invites={invites} />}</Loaded>
+          <Loaded {...invites}>
+            {(list) => <EventDetails event={event} invites={list} onChange={invites.setData} />}
+          </Loaded>
         )}
       </Loaded>
     </Layout>
   );
 }
 
-function EventDetails({ event, invites }: { event: Event; invites: Invite[] }) {
+function EventDetails({
+  event,
+  invites,
+  onChange,
+}: {
+  event: Event;
+  invites: Invite[];
+  onChange: (invites: Invite[]) => void;
+}) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const persons = invites.flatMap((invite) => invite.persons);
@@ -44,7 +55,10 @@ function EventDetails({ event, invites }: { event: Event; invites: Invite[] }) {
 
   return (
     <>
-      <h1>{pick(event.title, lang)}</h1>
+      <div className="row">
+        <h1>{pick(event.title, lang)}</h1>
+        <a href={`/admin/events/${event.id}/edit`}>{t("admin.event.edit")}</a>
+      </div>
       <p className="meta">{formatDateTime(event.starts_at, lang)}</p>
 
       <p className="tally">
@@ -82,16 +96,31 @@ function EventDetails({ event, invites }: { event: Event; invites: Invite[] }) {
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
       <ul className="cards">
         {invites.map((invite) => (
-          <InviteCard key={invite.id} event={event} invite={invite} />
+          <InviteCard
+            key={invite.id}
+            event={event}
+            invite={invite}
+            onDeleted={() => onChange(invites.filter((i) => i.id !== invite.id))}
+          />
         ))}
       </ul>
+      <NewInvite event={event} onCreated={(invite) => onChange([...invites, invite])} />
     </>
   );
 }
 
-function InviteCard({ event, invite }: { event: Event; invite: Invite }) {
+function InviteCard({
+  event,
+  invite,
+  onDeleted,
+}: {
+  event: Event;
+  invite: Invite;
+  onDeleted: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
+  const action = useSave();
   const link = `${window.location.origin}/i/${invite.token}`;
 
   useEffect(() => {
@@ -110,6 +139,18 @@ function InviteCard({ event, invite }: { event: Event; invite: Invite }) {
     }
   }
 
+  function remove() {
+    if (!window.confirm(t("admin.event.confirmDeleteInvite", { name: invite.name }))) return;
+    void action.run(async () => {
+      await unwrap(
+        api.DELETE("/api/admin/events/{event_id}/invites/{invite_id}", {
+          params: { path: { event_id: event.id, invite_id: invite.id } },
+        }),
+      );
+      onDeleted();
+    });
+  }
+
   return (
     <li className="card">
       <div className="row">
@@ -121,8 +162,17 @@ function InviteCard({ event, invite }: { event: Event; invite: Invite }) {
           <button type="button" onClick={() => void copyLink()}>
             {t(`admin.event.copy.${copy}`)}
           </button>
+          <button
+            type="button"
+            className="danger"
+            disabled={action.status === "saving"}
+            onClick={remove}
+          >
+            {t("common.delete")}
+          </button>
         </span>
       </div>
+      {action.error && <p className="error">{action.error}</p>}
       <ul className="persons">
         {invite.persons.map((person) => (
           <li key={person.id}>
@@ -138,6 +188,62 @@ function InviteCard({ event, invite }: { event: Event; invite: Invite }) {
       </ul>
       {invite.comment && <p className="prose muted">„{invite.comment}“</p>}
     </li>
+  );
+}
+
+/** Names are typed in for now, not taken from the address book (D29). */
+function NewInvite({ event, onCreated }: { event: Event; onCreated: (invite: Invite) => void }) {
+  const { t } = useTranslation();
+  const save = useSave();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [persons, setPersons] = useState("");
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    const names = persons
+      .split("\n")
+      .map((person) => person.trim())
+      .filter(Boolean);
+    void save.run(async () => {
+      const invite = await unwrap(
+        api.POST("/api/admin/events/{event_id}/invites", {
+          params: { path: { event_id: event.id } },
+          // One person, named like the invite, when no names are given.
+          body: { name, persons: names.length > 0 ? names : [name] },
+        }),
+      );
+      onCreated(invite);
+      setName("");
+      setPersons("");
+    });
+  }
+
+  if (!open) {
+    return (
+      <p>
+        <button type="button" onClick={() => setOpen(true)}>
+          + {t("admin.event.newInvite")}
+        </button>
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} onChange={save.reset} className="card">
+      <h2>{t("admin.event.newInvite")}</h2>
+      <label className="field">
+        <span>{t("admin.event.inviteName")} *</span>
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+        <span className="hint">{t("admin.event.inviteNameHint")}</span>
+      </label>
+      <label className="field">
+        <span>{t("admin.event.persons")}</span>
+        <textarea rows={4} value={persons} onChange={(e) => setPersons(e.target.value)} />
+        <span className="hint">{t("admin.event.personsHint")}</span>
+      </label>
+      <SaveBar save={save} label={t("admin.event.createInvite")} onCancel={() => setOpen(false)} />
+    </form>
   );
 }
 

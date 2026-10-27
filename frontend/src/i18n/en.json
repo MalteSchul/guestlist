@@ -7,7 +7,12 @@
     "error": "That didn't work.",
     "notFound": "Not found.",
     "save": "Save",
-    "saving": "Saving …"
+    "saving": "Saving …",
+    "saved": "Saved.",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "remove": "Remove"
   },
   "guest": {
     "yourAnswer": "Your answer, {{name}}",
@@ -25,21 +30,92 @@
     "events": {
       "title": "Your events",
       "empty": "No events yet.",
-      "devHint": "For now, create one through the API docs:"
+      "new": "New event"
     },
     "event": {
       "back": "All events",
+      "edit": "Edit event",
       "totals": "Choices",
       "totalsHint": "Counting everyone who said yes.",
       "invites_one": "{{count}} invite",
       "invites_other": "{{count}} invites",
-      "noInvites": "No invites yet. For now, create them through the API docs.",
+      "noInvites": "No invites yet.",
       "openLink": "Open",
       "copy": {
         "idle": "Copy link",
         "copied": "Copied",
         "failed": "Can't copy here – use “Open”"
-      }
+      },
+      "newInvite": "New invite",
+      "inviteName": "Name on the invite",
+      "inviteNameHint": "For example “Family Miller” or “Anna & Tom”.",
+      "persons": "People",
+      "personsHint": "One name per line. Leave it empty for a single person named like the invite.",
+      "createInvite": "Create invite",
+      "confirmDeleteInvite": "Delete the invite for {{name}}? Its link stops working and their answers are deleted."
+    },
+    "newEvent": {
+      "title": "New event",
+      "create": "Create event"
+    },
+    "form": {
+      "languages": {
+        "de": "Deutsch",
+        "en": "English"
+      },
+      "defaultLanguage": "Main language",
+      "defaultLanguageHint": "Text in this language is required, the other one is optional. Guests can only switch when everything is filled in both.",
+      "title": "Title",
+      "description": "Description",
+      "location": "Location",
+      "startsAt": "Starts",
+      "endsAt": "Ends",
+      "rsvpDeadline": "Answer by",
+      "rsvpDeadlineHint": "Leave it empty and guests can answer until the event starts.",
+      "keepData": "Keep the data after the event",
+      "keepDataHint": "Otherwise invites and answers are deleted 90 days after the event."
+    },
+    "setup": {
+      "title": "Edit “{{title}}”",
+      "back": "Overview",
+      "details": "Details",
+      "up": "Move up",
+      "down": "Move down",
+      "done": "Done",
+      "sections": "Information for guests",
+      "sectionsHint": "Shown on the invitation below the description, e.g. directions, dress code or the schedule.",
+      "sectionTitle": "Heading",
+      "sectionBody": "Text",
+      "addSection": "Add section",
+      "confirmDeleteSection": "Delete the section “{{title}}”?",
+      "questions": "Questions",
+      "questionsHint": "Guests who say yes or maybe answer these for each person.",
+      "question": "Question",
+      "addQuestion": "Add question",
+      "kind": "Kind",
+      "kinds": {
+        "choice": "Choice",
+        "text": "Free text",
+        "choiceOne": "Choice, one answer",
+        "choiceSeveral": "Choice, several answers"
+      },
+      "multiple": "Several answers allowed",
+      "kindFixed": "The kind can't be changed later.",
+      "required": "Required",
+      "requiredHint": "Only guests who say yes have to answer it.",
+      "confirmDeleteQuestion": "Delete the question “{{label}}”? All answers to it are deleted too.",
+      "options": "Options",
+      "option": "Option",
+      "optionNumber": "Option {{number}}",
+      "addOption": "Add option",
+      "hide": "Hide",
+      "show": "Show",
+      "hidden": "hidden",
+      "hiddenHint": "Hidden options can't be picked any more; answers already given stay. Options someone picked can only be hidden, not deleted.",
+      "confirmDeleteOption": "Delete the option “{{label}}”?",
+      "deleteEvent": "Delete event",
+      "deleteEventHint": "Deletes the event with all invites and answers. Only owners can do this.",
+      "confirmDeleteEvent": "Delete “{{title}}” with all invites and answers? This can't be undone."
     },
     "attendance": {
       "yes": "Coming",

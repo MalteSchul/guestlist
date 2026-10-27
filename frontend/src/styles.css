@@ -201,7 +201,9 @@ fieldset.person legend {
   margin: 0;
 }
 
-textarea {
+textarea,
+input[type="text"],
+input[type="datetime-local"] {
   font: inherit;
   color: inherit;
   background: var(--bg);
@@ -245,6 +247,75 @@ fieldset:disabled button {
 
 .success {
   color: var(--accent);
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+button.danger {
+  color: var(--error);
+}
+
+/* Host setup */
+
+.row > h1 {
+  margin-bottom: 0.5rem;
+}
+
+/* One input per language; side by side when there's room. */
+.translations,
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.5rem 0.75rem;
+}
+
+.translation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.9rem;
+}
+
+.controls {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.controls button {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+}
+
+.options {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.options > li.row {
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 0.35rem;
+}
+
+/* A form inside a card, e.g. one option while it's edited. */
+.nested {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
 }
 
 /* Host overview */

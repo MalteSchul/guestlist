@@ -11,18 +11,14 @@ export function EventList() {
 
   return (
     <Layout>
-      <h1>{t("admin.events.title")}</h1>
+      <div className="row">
+        <h1>{t("admin.events.title")}</h1>
+        <a href="/admin/events/new">+ {t("admin.events.new")}</a>
+      </div>
       <Loaded {...events}>
         {(events) =>
           events.length === 0 ? (
-            <>
-              <p className="muted">{t("admin.events.empty")}</p>
-              {import.meta.env.DEV && (
-                <p className="muted">
-                  {t("admin.events.devHint")} <a href="/docs">/docs</a>
-                </p>
-              )}
-            </>
+            <p className="muted">{t("admin.events.empty")}</p>
           ) : (
             <ul className="cards">
               {events.map((event) => (
