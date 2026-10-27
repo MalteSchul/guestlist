@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
@@ -91,12 +91,23 @@ function EventDetails({ event, invites }: { event: Event; invites: Invite[] }) {
 
 function InviteCard({ event, invite }: { event: Event; invite: Invite }) {
   const { t, i18n } = useTranslation();
-  const [copied, setCopied] = useState(false);
+  const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
   const link = `${window.location.origin}/i/${invite.token}`;
 
-  async function copy() {
-    await navigator.clipboard.writeText(link);
-    setCopied(true);
+  useEffect(() => {
+    if (copy !== "copied") return;
+    const timer = setTimeout(() => setCopy("idle"), 2000);
+    return () => clearTimeout(timer);
+  }, [copy]);
+
+  // The clipboard only exists on HTTPS and localhost; elsewhere `navigator.clipboard` is undefined.
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopy("copied");
+    } catch {
+      setCopy("failed");
+    }
   }
 
   return (
@@ -107,8 +118,8 @@ function InviteCard({ event, invite }: { event: Event; invite: Invite }) {
           <a href={link} target="_blank" rel="noreferrer">
             {t("admin.event.openLink")}
           </a>
-          <button type="button" onClick={() => void copy()}>
-            {copied ? t("admin.event.copied") : t("admin.event.copyLink")}
+          <button type="button" onClick={() => void copyLink()}>
+            {t(`admin.event.copy.${copy}`)}
           </button>
         </span>
       </div>

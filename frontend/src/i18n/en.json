@@ -35,8 +35,11 @@
       "invites_other": "{{count}} invites",
       "noInvites": "No invites yet. For now, create them through the API docs.",
       "openLink": "Open",
-      "copyLink": "Copy link",
-      "copied": "Copied"
+      "copy": {
+        "idle": "Copy link",
+        "copied": "Copied",
+        "failed": "Can't copy here – use “Open”"
+      }
     },
     "attendance": {
       "yes": "Coming",
