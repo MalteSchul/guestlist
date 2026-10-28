@@ -330,13 +330,12 @@ function Contacts({
               <li key={contact.id} className="item-row">
                 <span>
                   <strong>{contact.name}</strong>
-                  {contact.birth_year && <span className="muted"> · {contact.birth_year}</span>}
-                  {contact.group_ids.length > 0 && (
-                    <span className="muted">
-                      {" "}
-                      · {contact.group_ids.map((id) => groupNames.get(id)).join(", ")}
+                  {contact.birth_year && <span className="muted">{contact.birth_year}</span>}
+                  {contact.group_ids.map((id) => (
+                    <span key={id} className="badge">
+                      {groupNames.get(id)}
                     </span>
-                  )}
+                  ))}
                 </span>
                 <span className="controls">
                   <button type="button" onClick={() => setEditing(contact.id)}>
