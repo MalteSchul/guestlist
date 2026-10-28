@@ -22,7 +22,9 @@ export function useReveal<T extends HTMLElement>(
     }
     opened.current = true;
     const box = el.closest(".card") ?? el;
-    const fits = box.getBoundingClientRect().height <= window.innerHeight - 32; // scroll-margin
+    // What's left of the window under the header (scroll-padding), less the card's scroll-margin.
+    const header = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+    const fits = box.getBoundingClientRect().height <= window.innerHeight - header - 32;
     const target = fits ? box : (whenTall?.(el) ?? box);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest" });
