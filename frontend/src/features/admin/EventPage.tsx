@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
+import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime, pick } from "../../i18n/text";
@@ -76,6 +77,7 @@ function EventDetails({
         <span className="muted">{t("admin.event.personsTally")}</span>
         {ATTENDANCE.map((attendance) => (
           <span key={attendance} className="badge">
+            <AttendanceIcon attendance={attendance} />
             {t(`admin.attendance.${attendance}`)}:{" "}
             {persons.filter((person) => person.attendance === attendance).length}
           </span>
@@ -200,20 +202,23 @@ function InviteCard({
             person.attendance === "yes" ? openRequired(event.questions, person.answers).length : 0;
           return (
             <li key={person.id}>
+              <span>
+                {person.name}
+                {event.guest_list_enabled && person.attendance_public && (
+                  <span className="badge">{t("admin.event.onGuestList")}</span>
+                )}
+                {person.answers.length > 0 && (
+                  <span className="muted">
+                    {" "}
+                    · {summary(event.questions, person.answers, i18n.language)}
+                  </span>
+                )}
+              </span>
               <span className={`badge ${progressOf(event, person)}`}>
+                <AttendanceIcon attendance={person.attendance} />
                 {t(`admin.attendance.${person.attendance}`)}
                 {open > 0 && ` · ${t("admin.event.requiredOpen", { count: open })}`}
-              </span>{" "}
-              {person.name}
-              {event.guest_list_enabled && person.attendance_public && (
-                <span className="badge">{t("admin.event.onGuestList")}</span>
-              )}
-              {person.answers.length > 0 && (
-                <span className="muted">
-                  {" "}
-                  · {summary(event.questions, person.answers, i18n.language)}
-                </span>
-              )}
+              </span>
             </li>
           );
         })}

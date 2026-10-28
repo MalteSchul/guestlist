@@ -584,6 +584,14 @@ h3 {
   flex: none;
 }
 
+/* Name, year and group badges wrap as whole pieces on narrow screens, without dangling dots. */
+.item-row > span:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.4rem;
+}
+
 /* Contacts found in an import file: a scrolling list inside the import card. */
 .import-list {
   max-height: 24rem;
@@ -821,6 +829,18 @@ button.icon {
 
 /* How far guests are: red nothing yet, yellow not finished, green nothing left to do. Only
    progress has a colour, so "Not coming" (done) is never shown in red. */
+.attendance-icon {
+  width: 1em;
+  height: 1em;
+  margin-right: 0.3em;
+  vertical-align: -0.15em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .badge.open,
 .progress.open {
   --progress: var(--error);
@@ -854,9 +874,20 @@ button.icon {
   gap: 0.35rem;
 }
 
-/* The status badge in front of a name: a clear gap, not just a space. */
-.persons .badge:first-child {
-  margin-right: 0.4rem;
+/* Name on the left, status badge on the right, so names and badges each line up in a column. */
+.persons li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.persons li > .badge {
+  flex-shrink: 0;
+}
+
+.persons li > span:first-child .badge {
+  margin-left: 0.4rem;
 }
 
 .totals li {
