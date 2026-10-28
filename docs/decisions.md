@@ -48,6 +48,7 @@ new one that replaces it, not by silently editing the old one.
 | A20 | The guest API takes the token in an `X-Invite-Token` header (`/api/guest/invite`), never in the URL | Only the page URL `/i/<token>` contains it, and nginx masks that. A custom header also blocks cross-site form posts |
 | A21 | UI language: a choice made with the DE/EN switch is kept in `localStorage`; without one, the browser language (`de*` → DE, else EN). Exception: if every text a guest sees (title, description, sections, questions, active options) is only complete in one language, the guest page shows that one and hides the switch. The guest API sends these complete `languages` | An explicit choice should survive a reload. Guests never see app text in one language next to host text in the other. Only the switch saves a choice, so a forced language doesn't stick for other pages |
 | A22 | Invite tokens are 44 random base58 characters (256 bits), replacing `token_urlsafe` from A12. Existing tokens stay valid | No look-alikes like `0`/`O` or `I`/`l`, and no `-` that stops a double-click selection |
+| A23 | Guest texts address one person with "du" and several with "ihr": i18next plurals counted by the invite's persons (`_one`/`_other`). A one-person invite shows no name heading on its card | "Eure Antwort" reads wrong for someone invited alone. English needs no difference but keeps both keys |
 
 ## Data model
 
@@ -83,13 +84,17 @@ new one that replaces it, not by silently editing the old one.
 | D28 | Inactive options can't be newly picked and guests don't see them, but picks made before deactivation stay | "Hide instead of delete" shouldn't silently change answers already given |
 | D29 | For now invites are created with typed-in names, not from the address book | The address book comes later; `persons.contact_id` stays empty until then |
 | D30 | Guests save the whole state per person; answers left out are removed. Rows are updated in place | One form, one save. Unchanged answers keep their `updated_at` |
+| D31 | Inviting a group: the host chooses one shared link for all (`together`, a household) or one link per member (`separately`, a circle of friends) when inviting; the default comes from `contact_groups.invite_mode`. Members already invited are skipped. Groups created by an import default to `separately` (answers the open question) | Most groups are always invited the same way, but a household may also get separate links for one event. Imported labels are usually circles like "Work" |
+| D32 | Contacts are imported from an address book export (Google CSV or vCard), read in the browser. Only name, birth year and labels of the contacts the host picks are sent; labels join a group with the same name (any case) or become one. Contacts whose name is already in the address book start unticked. No live Google connection for now (replaces the "CSV import" open item) | Works without a Google Cloud project or OAuth client. Emails, phone numbers and addresses never reach the server (data minimisation) |
+| D33 | Guest list: the host turns it on per event (`guest_list_enabled`); each person opts in (`attendance_public`, off by default). Guests see the names of people who opted in and said "yes" or "maybe", nothing else. Specifies D3 | Consent per person. A declined guest isn't listed even if they agreed, so the list reads as "who's coming" |
+| D34 | Invites take typed-in names or contacts from the inviting host's own address book (replaces D29). A contact gets at most one person per event (D21); another user's contacts are not found | Co-hosts each have their own address book; contacts are private to their owner |
 
 ## Open
 
-- **Household vs. circle-of-friends groups:** does inviting a group create one shared link or one
-  link per member? A flag on the group, or a choice when inviting?
 - **`invites.last_opened_at`** ("has the guest seen it?"): later.
-- **CSV export/import of contacts** (contacts table only): later feature.
+- **CSV export of contacts**: later feature.
+- **Live import from Google** (People API, needs an OAuth client ID): only if the file import
+  (D32) turns out to be too cumbersome.
 - **Slimmer platform (proposal, not decided):** one image (FastAPI serves the React build, no
   nginx, no internal ingress; `Referrer-Policy` moves to middleware), migrations run from GitHub
   Actions before deploy, cleanup stays a Container Apps Job (GitHub disables scheduled workflows

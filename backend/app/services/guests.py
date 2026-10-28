@@ -1,6 +1,7 @@
 """What guests do through their personal link. The token is their only credential."""
 
 import uuid
+from collections.abc import Sequence
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -17,6 +18,24 @@ def get_invite(session: Session, token: str) -> Invite:
     if invite is None:
         raise NotFound("invite not found")
     return invite
+
+
+def guest_list(session: Session, invite: Invite) -> Sequence[Person] | None:
+    """Who's coming, as other guests see it, if the host turned the list on. Only people who
+    agreed to be listed, and only "yes" and "maybe" (D33). Nothing but names and attendance
+    may leave this: answers stay private (D3)."""
+    if not invite.event.guest_list_enabled:
+        return None
+    return session.scalars(
+        select(Person)
+        .join(Invite)
+        .where(
+            Invite.event_id == invite.event_id,
+            Person.attendance_public,
+            Person.attendance.in_(("yes", "maybe")),
+        )
+        .order_by(Invite.created_at, Person.position, Person.created_at)
+    ).all()
 
 
 def save_response(session: Session, token: str, data: GuestResponseIn) -> Invite:
@@ -41,6 +60,7 @@ def _save_person(
     if response.attendance != person.attendance:
         person.attendance = response.attendance
         person.attendance_changed_at = datetime.now(UTC)
+    person.attendance_public = response.attendance_public
 
     given: dict[uuid.UUID, AnswerIn] = {}
     for answer in response.answers:

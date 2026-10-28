@@ -74,6 +74,105 @@
         "title": "AnswerOut",
         "type": "object"
       },
+      "ContactImport": {
+        "additionalProperties": false,
+        "properties": {
+          "contacts": {
+            "items": {
+              "$ref": "#/components/schemas/ImportedContact"
+            },
+            "maxItems": 2000,
+            "minItems": 1,
+            "title": "Contacts",
+            "type": "array"
+          }
+        },
+        "required": [
+          "contacts"
+        ],
+        "title": "ContactImport",
+        "type": "object"
+      },
+      "ContactIn": {
+        "additionalProperties": false,
+        "properties": {
+          "birth_year": {
+            "anyOf": [
+              {
+                "maximum": 2100.0,
+                "minimum": 1900.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Year"
+          },
+          "group_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Group Ids",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ContactIn",
+        "type": "object"
+      },
+      "ContactOut": {
+        "additionalProperties": false,
+        "properties": {
+          "birth_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Year"
+          },
+          "group_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Group Ids",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "birth_year",
+          "group_ids"
+        ],
+        "title": "ContactOut",
+        "type": "object"
+      },
       "EventIn": {
         "additionalProperties": false,
         "properties": {
@@ -304,6 +403,134 @@
         "title": "EventSummary",
         "type": "object"
       },
+      "GroupIn": {
+        "additionalProperties": false,
+        "properties": {
+          "invite_mode": {
+            "default": "together",
+            "enum": [
+              "together",
+              "separately"
+            ],
+            "title": "Invite Mode",
+            "type": "string"
+          },
+          "member_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Member Ids",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "GroupIn",
+        "type": "object"
+      },
+      "GroupInviteIn": {
+        "additionalProperties": false,
+        "properties": {
+          "group_id": {
+            "format": "uuid",
+            "title": "Group Id",
+            "type": "string"
+          },
+          "invite_mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "together",
+                  "separately"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invite Mode"
+          }
+        },
+        "required": [
+          "group_id"
+        ],
+        "title": "GroupInviteIn",
+        "type": "object"
+      },
+      "GroupInviteOut": {
+        "additionalProperties": false,
+        "properties": {
+          "invites": {
+            "items": {
+              "$ref": "#/components/schemas/InviteOut"
+            },
+            "title": "Invites",
+            "type": "array"
+          },
+          "skipped": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "invites",
+          "skipped"
+        ],
+        "title": "GroupInviteOut",
+        "type": "object"
+      },
+      "GroupOut": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "invite_mode": {
+            "enum": [
+              "together",
+              "separately"
+            ],
+            "title": "Invite Mode",
+            "type": "string"
+          },
+          "member_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Member Ids",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "invite_mode",
+          "member_ids"
+        ],
+        "title": "GroupOut",
+        "type": "object"
+      },
       "GuestEvent": {
         "additionalProperties": false,
         "properties": {
@@ -337,6 +564,10 @@
               }
             ],
             "title": "Ends At"
+          },
+          "guest_list_enabled": {
+            "title": "Guest List Enabled",
+            "type": "boolean"
           },
           "languages": {
             "description": "The languages every text the guest sees is written in, so the page can show one of\nthem without mixing (A21).",
@@ -393,6 +624,7 @@
           "ends_at",
           "answers_close_at",
           "answers_open",
+          "guest_list_enabled",
           "sections",
           "questions",
           "languages"
@@ -417,6 +649,20 @@
           "event": {
             "$ref": "#/components/schemas/GuestEvent"
           },
+          "guest_list": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GuestListEntry"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest List"
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -436,6 +682,32 @@
           "persons"
         ],
         "title": "GuestInviteOut",
+        "type": "object"
+      },
+      "GuestListEntry": {
+        "additionalProperties": false,
+        "description": "Someone on the guest list: a name and whether they come, nothing else (D3).",
+        "properties": {
+          "attendance": {
+            "enum": [
+              "pending",
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "title": "Attendance",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "attendance"
+        ],
+        "title": "GuestListEntry",
         "type": "object"
       },
       "GuestQuestion": {
@@ -532,6 +804,136 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HostPersonOut": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerOut"
+            },
+            "title": "Answers",
+            "type": "array"
+          },
+          "attendance": {
+            "enum": [
+              "pending",
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "title": "Attendance",
+            "type": "string"
+          },
+          "attendance_changed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attendance Changed At"
+          },
+          "attendance_public": {
+            "title": "Attendance Public",
+            "type": "boolean"
+          },
+          "contact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "attendance",
+          "attendance_changed_at",
+          "attendance_public",
+          "answers",
+          "contact_id"
+        ],
+        "title": "HostPersonOut",
+        "type": "object"
+      },
+      "ImportResult": {
+        "additionalProperties": false,
+        "properties": {
+          "contacts": {
+            "title": "Contacts",
+            "type": "integer"
+          },
+          "groups": {
+            "title": "Groups",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "contacts",
+          "groups"
+        ],
+        "title": "ImportResult",
+        "type": "object"
+      },
+      "ImportedContact": {
+        "additionalProperties": false,
+        "description": "One contact from an address book export, read in the browser (D32).",
+        "properties": {
+          "birth_year": {
+            "anyOf": [
+              {
+                "maximum": 2100.0,
+                "minimum": 1900.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birth Year"
+          },
+          "groups": {
+            "default": [],
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Groups",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ImportedContact",
+        "type": "object"
+      },
       "InviteIn": {
         "additionalProperties": false,
         "properties": {
@@ -543,9 +945,7 @@
           },
           "persons": {
             "items": {
-              "maxLength": 200,
-              "minLength": 1,
-              "type": "string"
+              "$ref": "#/components/schemas/PersonIn"
             },
             "maxItems": 50,
             "minItems": 1,
@@ -585,7 +985,7 @@
           },
           "persons": {
             "items": {
-              "$ref": "#/components/schemas/PersonOut"
+              "$ref": "#/components/schemas/HostPersonOut"
             },
             "title": "Persons",
             "type": "array"
@@ -657,6 +1057,34 @@
         "title": "OptionOut",
         "type": "object"
       },
+      "PersonIn": {
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Id"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "PersonIn",
+        "type": "object"
+      },
       "PersonOut": {
         "additionalProperties": false,
         "properties": {
@@ -689,6 +1117,10 @@
             ],
             "title": "Attendance Changed At"
           },
+          "attendance_public": {
+            "title": "Attendance Public",
+            "type": "boolean"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -704,6 +1136,7 @@
           "name",
           "attendance",
           "attendance_changed_at",
+          "attendance_public",
           "answers"
         ],
         "title": "PersonOut",
@@ -729,6 +1162,11 @@
             ],
             "title": "Attendance",
             "type": "string"
+          },
+          "attendance_public": {
+            "default": false,
+            "title": "Attendance Public",
+            "type": "boolean"
           },
           "id": {
             "format": "uuid",
@@ -1026,6 +1464,223 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/admin/contacts": {
+      "get": {
+        "operationId": "list_contacts_api_admin_contacts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ContactOut"
+                  },
+                  "title": "Response List Contacts Api Admin Contacts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Contacts",
+        "tags": [
+          "address book"
+        ]
+      },
+      "post": {
+        "operationId": "create_contact_api_admin_contacts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Contact",
+        "tags": [
+          "address book"
+        ]
+      }
+    },
+    "/api/admin/contacts/import": {
+      "post": {
+        "operationId": "import_contacts_api_admin_contacts_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactImport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Import Contacts",
+        "tags": [
+          "address book"
+        ]
+      }
+    },
+    "/api/admin/contacts/{contact_id}": {
+      "delete": {
+        "operationId": "delete_contact_api_admin_contacts__contact_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Contact",
+        "tags": [
+          "address book"
+        ]
+      },
+      "put": {
+        "operationId": "update_contact_api_admin_contacts__contact_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Contact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Contact",
+        "tags": [
+          "address book"
+        ]
+      }
+    },
     "/api/admin/events": {
       "get": {
         "operationId": "list_events_api_admin_events_get",
@@ -1346,6 +2001,64 @@
           }
         ],
         "summary": "Create Invite",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/events/{event_id}/invites/group": {
+      "post": {
+        "operationId": "invite_group_api_admin_events__event_id__invites_group_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupInviteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupInviteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Invite Group",
         "tags": [
           "admin"
         ]
@@ -1954,6 +2667,177 @@
         "summary": "Update Section",
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/api/admin/groups": {
+      "get": {
+        "operationId": "list_groups_api_admin_groups_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupOut"
+                  },
+                  "title": "Response List Groups Api Admin Groups Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Groups",
+        "tags": [
+          "address book"
+        ]
+      },
+      "post": {
+        "operationId": "create_group_api_admin_groups_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Group",
+        "tags": [
+          "address book"
+        ]
+      }
+    },
+    "/api/admin/groups/{group_id}": {
+      "delete": {
+        "operationId": "delete_group_api_admin_groups__group_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Group",
+        "tags": [
+          "address book"
+        ]
+      },
+      "put": {
+        "operationId": "update_group_api_admin_groups__group_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "group_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Group Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Group",
+        "tags": [
+          "address book"
         ]
       }
     },

@@ -39,7 +39,7 @@ def party(client: TestClient) -> dict:
     ]
     invite = client.post(
         f"{EVENTS}/{event['id']}/invites",
-        json={"name": "Familie Müller", "persons": ["Anna", "Ben"]},
+        json={"name": "Familie Müller", "persons": [{"name": "Anna"}, {"name": "Ben"}]},
     ).json()
     return {"event": event, "food": questions[0], "drinks": questions[1], "text": questions[2]} | {
         "invite": invite,
@@ -109,7 +109,9 @@ def test_guest_gets_the_languages_every_text_is_written_in(client: TestClient):
     title = {"de": "Sommerfest", "en": "Summer party"}
     event = client.post(EVENTS, json={"title": title, "starts_at": in_days(30)}).json()
     url = f"{EVENTS}/{event['id']}"
-    invite = client.post(f"{url}/invites", json={"name": "Anna", "persons": ["Anna"]}).json()
+    invite = client.post(
+        f"{url}/invites", json={"name": "Anna", "persons": [{"name": "Anna"}]}
+    ).json()
 
     def languages() -> list[str]:
         response = client.get(GUEST, headers={"X-Invite-Token": invite["token"]})
@@ -232,7 +234,7 @@ def test_answers_left_out_are_removed(client: TestClient, party: dict):
 
 def test_persons_of_other_invites_are_not_found(client: TestClient, party: dict):
     url = f"{EVENTS}/{party['event']['id']}/invites"
-    other = client.post(url, json={"name": "Andere", "persons": ["Carla"]}).json()
+    other = client.post(url, json={"name": "Andere", "persons": [{"name": "Carla"}]}).json()
     person = {"id": other["persons"][0]["id"], "attendance": "no"}
     assert save(client, party, person).status_code == 404
 
@@ -247,3 +249,42 @@ def test_answers_close_at_the_deadline_or_the_start(client: TestClient, party: d
     # A deadline after the start keeps answers open (D12).
     client.put(url, json=started | {"rsvp_deadline": in_days(1)})
     assert save(client, party, {"id": party["ben"], "attendance": "no"}).status_code == 200
+
+
+# Guest list (D3, D33)
+
+
+def test_no_guest_list_unless_the_host_shows_one(client: TestClient, party: dict):
+    save(client, party, {"id": party["ben"], "attendance": "no", "attendance_public": True})
+    response = client.get(GUEST, headers=as_guest(party))
+    assert response.json()["guest_list"] is None
+    assert response.json()["event"]["guest_list_enabled"] is False
+
+
+def test_guest_list_shows_only_people_who_agreed_and_come(client: TestClient, party: dict):
+    event = party["event"]
+    shown = {"title": event["title"], "starts_at": event["starts_at"], "guest_list_enabled": True}
+    assert client.put(f"{EVENTS}/{event['id']}", json=shown).status_code == 200
+    url = f"{EVENTS}/{event['id']}/invites"
+    other = client.post(url, json={"name": "Carla", "persons": [{"name": "Carla"}]}).json()
+    carla = {"X-Invite-Token": other["token"]}
+    yes = [answer(party["food"], 0)]
+    client.put(
+        GUEST,
+        json={"persons": [{"id": other["persons"][0]["id"], "attendance": "maybe"}]},
+        headers=carla,
+    )  # Carla didn't agree to be listed
+
+    response = save(
+        client,
+        party,
+        {"id": party["anna"], "attendance": "yes", "attendance_public": True, "answers": yes},
+        {"id": party["ben"], "attendance": "no", "attendance_public": True},
+    )
+    assert response.status_code == 200, response.text
+    assert [p["attendance_public"] for p in response.json()["persons"]] == [True, True]
+    # Ben declined, Carla didn't agree; and nothing but name and attendance is shown.
+    assert response.json()["guest_list"] == [{"name": "Anna", "attendance": "yes"}]
+    assert client.get(GUEST, headers=carla).json()["guest_list"] == [
+        {"name": "Anna", "attendance": "yes"}
+    ]
