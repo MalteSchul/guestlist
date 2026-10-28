@@ -14,7 +14,7 @@ export function NewEvent() {
   }
 
   return (
-    <Layout>
+    <Layout admin>
       <p>
         <a href="/">← {t("admin.event.back")}</a>
       </p>

@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Guestlist"
+    "name": "Guestlist",
+    "nav": "Navigation",
+    "events": "Events",
+    "contacts": "Adressbuch"
   },
   "common": {
     "loading": "Lädt …",
@@ -12,7 +15,8 @@
     "cancel": "Abbrechen",
     "edit": "Bearbeiten",
     "delete": "Löschen",
-    "remove": "Entfernen"
+    "remove": "Entfernen",
+    "close": "Schließen"
   },
   "guest": {
     "yourAnswer": "Eure Antwort, {{name}}",
@@ -144,5 +148,58 @@
       "no": "Abgesagt",
       "pending": "Offen"
     }
+  },
+  "contacts": {
+    "title": "Adressbuch",
+    "search": "Suchen",
+    "list_one": "{{count}} Kontakt",
+    "list_other": "{{count}} Kontakte",
+    "empty": "Noch keine Kontakte. Lege welche an oder importiere sie aus Google Kontakte.",
+    "add": "Kontakt",
+    "name": "Name",
+    "birthYear": "Geburtsjahr",
+    "confirmDelete": "{{name}} löschen? Personen, die schon eingeladen sind, bleiben in ihren Events.",
+    "inviteModes": {
+      "together": "Ein Link für alle",
+      "separately": "Ein Link pro Person"
+    },
+    "groups": {
+      "title": "Gruppen",
+      "hint": "Zum Beispiel ein Haushalt oder ein Freundeskreis – mit einem Klick eingeladen.",
+      "empty": "Noch keine Gruppen.",
+      "add": "Gruppe",
+      "name": "Name der Gruppe",
+      "inviteMode": "Beim Einladen",
+      "inviteModeHint": "Ein Haushalt teilt sich meist einen Link, ein Freundeskreis bekommt einen pro Person. Beim Einladen lässt es sich für das Event ändern.",
+      "members": "Mitglieder",
+      "noMembers": "Noch keine Mitglieder.",
+      "noContacts": "Lege zuerst Kontakte an.",
+      "confirmDelete": "Gruppe „{{name}}“ löschen? Die Kontakte bleiben."
+    },
+    "import": {
+      "open": "Importieren",
+      "title": "Aus Google Kontakte importieren",
+      "how": "Auf contacts.google.com: Exportieren → „Google CSV“ oder „vCard“. Andere vCard- und CSV-Dateien gehen auch.",
+      "privacy": "Die Datei wird nur in deinem Browser gelesen. Übertragen werden nur Name, Geburtsjahr und Labels der Kontakte, die du auswählst; Labels werden zu Gruppen.",
+      "file": "Datei",
+      "choose": "Datei auswählen",
+      "nothing": "In der Datei sind keine Kontakte.",
+      "found_one": "{{count}} Kontakt gefunden",
+      "found_other": "{{count}} Kontakte gefunden",
+      "known": "schon im Adressbuch",
+      "submit_one": "{{count}} Kontakt importieren",
+      "submit_other": "{{count}} Kontakte importieren",
+      "done_one": "✓ {{count}} Kontakt importiert, {{groups}} neue Gruppen.",
+      "done_other": "✓ {{count}} Kontakte importiert, {{groups}} neue Gruppen.",
+      "picked_one": "{{count}} ausgewählt",
+      "picked_other": "{{count}} ausgewählt",
+      "withoutName_one": "{{count}} Eintrag ohne Namen (zum Beispiel nur eine Telefonnummer) wird übersprungen.",
+      "withoutName_other": "{{count}} Einträge ohne Namen (zum Beispiel nur eine Telefonnummer) werden übersprungen.",
+      "matching_one": "{{count}} von {{total}} Kontakten",
+      "matching_other": "{{count}} von {{total}} Kontakten"
+    },
+    "searchHint": "Name oder Gruppe suchen …",
+    "noMatch": "Keine Kontakte zu „{{query}}“.",
+    "searchName": "Name suchen …"
   }
 }

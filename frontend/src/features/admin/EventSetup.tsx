@@ -35,7 +35,7 @@ export function EventSetup({ eventId }: { eventId: string }) {
   }
 
   return (
-    <Layout>
+    <Layout admin>
       <p>
         <a href={`/admin/events/${eventId}`}>← {t("admin.setup.back")}</a>
       </p>

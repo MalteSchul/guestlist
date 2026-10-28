@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Guestlist"
+    "name": "Guestlist",
+    "nav": "Navigation",
+    "events": "Events",
+    "contacts": "Address book"
   },
   "common": {
     "loading": "Loading …",
@@ -12,7 +15,8 @@
     "cancel": "Cancel",
     "edit": "Edit",
     "delete": "Delete",
-    "remove": "Remove"
+    "remove": "Remove",
+    "close": "Close"
   },
   "guest": {
     "yourAnswer": "Your answer, {{name}}",
@@ -144,5 +148,58 @@
       "no": "Not coming",
       "pending": "No answer"
     }
+  },
+  "contacts": {
+    "title": "Address book",
+    "search": "Search",
+    "list_one": "{{count}} contact",
+    "list_other": "{{count}} contacts",
+    "empty": "No contacts yet. Add some or import them from Google Contacts.",
+    "add": "Contact",
+    "name": "Name",
+    "birthYear": "Year of birth",
+    "confirmDelete": "Delete {{name}}? People who are already invited stay in their events.",
+    "inviteModes": {
+      "together": "One link for all",
+      "separately": "One link per person"
+    },
+    "groups": {
+      "title": "Groups",
+      "hint": "For example a household or a circle of friends – invited with one click.",
+      "empty": "No groups yet.",
+      "add": "Group",
+      "name": "Group name",
+      "inviteMode": "When inviting",
+      "inviteModeHint": "A household usually shares one link, friends get one each. You can change it for an event when inviting.",
+      "members": "Members",
+      "noMembers": "No members yet.",
+      "noContacts": "Add contacts first.",
+      "confirmDelete": "Delete the group “{{name}}”? Its contacts stay."
+    },
+    "import": {
+      "open": "Import",
+      "title": "Import from Google Contacts",
+      "how": "At contacts.google.com: Export → “Google CSV” or “vCard”. Other vCard and CSV files work too.",
+      "privacy": "The file is only read in your browser. Only the name, year of birth and labels of the contacts you pick are sent; labels become groups.",
+      "file": "File",
+      "choose": "Choose file",
+      "nothing": "No contacts found in this file.",
+      "found_one": "{{count}} contact found",
+      "found_other": "{{count}} contacts found",
+      "known": "already in your address book",
+      "submit_one": "Import {{count}} contact",
+      "submit_other": "Import {{count}} contacts",
+      "done_one": "✓ Imported {{count}} contact, {{groups}} new groups.",
+      "done_other": "✓ Imported {{count}} contacts, {{groups}} new groups.",
+      "picked_one": "{{count}} selected",
+      "picked_other": "{{count}} selected",
+      "withoutName_one": "{{count}} entry without a name (for example only a phone number) is skipped.",
+      "withoutName_other": "{{count}} entries without a name (for example only a phone number) are skipped.",
+      "matching_one": "{{count}} of {{total}} contacts",
+      "matching_other": "{{count}} of {{total}} contacts"
+    },
+    "searchHint": "Search by name or group …",
+    "noMatch": "No contacts match “{{query}}”.",
+    "searchName": "Search by name …"
   }
 }
