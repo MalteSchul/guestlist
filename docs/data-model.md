@@ -81,6 +81,7 @@ erDiagram
 | 🔑 id | UUID | |
 | owner_user_id | → users | |
 | name | text | "Familie Müller" |
+| invite_mode | `together` / `separately` | default `together`: what inviting the group creates by default, one shared link or one per member (D31) |
 
 **`contact_group_members`**
 | column | type | note |
@@ -202,7 +203,7 @@ first and gives a friendly message (D24).
 
 ## Conventions
 
-- **Allowed values** (role, attendance, kind, language) are stored as text plus a CHECK
+- **Allowed values** (role, attendance, kind, language, invite mode) are stored as text plus a CHECK
   constraint, not as native Postgres enums. That keeps them easy to change in migrations.
 - **Constraint names** follow a fixed naming convention (`pk_`, `fk_`, `uq_`, `ck_`, `ix_`), so
   Alembic migrations are predictable.
@@ -230,8 +231,12 @@ Built (`backend/app/services/`):
   to its question; new picks need an active option (D28)
 - text questions take text, choice questions take options
 - a person who says "yes" answers every required question that can be answered (D27)
+- contacts and groups are only found in their owner's address book; a group only holds its
+  owner's contacts, and invites only take the inviting host's own contacts (D34)
+- a contact is invited at most once per event (D21); inviting a group skips members who are
+  already invited (D31)
+- the guest list only shows people who agreed (`attendance_public`) and said "yes" or "maybe",
+  and only when the event shows one (`guest_list_enabled`); just names and attendance (D33)
 
 Still to build:
 - an event always keeps at least one owner (once roles can be changed)
-- a contact is invited at most once per event
-- a contact group and its contacts belong to the same user

@@ -1,4 +1,5 @@
 import { EventList } from "./features/admin/EventList";
+import { AddressBook } from "./features/contacts/AddressBook";
 import { EventPage } from "./features/admin/EventPage";
 import { EventSetup } from "./features/admin/EventSetup";
 import { NewEvent } from "./features/admin/NewEvent";
@@ -10,6 +11,8 @@ export function App() {
 
   const guest = path.match(/^\/i\/([^/]+)\/?$/);
   if (guest?.[1]) return <GuestPage token={decodeURIComponent(guest[1])} />;
+
+  if (/^\/admin\/contacts\/?$/.test(path)) return <AddressBook />;
 
   if (/^\/admin\/events\/new\/?$/.test(path)) return <NewEvent />;
 

@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Guestlist"
+    "name": "Guestlist",
+    "nav": "Navigation",
+    "events": "Events",
+    "contacts": "Adressbuch"
   },
   "common": {
     "loading": "Lädt …",
@@ -12,11 +15,14 @@
     "cancel": "Abbrechen",
     "edit": "Bearbeiten",
     "delete": "Löschen",
-    "remove": "Entfernen"
+    "remove": "Entfernen",
+    "close": "Schließen",
+    "removeItem": "{{name}} entfernen",
+    "noMatch": "Keine Treffer.",
+    "moreMatches_one": "{{count}} weiterer Treffer – weitertippen",
+    "moreMatches_other": "{{count}} weitere Treffer – weitertippen"
   },
   "guest": {
-    "yourAnswer": "Eure Antwort, {{name}}",
-    "answerUntil": "Ihr könnt bis {{date}} antworten und eure Antwort bis dahin jederzeit ändern.",
     "closed": "Die Antwortfrist ist vorbei.",
     "attendance": {
       "yes": "Komme",
@@ -24,7 +30,6 @@
       "no": "Komme nicht"
     },
     "comment": "Nachricht an die Gastgeber (optional)",
-    "saved": "✓ Gespeichert – ihr könnt es bis {{date}} ändern.",
     "unsaved": "Noch nicht gespeichert",
     "missing": "Bitte noch beantworten",
     "toAnswer": "Noch zu beantworten",
@@ -34,7 +39,23 @@
     "answered": {
       "yes": "kommt",
       "no": "kommt nicht"
-    }
+    },
+    "yourAnswer_one": "Deine Antwort, {{name}}",
+    "yourAnswer_other": "Eure Antwort, {{name}}",
+    "answerUntil_one": "Du kannst bis {{date}} antworten und deine Antwort bis dahin jederzeit ändern.",
+    "answerUntil_other": "Ihr könnt bis {{date}} antworten und eure Antwort bis dahin jederzeit ändern.",
+    "saved_one": "✓ Gespeichert – du kannst es bis {{date}} ändern.",
+    "saved_other": "✓ Gespeichert – ihr könnt es bis {{date}} ändern.",
+    "showOnList": "Auf der Gästeliste erscheinen",
+    "showOnListHint": "Andere Gäste sehen dann nur den Namen und ob jemand kommt.",
+    "listed": "auf der Gästeliste",
+    "guestList": "Wer kommt",
+    "guestListEmpty": "Noch hat sich niemand eingetragen.",
+    "guestListHint": "Hier steht nur, wer zugestimmt hat.",
+    "listComing_one": "Kommt:",
+    "listComing_other": "Kommen:",
+    "listMaybe_one": "Vielleicht:",
+    "listMaybe_other": "Vielleicht:"
   },
   "admin": {
     "events": {
@@ -63,11 +84,25 @@
       },
       "newInvite": "Neue Einladung",
       "inviteName": "Name auf der Einladung",
-      "inviteNameHint": "Zum Beispiel „Familie Müller“ oder „Anna & Tom“.",
+      "inviteNameHint": "Leer lassen, dann stehen die Namen der Personen darauf.",
       "persons": "Personen",
-      "personsHint": "Ein Name pro Zeile. Leer lassen für eine Person mit dem Namen der Einladung.",
+      "personsHint": "Eine neue Zeile erscheint, sobald du tippst. Eine Liste mit einem Namen pro Zeile lässt sich einfügen.",
       "createInvite": "Einladung anlegen",
-      "confirmDeleteInvite": "Einladung für {{name}} löschen? Der Link funktioniert dann nicht mehr und die Antworten werden gelöscht."
+      "confirmDeleteInvite": "Einladung für {{name}} löschen? Der Link funktioniert dann nicht mehr und die Antworten werden gelöscht.",
+      "inviteGroup": "Bestehende Gruppe einladen",
+      "personNumber": "Person {{number}}",
+      "personPlaceholder": "Name",
+      "fromContacts": "Adressbuch",
+      "personsHintContacts": "Namen aus dem Adressbuch werden vorgeschlagen, Enter übernimmt den markierten. Eine neue Zeile erscheint, sobald du tippst.",
+      "createInvites_one": "{{count}} Einladung anlegen",
+      "createInvites_other": "{{count}} Einladungen anlegen",
+      "group": "Gruppe",
+      "groupMode": "Für dieses Event",
+      "alreadyInvited": "bereits eingeladen",
+      "skipped_one": "{{count}} Person ist schon eingeladen und wird übersprungen.",
+      "skipped_other": "{{count}} Personen sind schon eingeladen und werden übersprungen.",
+      "onGuestList": "Gästeliste",
+      "morePlaceholder": "Weitere Person"
     },
     "newEvent": {
       "title": "Neues Event",
@@ -91,7 +126,9 @@
       "rsvpDeadline": "Antworten bis",
       "rsvpDeadlineHint": "Leer lassen, dann können Gäste bis zum Beginn antworten.",
       "keepData": "Daten nach dem Event behalten",
-      "keepDataHint": "Sonst werden Einladungen und Antworten 90 Tage nach dem Event gelöscht."
+      "keepDataHint": "Sonst werden Einladungen und Antworten 90 Tage nach dem Event gelöscht.",
+      "guestList": "Gästen zeigen, wer kommt",
+      "guestListHint": "Auf der Liste steht nur, wer zustimmt – mit Name und Zusage, sonst nichts."
     },
     "setup": {
       "title": "„{{title}}“ bearbeiten",
@@ -144,5 +181,61 @@
       "no": "Abgesagt",
       "pending": "Offen"
     }
+  },
+  "contacts": {
+    "title": "Adressbuch",
+    "search": "Suchen",
+    "list_one": "{{count}} Kontakt",
+    "list_other": "{{count}} Kontakte",
+    "empty": "Noch keine Kontakte. Lege welche an oder importiere sie aus Google Kontakte.",
+    "add": "Kontakt",
+    "name": "Name",
+    "birthYear": "Geburtsjahr",
+    "confirmDelete": "{{name}} löschen? Personen, die schon eingeladen sind, bleiben in ihren Events.",
+    "inviteModes": {
+      "together": "Ein Link für alle",
+      "separately": "Ein Link pro Person"
+    },
+    "groups": {
+      "title": "Gruppen",
+      "hint": "Zum Beispiel ein Haushalt oder ein Freundeskreis – mit einem Klick eingeladen.",
+      "empty": "Noch keine Gruppen.",
+      "add": "Gruppe",
+      "name": "Name der Gruppe",
+      "inviteMode": "Beim Einladen",
+      "inviteModeHint": "Ein Haushalt teilt sich meist einen Link, ein Freundeskreis bekommt einen pro Person. Beim Einladen lässt es sich für das Event ändern.",
+      "members": "Mitglieder",
+      "noMembers": "Noch keine Mitglieder.",
+      "noContacts": "Lege zuerst Kontakte an.",
+      "confirmDelete": "Gruppe „{{name}}“ löschen? Die Kontakte bleiben.",
+      "search": "Gruppe suchen …",
+      "memberCount_one": "{{count}} Mitglied",
+      "memberCount_other": "{{count}} Mitglieder"
+    },
+    "import": {
+      "open": "Importieren",
+      "title": "Aus Google Kontakte importieren",
+      "how": "Auf contacts.google.com: Exportieren → „Google CSV“ oder „vCard“. Andere vCard- und CSV-Dateien gehen auch.",
+      "privacy": "Die Datei wird nur in deinem Browser gelesen. Übertragen werden nur Name, Geburtsjahr und Labels der Kontakte, die du auswählst; Labels werden zu Gruppen.",
+      "file": "Datei",
+      "choose": "Datei auswählen",
+      "nothing": "In der Datei sind keine Kontakte.",
+      "found_one": "{{count}} Kontakt gefunden",
+      "found_other": "{{count}} Kontakte gefunden",
+      "known": "schon im Adressbuch",
+      "submit_one": "{{count}} Kontakt importieren",
+      "submit_other": "{{count}} Kontakte importieren",
+      "done_one": "✓ {{count}} Kontakt importiert, {{groups}} neue Gruppen.",
+      "done_other": "✓ {{count}} Kontakte importiert, {{groups}} neue Gruppen.",
+      "picked_one": "{{count}} ausgewählt",
+      "picked_other": "{{count}} ausgewählt",
+      "withoutName_one": "{{count}} Eintrag ohne Namen (zum Beispiel nur eine Telefonnummer) wird übersprungen.",
+      "withoutName_other": "{{count}} Einträge ohne Namen (zum Beispiel nur eine Telefonnummer) werden übersprungen.",
+      "matching_one": "{{count}} von {{total}} Kontakten",
+      "matching_other": "{{count}} von {{total}} Kontakten"
+    },
+    "searchHint": "Name oder Gruppe suchen …",
+    "noMatch": "Keine Kontakte zu „{{query}}“.",
+    "searchName": "Name suchen …"
   }
 }

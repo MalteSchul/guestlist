@@ -1,13 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app.routers import admin, guest, health
+from app.routers import address_book, admin, guest, health
 from app.services.errors import ServiceError
 
 app = FastAPI(title="Guestlist", version="0.1.0")
 
 # nginx forwards /api/* unchanged, so the prefix lives here.
-for router in (health.router, admin.router, guest.router):
+for router in (health.router, admin.router, address_book.router, guest.router):
     app.include_router(router, prefix="/api")
 
 

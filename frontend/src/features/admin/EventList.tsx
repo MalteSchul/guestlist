@@ -10,7 +10,7 @@ export function EventList() {
   const events = useLoad(() => unwrap(api.GET("/api/admin/events")), []);
 
   return (
-    <Layout>
+    <Layout admin>
       <div className="row">
         <h1>{t("admin.events.title")}</h1>
         <a href="/admin/events/new">+ {t("admin.events.new")}</a>

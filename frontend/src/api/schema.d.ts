@@ -4,6 +4,59 @@
  */
 
 export interface paths {
+    "/api/admin/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Contacts */
+        get: operations["list_contacts_api_admin_contacts_get"];
+        put?: never;
+        /** Create Contact */
+        post: operations["create_contact_api_admin_contacts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/contacts/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Contacts */
+        post: operations["import_contacts_api_admin_contacts_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/contacts/{contact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Contact */
+        put: operations["update_contact_api_admin_contacts__contact_id__put"];
+        post?: never;
+        /** Delete Contact */
+        delete: operations["delete_contact_api_admin_contacts__contact_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/events": {
         parameters: {
             query?: never;
@@ -53,6 +106,23 @@ export interface paths {
         put?: never;
         /** Create Invite */
         post: operations["create_invite_api_admin_events__event_id__invites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/events/{event_id}/invites/group": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Invite Group */
+        post: operations["invite_group_api_admin_events__event_id__invites_group_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -181,6 +251,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Groups */
+        get: operations["list_groups_api_admin_groups_get"];
+        put?: never;
+        /** Create Group */
+        post: operations["create_group_api_admin_groups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/groups/{group_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Group */
+        put: operations["update_group_api_admin_groups__group_id__put"];
+        post?: never;
+        /** Delete Group */
+        delete: operations["delete_group_api_admin_groups__group_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/me": {
         parameters: {
             query?: never;
@@ -263,6 +369,37 @@ export interface components {
             question_id: string;
             /** Text Value */
             text_value: string | null;
+        };
+        /** ContactImport */
+        ContactImport: {
+            /** Contacts */
+            contacts: components["schemas"]["ImportedContact"][];
+        };
+        /** ContactIn */
+        ContactIn: {
+            /** Birth Year */
+            birth_year?: number | null;
+            /**
+             * Group Ids
+             * @default []
+             */
+            group_ids: string[];
+            /** Name */
+            name: string;
+        };
+        /** ContactOut */
+        ContactOut: {
+            /** Birth Year */
+            birth_year: number | null;
+            /** Group Ids */
+            group_ids: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** EventIn */
         EventIn: {
@@ -353,6 +490,56 @@ export interface components {
             starts_at: string;
             title: components["schemas"]["Translated"];
         };
+        /** GroupIn */
+        GroupIn: {
+            /**
+             * Invite Mode
+             * @default together
+             * @enum {string}
+             */
+            invite_mode: "together" | "separately";
+            /**
+             * Member Ids
+             * @default []
+             */
+            member_ids: string[];
+            /** Name */
+            name: string;
+        };
+        /** GroupInviteIn */
+        GroupInviteIn: {
+            /**
+             * Group Id
+             * Format: uuid
+             */
+            group_id: string;
+            /** Invite Mode */
+            invite_mode?: ("together" | "separately") | null;
+        };
+        /** GroupInviteOut */
+        GroupInviteOut: {
+            /** Invites */
+            invites: components["schemas"]["InviteOut"][];
+            /** Skipped */
+            skipped: string[];
+        };
+        /** GroupOut */
+        GroupOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Invite Mode
+             * @enum {string}
+             */
+            invite_mode: "together" | "separately";
+            /** Member Ids */
+            member_ids: string[];
+            /** Name */
+            name: string;
+        };
         /** GuestEvent */
         GuestEvent: {
             /**
@@ -365,6 +552,8 @@ export interface components {
             description: components["schemas"]["Translated"] | null;
             /** Ends At */
             ends_at: string | null;
+            /** Guest List Enabled */
+            guest_list_enabled: boolean;
             /**
              * Languages
              * @description The languages every text the guest sees is written in, so the page can show one of
@@ -389,10 +578,25 @@ export interface components {
             /** Comment */
             comment: string | null;
             event: components["schemas"]["GuestEvent"];
+            /** Guest List */
+            guest_list?: components["schemas"]["GuestListEntry"][] | null;
             /** Name */
             name: string;
             /** Persons */
             persons: components["schemas"]["PersonOut"][];
+        };
+        /**
+         * GuestListEntry
+         * @description Someone on the guest list: a name and whether they come, nothing else (D3).
+         */
+        GuestListEntry: {
+            /**
+             * Attendance
+             * @enum {string}
+             */
+            attendance: "pending" | "yes" | "no" | "maybe";
+            /** Name */
+            name: string;
         };
         /** GuestQuestion */
         GuestQuestion: {
@@ -434,12 +638,57 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HostPersonOut */
+        HostPersonOut: {
+            /** Answers */
+            answers: components["schemas"]["AnswerOut"][];
+            /**
+             * Attendance
+             * @enum {string}
+             */
+            attendance: "pending" | "yes" | "no" | "maybe";
+            /** Attendance Changed At */
+            attendance_changed_at: string | null;
+            /** Attendance Public */
+            attendance_public: boolean;
+            /** Contact Id */
+            contact_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /** ImportResult */
+        ImportResult: {
+            /** Contacts */
+            contacts: number;
+            /** Groups */
+            groups: number;
+        };
+        /**
+         * ImportedContact
+         * @description One contact from an address book export, read in the browser (D32).
+         */
+        ImportedContact: {
+            /** Birth Year */
+            birth_year?: number | null;
+            /**
+             * Groups
+             * @default []
+             */
+            groups: string[];
+            /** Name */
+            name: string;
+        };
         /** InviteIn */
         InviteIn: {
             /** Name */
             name: string;
             /** Persons */
-            persons: string[];
+            persons: components["schemas"]["PersonIn"][];
         };
         /** InviteOut */
         InviteOut: {
@@ -453,7 +702,7 @@ export interface components {
             /** Name */
             name: string;
             /** Persons */
-            persons: components["schemas"]["PersonOut"][];
+            persons: components["schemas"]["HostPersonOut"][];
             /** Token */
             token: string;
         };
@@ -490,6 +739,13 @@ export interface components {
              */
             position: number;
         };
+        /** PersonIn */
+        PersonIn: {
+            /** Contact Id */
+            contact_id?: string | null;
+            /** Name */
+            name: string;
+        };
         /** PersonOut */
         PersonOut: {
             /** Answers */
@@ -501,6 +757,8 @@ export interface components {
             attendance: "pending" | "yes" | "no" | "maybe";
             /** Attendance Changed At */
             attendance_changed_at: string | null;
+            /** Attendance Public */
+            attendance_public: boolean;
             /**
              * Id
              * Format: uuid
@@ -521,6 +779,11 @@ export interface components {
              * @enum {string}
              */
             attendance: "pending" | "yes" | "no" | "maybe";
+            /**
+             * Attendance Public
+             * @default false
+             */
+            attendance_public: boolean;
             /**
              * Id
              * Format: uuid
@@ -671,6 +934,156 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_contacts_api_admin_contacts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"][];
+                };
+            };
+        };
+    };
+    create_contact_api_admin_contacts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_contacts_api_admin_contacts_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactImport"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_contact_api_admin_contacts__contact_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_contact_api_admin_contacts__contact_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_events_api_admin_events_get: {
         parameters: {
             query?: never;
@@ -872,6 +1285,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invite_group_api_admin_events__event_id__invites_group_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GroupInviteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupInviteOut"];
                 };
             };
             /** @description Validation Error */
@@ -1198,6 +1646,123 @@ export interface operations {
             path: {
                 event_id: string;
                 section_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_groups_api_admin_groups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupOut"][];
+                };
+            };
+        };
+    };
+    create_group_api_admin_groups_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GroupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_group_api_admin_groups__group_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GroupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_group_api_admin_groups__group_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
             };
             cookie?: never;
         };

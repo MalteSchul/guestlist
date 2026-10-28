@@ -18,8 +18,9 @@ docker compose up --build    # Postgres, migrations, backend (:8000) and the ngi
 ```
 
 Locally the admin API uses the dev bypass: every request is the same dev user, no login
-(decision A13). Hosts set up events, questions and invites in the app at http://localhost:8080;
-the API docs are at http://localhost:8000/docs
+(decision A13). Hosts set up events, questions and invites, and keep an address book (with an
+import from Google Contacts exports), in the app at http://localhost:8080; the API docs are at
+http://localhost:8000/docs
 
 ### Frontend with hot reload
 

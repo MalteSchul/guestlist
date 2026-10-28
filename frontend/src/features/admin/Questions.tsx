@@ -15,6 +15,7 @@ import {
   TranslatedField,
   useSave,
 } from "./forms";
+import { useReveal } from "../../components/useReveal";
 
 type Event = Schemas["EventOut"];
 type Question = Schemas["QuestionOut"];
@@ -151,6 +152,7 @@ function QuestionEditor({
 }) {
   const { t } = useTranslation();
   const save = useSave();
+  const reveal = useReveal<HTMLLIElement>();
   const [label, setLabel] = useState(textDraft(question.label));
   const [required, setRequired] = useState(question.required);
 
@@ -168,7 +170,7 @@ function QuestionEditor({
   }
 
   return (
-    <li className="card">
+    <li className="card" ref={reveal}>
       <form onSubmit={submit} onChange={save.reset}>
         <TranslatedField
           label={t("admin.setup.question")}
@@ -340,6 +342,7 @@ function OptionForm({
 }) {
   const { t } = useTranslation();
   const save = useSave();
+  const reveal = useReveal<HTMLFormElement>();
   const [label, setLabel] = useState(textDraft(option?.label));
 
   function submit(e: FormEvent) {
@@ -348,7 +351,7 @@ function OptionForm({
   }
 
   return (
-    <form onSubmit={submit} onChange={save.reset} className="nested">
+    <form onSubmit={submit} onChange={save.reset} className="nested" ref={reveal}>
       <TranslatedField
         label={t("admin.setup.option")}
         value={label}
@@ -376,6 +379,8 @@ function NewQuestion({
   const [kind, setKind] = useState<Kind>("single");
   const [required, setRequired] = useState(false);
   const [options, setOptions] = useState<TextDraft[]>([textDraft(null), textDraft(null)]);
+  // Grows with the option rows of a choice question.
+  const reveal = useReveal<HTMLFormElement>([kind === "text", options.length]);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -401,7 +406,7 @@ function NewQuestion({
   }
 
   return (
-    <form onSubmit={submit} onChange={save.reset} className="card">
+    <form onSubmit={submit} onChange={save.reset} className="card" ref={reveal}>
       <TranslatedField
         label={t("admin.setup.question")}
         value={label}

@@ -18,7 +18,7 @@ from app.schemas.events import (
     SectionIn,
     SectionOut,
 )
-from app.schemas.invites import InviteIn, InviteOut
+from app.schemas.invites import GroupInviteIn, GroupInviteOut, InviteIn, InviteOut
 from app.schemas.users import UserOut
 from app.services import events, invites
 
@@ -170,6 +170,16 @@ def create_invite(
     session: SessionDep, user: CurrentUser, event_id: uuid.UUID, data: InviteIn
 ) -> InviteOut:
     return InviteOut.model_validate(invites.create_invite(session, user, event_id, data))
+
+
+@router.post("/events/{event_id}/invites/group", **CREATED)
+def invite_group(
+    session: SessionDep, user: CurrentUser, event_id: uuid.UUID, data: GroupInviteIn
+) -> GroupInviteOut:
+    result = invites.invite_group(session, user, event_id, data)
+    return GroupInviteOut(
+        invites=[InviteOut.model_validate(i) for i in result.invites], skipped=result.skipped
+    )
 
 
 @router.delete("/events/{event_id}/invites/{invite_id}", **NO_CONTENT)
