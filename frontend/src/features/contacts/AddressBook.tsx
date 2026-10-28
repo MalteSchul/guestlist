@@ -6,7 +6,9 @@ import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { SaveBar, useSave } from "../admin/forms";
 import { ImportContacts } from "./ImportContacts";
-import { matches } from "./search";
+import { Picker } from "../../components/Picker";
+import { matches } from "../../components/search";
+import { useReveal } from "../../components/useReveal";
 
 type Contact = Schemas["ContactOut"];
 type Group = Schemas["GroupOut"];
@@ -193,12 +195,11 @@ function GroupForm({
 }) {
   const { t } = useTranslation();
   const save = useSave();
+  const reveal = useReveal<HTMLFormElement>();
   const [name, setName] = useState(group?.name ?? "");
   const [mode, setMode] = useState<InviteMode>(group?.invite_mode ?? "together");
   // In the order they were added: also the order of the persons on a shared invite.
   const [members, setMembers] = useState(group?.member_ids ?? []);
-  const [search, setSearch] = useState("");
-  const shown = contacts.filter((contact) => matches(search, contact.name));
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -206,7 +207,7 @@ function GroupForm({
   }
 
   return (
-    <form onSubmit={submit} onChange={save.reset}>
+    <form onSubmit={submit} onChange={save.reset} ref={reveal}>
       <label className="field">
         <span>{t("contacts.groups.name")} *</span>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -230,44 +231,21 @@ function GroupForm({
         <span className="hint">{t("contacts.groups.inviteModeHint")}</span>
       </fieldset>
 
-      <fieldset className="field plain">
-        <legend>
-          {t("contacts.groups.members")} ({members.length})
-        </legend>
-        {contacts.length === 0 ? (
-          <span className="hint">{t("contacts.groups.noContacts")}</span>
-        ) : (
-          <>
-            {contacts.length > 8 && (
-              <input
-                type="text"
-                aria-label={t("contacts.search")}
-                placeholder={t("contacts.searchName")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            )}
-            <div className="picker">
-              {shown.map((contact) => (
-                <label key={contact.id} className="choice">
-                  <input
-                    type="checkbox"
-                    checked={members.includes(contact.id)}
-                    onChange={(e) =>
-                      setMembers((all) =>
-                        e.target.checked
-                          ? [...all, contact.id]
-                          : all.filter((id) => id !== contact.id),
-                      )
-                    }
-                  />
-                  {contact.name}
-                </label>
-              ))}
-            </div>
-          </>
-        )}
-      </fieldset>
+      {contacts.length === 0 ? (
+        <p className="hint">{t("contacts.groups.noContacts")}</p>
+      ) : (
+        <Picker
+          label={t("contacts.groups.members")}
+          placeholder={t("contacts.searchName")}
+          items={contacts.map((contact) => ({
+            id: contact.id,
+            label: contact.name,
+            detail: contact.birth_year?.toString(), // tells two people of the same name apart
+          }))}
+          selected={members}
+          onChange={setMembers}
+        />
+      )}
 
       <SaveBar save={save} onCancel={onCancel} />
     </form>
@@ -409,6 +387,7 @@ function ContactForm({
 }) {
   const { t } = useTranslation();
   const save = useSave();
+  const reveal = useReveal<HTMLFormElement>();
   const [name, setName] = useState(contact?.name ?? "");
   const [birthYear, setBirthYear] = useState(contact?.birth_year?.toString() ?? "");
   const [groupIds, setGroupIds] = useState(contact?.group_ids ?? []);
@@ -420,7 +399,7 @@ function ContactForm({
   }
 
   return (
-    <form onSubmit={submit} onChange={save.reset}>
+    <form onSubmit={submit} onChange={save.reset} ref={reveal}>
       <div className="columns">
         <label className="field">
           <span>{t("contacts.name")} *</span>
@@ -439,25 +418,17 @@ function ContactForm({
         </label>
       </div>
       {groups.length > 0 && (
-        <fieldset className="field plain">
-          <legend>{t("contacts.groups.title")}</legend>
-          <div className="choices">
-            {groups.map((group) => (
-              <label key={group.id} className="choice">
-                <input
-                  type="checkbox"
-                  checked={groupIds.includes(group.id)}
-                  onChange={(e) =>
-                    setGroupIds((all) =>
-                      e.target.checked ? [...all, group.id] : all.filter((id) => id !== group.id),
-                    )
-                  }
-                />
-                {group.name}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <Picker
+          label={t("contacts.groups.title")}
+          placeholder={t("contacts.groups.search")}
+          items={groups.map((group) => ({
+            id: group.id,
+            label: group.name,
+            detail: t("contacts.groups.memberCount", { count: group.member_ids.length }),
+          }))}
+          selected={groupIds}
+          onChange={setGroupIds}
+        />
       )}
       <SaveBar save={save} onCancel={onCancel} />
     </form>

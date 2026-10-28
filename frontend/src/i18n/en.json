@@ -16,7 +16,11 @@
     "edit": "Edit",
     "delete": "Delete",
     "remove": "Remove",
-    "close": "Close"
+    "close": "Close",
+    "removeItem": "Remove {{name}}",
+    "noMatch": "No matches.",
+    "moreMatches_one": "{{count}} more match – keep typing",
+    "moreMatches_other": "{{count}} more matches – keep typing"
   },
   "guest": {
     "closed": "Answers are closed.",
@@ -82,15 +86,14 @@
       "inviteName": "Name on the invite",
       "inviteNameHint": "Leave it empty to use the people's names.",
       "persons": "People",
-      "personsHint": "Enter adds the next person. A list with one name per line can be pasted.",
+      "personsHint": "A new row appears as you type. A list with one name per line can be pasted.",
       "createInvite": "Create invite",
       "confirmDeleteInvite": "Delete the invite for {{name}}? Its link stops working and their answers are deleted.",
-      "inviteGroup": "Invite a group",
+      "inviteGroup": "Invite existing group",
       "personNumber": "Person {{number}}",
       "personPlaceholder": "Name",
       "fromContacts": "Address book",
-      "personsHintContacts": "Names from your address book are suggested. Enter adds the next person.",
-      "addPerson": "Person",
+      "personsHintContacts": "Names from your address book are suggested; Enter takes the highlighted one. A new row appears as you type.",
       "createInvites_one": "Create {{count}} invite",
       "createInvites_other": "Create {{count}} invites",
       "group": "Group",
@@ -98,7 +101,8 @@
       "alreadyInvited": "already invited",
       "skipped_one": "{{count}} person is already invited and will be skipped.",
       "skipped_other": "{{count}} people are already invited and will be skipped.",
-      "onGuestList": "Guest list"
+      "onGuestList": "Guest list",
+      "morePlaceholder": "Another person"
     },
     "newEvent": {
       "title": "New event",
@@ -203,7 +207,10 @@
       "members": "Members",
       "noMembers": "No members yet.",
       "noContacts": "Add contacts first.",
-      "confirmDelete": "Delete the group “{{name}}”? Its contacts stay."
+      "confirmDelete": "Delete the group “{{name}}”? Its contacts stay.",
+      "search": "Search for a group …",
+      "memberCount_one": "{{count}} member",
+      "memberCount_other": "{{count}} members"
     },
     "import": {
       "open": "Import",

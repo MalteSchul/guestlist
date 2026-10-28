@@ -16,7 +16,11 @@
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "remove": "Entfernen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "removeItem": "{{name}} entfernen",
+    "noMatch": "Keine Treffer.",
+    "moreMatches_one": "{{count}} weiterer Treffer – weitertippen",
+    "moreMatches_other": "{{count}} weitere Treffer – weitertippen"
   },
   "guest": {
     "closed": "Die Antwortfrist ist vorbei.",
@@ -82,15 +86,14 @@
       "inviteName": "Name auf der Einladung",
       "inviteNameHint": "Leer lassen, dann stehen die Namen der Personen darauf.",
       "persons": "Personen",
-      "personsHint": "Enter fügt die nächste Person hinzu. Eine Liste mit einem Namen pro Zeile lässt sich einfügen.",
+      "personsHint": "Eine neue Zeile erscheint, sobald du tippst. Eine Liste mit einem Namen pro Zeile lässt sich einfügen.",
       "createInvite": "Einladung anlegen",
       "confirmDeleteInvite": "Einladung für {{name}} löschen? Der Link funktioniert dann nicht mehr und die Antworten werden gelöscht.",
-      "inviteGroup": "Gruppe einladen",
+      "inviteGroup": "Bestehende Gruppe einladen",
       "personNumber": "Person {{number}}",
       "personPlaceholder": "Name",
       "fromContacts": "Adressbuch",
-      "personsHintContacts": "Namen aus dem Adressbuch werden vorgeschlagen. Enter fügt die nächste Person hinzu.",
-      "addPerson": "Person",
+      "personsHintContacts": "Namen aus dem Adressbuch werden vorgeschlagen, Enter übernimmt den markierten. Eine neue Zeile erscheint, sobald du tippst.",
       "createInvites_one": "{{count}} Einladung anlegen",
       "createInvites_other": "{{count}} Einladungen anlegen",
       "group": "Gruppe",
@@ -98,7 +101,8 @@
       "alreadyInvited": "bereits eingeladen",
       "skipped_one": "{{count}} Person ist schon eingeladen und wird übersprungen.",
       "skipped_other": "{{count}} Personen sind schon eingeladen und werden übersprungen.",
-      "onGuestList": "Gästeliste"
+      "onGuestList": "Gästeliste",
+      "morePlaceholder": "Weitere Person"
     },
     "newEvent": {
       "title": "Neues Event",
@@ -203,7 +207,10 @@
       "members": "Mitglieder",
       "noMembers": "Noch keine Mitglieder.",
       "noContacts": "Lege zuerst Kontakte an.",
-      "confirmDelete": "Gruppe „{{name}}“ löschen? Die Kontakte bleiben."
+      "confirmDelete": "Gruppe „{{name}}“ löschen? Die Kontakte bleiben.",
+      "search": "Gruppe suchen …",
+      "memberCount_one": "{{count}} Mitglied",
+      "memberCount_other": "{{count}} Mitglieder"
     },
     "import": {
       "open": "Importieren",

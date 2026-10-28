@@ -19,6 +19,7 @@ import {
   useSave,
 } from "./forms";
 import { Questions } from "./Questions";
+import { useReveal } from "../../components/useReveal";
 
 type Event = Schemas["EventOut"];
 type Section = Schemas["SectionOut"];
@@ -212,6 +213,7 @@ function SectionForm({
 }) {
   const { t } = useTranslation();
   const save = useSave();
+  const reveal = useReveal<HTMLFormElement>();
   const [title, setTitle] = useState(textDraft(section?.title));
   const [body, setBody] = useState(textDraft(section?.body));
 
@@ -221,7 +223,7 @@ function SectionForm({
   }
 
   return (
-    <form onSubmit={submit} onChange={save.reset}>
+    <form onSubmit={submit} onChange={save.reset} ref={reveal}>
       <TranslatedField
         label={t("admin.setup.sectionTitle")}
         value={title}

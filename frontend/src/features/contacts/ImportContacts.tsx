@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { api, type Schemas, unwrap } from "../../api/client";
 import { SaveBar, useSave } from "../admin/forms";
 import { type ImportedContact, parseContacts } from "./importFile";
-import { matches } from "./search";
+import { matches } from "../../components/search";
+import { useReveal } from "../../components/useReveal";
 
 /** Import from a Google Contacts export (or any vCard/CSV). The file never leaves the browser;
  * only the picked contacts' names, birth years and labels are sent (D32). */
@@ -19,6 +20,7 @@ export function ImportContacts({
 }) {
   const { t } = useTranslation();
   const save = useSave();
+  const reveal = useReveal<HTMLElement>();
   const [found, setFound] = useState<ImportedContact[]>();
   const [picked, setPicked] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string>();
@@ -84,7 +86,7 @@ export function ImportContacts({
   }
 
   return (
-    <section className="card">
+    <section className="card" ref={reveal}>
       <h2>{t("contacts.import.title")}</h2>
       <p className="muted">{t("contacts.import.how")}</p>
       <p className="hint">{t("contacts.import.privacy")}</p>
