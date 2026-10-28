@@ -193,7 +193,7 @@ function InviteCard({
     invite.persons.length === 1 &&
     invite.persons[0]!.name.trim().toLocaleLowerCase() === invite.name.trim().toLocaleLowerCase();
   const actions = (
-    <span className="actions">
+    <span className="card-actions">
       <a
         className="icon ghost"
         href={link}

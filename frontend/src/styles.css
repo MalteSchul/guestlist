@@ -869,8 +869,9 @@ button.icon.ghost.done {
   animation: appear 120ms ease-out;
 }
 
-/* The actions of a card, at the end of its first line. */
-.actions {
+/* The actions of a card, at the end of its first line. Not `.actions`: that's the button bar
+   under every form. */
+.card-actions {
   display: flex;
   gap: 0.15rem;
   margin: -0.4rem -0.4rem -0.4rem 0; /* the icons' padding, so the line keeps its height */
