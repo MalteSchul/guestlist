@@ -3,7 +3,10 @@
     "name": "Guestlist",
     "nav": "Navigation",
     "events": "Events",
-    "contacts": "Address book"
+    "contacts": "Address book",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark"
   },
   "common": {
     "loading": "Loading …",

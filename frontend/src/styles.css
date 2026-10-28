@@ -9,13 +9,17 @@
   --error: #b42318;
   --warn: #9a6700;
   --radius: 10px;
-  color-scheme: light dark;
+  /* Set from the header's measured height (Layout); this is one line of it. */
+  --topbar-height: 3.25rem;
+  color-scheme: light;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
 }
 
+/* Dark as the system asks, unless light was chosen with the switch, or dark chosen with it
+   (theme.ts). The same values twice: CSS can't share them between the two selectors. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #17191c;
     --surface: #202327;
     --text: #e8e6e3;
@@ -25,7 +29,26 @@
     --accent-text: #0f1f1a;
     --error: #ff8a7a;
     --warn: #e3b341;
+    color-scheme: dark;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #17191c;
+  --surface: #202327;
+  --text: #e8e6e3;
+  --muted: #9aa0a8;
+  --border: #33373d;
+  --accent: #6cc3a8;
+  --accent-text: #0f1f1a;
+  --error: #ff8a7a;
+  --warn: #e3b341;
+  color-scheme: dark;
+}
+
+/* Scrolling something into view leaves it clear of the header, which stays at the top. */
+html {
+  scroll-padding-top: var(--topbar-height);
 }
 
 * {
@@ -67,11 +90,17 @@ a {
   color: var(--error);
 }
 
+/* Stays at the top, above the sticky language bar (1) and suggestion lists (2). */
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  gap: 0.5rem 0;
+  padding: 0.6rem 1rem;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -80,25 +109,39 @@ a {
   font-weight: 600;
 }
 
-/* Host pages: events and address book. */
+/* Host pages: events and address book. A line sets the menu off from the app's name; each
+   link is a tab, so "Address book" reads as one item. */
 .nav {
   display: flex;
-  gap: 1rem;
-  margin: 0 auto 0 1.5rem;
+  gap: 0.25rem;
+  margin: 0 auto 0 1rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--border);
 }
 
 .nav a {
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
   color: var(--muted);
   text-decoration: none;
+  white-space: nowrap;
 }
 
-.nav a:hover,
-.nav a[aria-current="page"] {
+.nav a:hover {
   color: var(--text);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 .nav a[aria-current="page"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   font-weight: 600;
+}
+
+.topbar-controls {
+  display: flex;
+  gap: 1rem;
+  margin-left: auto;
 }
 
 /* Read by screen readers only, e.g. the name on a one-person invite. */
@@ -111,26 +154,51 @@ a {
   white-space: nowrap;
 }
 
-.languages button {
+/* Buttons joined into one control, the pressed one filled: light/dark, DE/EN. */
+.switch {
+  display: flex;
+}
+
+.switch button {
+  display: inline-flex;
+  align-items: center;
+  height: 1.75rem;
   font: inherit;
   font-size: 0.85rem;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted);
-  padding: 0.15rem 0.5rem;
+  padding: 0 0.5rem;
   cursor: pointer;
 }
 
-.languages button:first-child {
-  border-radius: 6px 0 0 6px;
+.switch button:hover {
+  color: var(--text);
 }
 
-.languages button:last-child {
-  border-radius: 0 6px 6px 0;
+.switch button + button {
   border-left: none;
 }
 
-.languages button[aria-pressed="true"] {
+.switch button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.switch button:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.switch svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.switch button[aria-pressed="true"] {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
@@ -357,10 +425,10 @@ button.danger {
   gap: 0 0.75rem;
 }
 
-/* Which language the text fields edit; stays in view while scrolling. */
+/* Which language the text fields edit; stays in view while scrolling, under the header. */
 .edit-language {
   position: sticky;
-  top: 0;
+  top: var(--topbar-height);
   z-index: 1;
   display: flex;
   align-items: center;
