@@ -19,14 +19,15 @@ import {
 type Event = Schemas["EventOut"];
 type Question = Schemas["QuestionOut"];
 type Option = Schemas["OptionOut"];
-type Kind = Schemas["QuestionIn"]["kind"];
-
-const KINDS: Kind[] = ["choice", "text"];
+/** What hosts pick from; stored as `kind` plus `multiple`. */
+const KINDS = ["single", "multiple", "text"] as const;
+type Kind = (typeof KINDS)[number];
 
 export function Questions({ event, reload }: { event: Event; reload: () => Promise<void> }) {
   const { t, i18n } = useTranslation();
   const action = useSave();
-  const [editing, setEditing] = useState<string>(); // a question's ID, or "new"
+  const [editing, setEditing] = useState<string>(); // a question's ID
+  const [adding, setAdding] = useState(false);
   const { questions } = event;
   const params = (questionId: string) => ({
     path: { event_id: event.id, question_id: questionId },
@@ -91,15 +92,11 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
           ),
         )}
       </ul>
-      {editing === "new" ? (
-        <NewQuestion
-          event={event}
-          reload={reload}
-          onDone={() => setEditing(undefined)}
-        />
+      {adding ? (
+        <NewQuestion event={event} reload={reload} onDone={() => setAdding(false)} />
       ) : (
         <p>
-          <button type="button" onClick={() => setEditing("new")}>
+          <button type="button" onClick={() => setAdding(true)}>
             + {t("admin.setup.addQuestion")}
           </button>
         </p>
@@ -131,9 +128,9 @@ function QuestionSummary({ question }: { question: Question }) {
   );
 }
 
-function kindOf(question: Pick<Question, "kind" | "multiple">) {
+function kindOf(question: Pick<Question, "kind" | "multiple">): Kind {
   if (question.kind === "text") return "text";
-  return question.multiple ? "choiceSeveral" : "choiceOne";
+  return question.multiple ? "multiple" : "single";
 }
 
 /** PUT takes the whole object, without the fields fixed at creation (D26). */
@@ -220,7 +217,8 @@ function Options({
 }) {
   const { t, i18n } = useTranslation();
   const action = useSave();
-  const [editing, setEditing] = useState<string>(); // an option's ID, or "new"
+  const [editing, setEditing] = useState<string>(); // an option's ID
+  const [adding, setAdding] = useState(false);
   const { options } = question;
   const params = (optionId: string) => ({
     path: { event_id: event.id, question_id: question.id, option_id: optionId },
@@ -265,7 +263,7 @@ function Options({
       }),
     );
     await reload();
-    setEditing(undefined);
+    setAdding(false);
   }
 
   async function change(option: Option, label: Schemas["Translated"]) {
@@ -316,11 +314,11 @@ function Options({
           ),
         )}
       </ul>
-      {editing === "new" ? (
-        <OptionForm event={event} onSubmit={add} onCancel={() => setEditing(undefined)} />
+      {adding ? (
+        <OptionForm event={event} onSubmit={add} onCancel={() => setAdding(false)} />
       ) : (
         <p>
-          <button type="button" onClick={() => setEditing("new")}>
+          <button type="button" onClick={() => setAdding(true)}>
             + {t("admin.setup.addOption")}
           </button>
         </p>
@@ -375,23 +373,22 @@ function NewQuestion({
   const { t } = useTranslation();
   const save = useSave();
   const [label, setLabel] = useState(textDraft(null));
-  const [kind, setKind] = useState<Kind>("choice");
-  const [multiple, setMultiple] = useState(false);
+  const [kind, setKind] = useState<Kind>("single");
   const [required, setRequired] = useState(false);
   const [options, setOptions] = useState<TextDraft[]>([textDraft(null), textDraft(null)]);
 
   function submit(e: FormEvent) {
     e.preventDefault();
     // Empty option rows are left out; a choice question without any gets the backend's message.
-    const labels = kind === "choice" ? options.flatMap((o) => translated(o) ?? []) : [];
+    const labels = kind !== "text" ? options.flatMap((o) => translated(o) ?? []) : [];
     void save.run(async () => {
       await unwrap(
         api.POST("/api/admin/events/{event_id}/questions", {
           params: { path: { event_id: event.id } },
           body: {
             label: requiredText(label),
-            kind,
-            multiple: kind === "choice" && multiple,
+            kind: kind === "text" ? "text" : "choice",
+            multiple: kind === "multiple",
             required,
             position: nextPosition(event.questions),
             options: labels.map((label, position) => ({ label, active: true, position })),
@@ -422,23 +419,13 @@ function NewQuestion({
               {t(`admin.setup.kinds.${k}`)}
             </label>
           ))}
-          {kind === "choice" && (
-            <label className="choice">
-              <input
-                type="checkbox"
-                checked={multiple}
-                onChange={(e) => setMultiple(e.target.checked)}
-              />
-              {t("admin.setup.multiple")}
-            </label>
-          )}
         </div>
         <span className="hint">{t("admin.setup.kindFixed")}</span>
       </fieldset>
 
       <RequiredField value={required} onChange={setRequired} />
 
-      {kind === "choice" && (
+      {kind !== "text" && (
         <fieldset className="field plain">
           <legend>{t("admin.setup.options")}</legend>
           {options.map((option, index) => (

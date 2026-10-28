@@ -7,10 +7,12 @@ import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { preferredLanguage } from "../../i18n";
 import { formatDateTime, pick } from "../../i18n/text";
+import { openRequired, personProgress, summary } from "../answers";
 
 type Invite = Schemas["GuestInviteOut"];
+type Person = Schemas["PersonOut"];
 type Question = Schemas["GuestQuestion"];
-type Attendance = Schemas["PersonOut"]["attendance"];
+type Attendance = Person["attendance"];
 type Answer = { option_ids: string[]; text_value: string };
 type Draft = { attendance: Attendance; answers: Record<string, Answer> };
 
@@ -54,10 +56,18 @@ function Invitation({
   const [drafts, setDrafts] = useState(() => draftsOf(invite));
   const [comment, setComment] = useState(invite.comment ?? "");
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [unsaved, setUnsaved] = useState(false);
+  const [tried, setTried] = useState(false); // to save with a gap; only then are gaps marked
+  const [reopened, setReopened] = useState<string[]>([]); // done persons opened with "Change"
   const [error, setError] = useState<string>();
 
-  function update(personId: string, change: Partial<Draft>) {
+  function changed() {
     setStatus("idle");
+    setUnsaved(true);
+  }
+
+  function update(personId: string, change: Partial<Draft>) {
+    changed();
     setDrafts((all) => ({ ...all, [personId]: { ...all[personId]!, ...change } }));
   }
 
@@ -68,11 +78,32 @@ function Invitation({
     try {
       await onSave(requestOf(drafts, comment));
       setStatus("saved");
+      setUnsaved(false);
+      setTried(false);
+      setReopened([]);
     } catch (failure) {
       setStatus("idle");
       setError(failure instanceof ApiError && failure.message ? failure.message : t("common.error"));
     }
   }
+
+  // Sorted by what's saved, not what's typed, so nobody moves while the guest is still clicking.
+  // Done: "no", or "yes" with every required question answered. "Maybe" isn't done.
+  const isDone = (person: Person) =>
+    personProgress(event.questions, person.attendance, person.answers) === "done";
+  const toAnswer = invite.persons.filter((person) => !isDone(person));
+  const done = invite.persons.filter(isDone);
+
+  const form = (person: Person) => (
+    <PersonForm
+      key={person.id}
+      person={person}
+      draft={drafts[person.id]!}
+      questions={event.questions}
+      tried={tried}
+      onChange={(change) => update(person.id, change)}
+    />
+  );
 
   return (
     <>
@@ -104,54 +135,72 @@ function Invitation({
           : t("guest.closed")}
       </p>
 
-      <form onSubmit={submit}>
+      {/* Native validation stops the save on the first gap; from then on all gaps are marked. */}
+      <form onSubmit={submit} onInvalidCapture={() => setTried(true)}>
         <fieldset disabled={!event.answers_open || status === "saving"} className="plain">
-          {invite.persons.map((person) => {
-            const draft = drafts[person.id]!;
-            return (
-              <fieldset key={person.id} className="card person">
-                <legend>{person.name}</legend>
-                <div className="choices">
-                  {CHOICES.map((choice) => (
-                    <label key={choice} className="choice">
-                      <input
-                        type="radio"
-                        name={`attendance-${person.id}`}
-                        checked={draft.attendance === choice}
-                        onChange={() => update(person.id, { attendance: choice })}
-                        required
-                      />
-                      {t(`guest.attendance.${choice}`)}
-                    </label>
-                  ))}
-                </div>
-                {seesQuestions(draft.attendance) &&
-                  event.questions.map((question) => (
-                    <QuestionField
-                      key={question.id}
-                      name={`${person.id}-${question.id}`}
-                      question={question}
-                      required={question.required && draft.attendance === "yes"}
-                      answer={draft.answers[question.id] ?? { option_ids: [], text_value: "" }}
-                      onChange={(answer) =>
-                        update(person.id, { answers: { ...draft.answers, [question.id]: answer } })
-                      }
-                    />
-                  ))}
-              </fieldset>
-            );
-          })}
+          {toAnswer.length > 0 && (
+            <>
+              {done.length > 0 && <h3>{t("guest.toAnswer")}</h3>}
+              {toAnswer.map(form)}
+            </>
+          )}
+
+          {done.length > 0 && (
+            <>
+              <h3>{t("guest.done")}</h3>
+              {/* One card with a row per person, like the summary at the end of a checkout.
+                  "Change" opens the person's form inside their row. */}
+              <ul className="card done-list">
+                {done.map((person) =>
+                  reopened.includes(person.id) ? (
+                    <li key={person.id}>{form(person)}</li>
+                  ) : (
+                    <li key={person.id} className="done-row">
+                      <span>
+                        <strong>{person.name}</strong> –{" "}
+                        {t(`guest.answered.${person.attendance}`)}
+                        {person.answers.length > 0 && (
+                          <span className="muted">
+                            {" "}
+                            · {summary(event.questions, person.answers, lang)}
+                          </span>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setReopened((all) => [...all, person.id])}
+                      >
+                        {t("guest.change")}
+                      </button>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </>
+          )}
 
           <label className="field">
             <span>{t("guest.comment")}</span>
-            <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} />
+            <textarea
+              value={comment}
+              onChange={(e) => {
+                setComment(e.target.value);
+                changed();
+              }}
+              rows={3}
+            />
           </label>
 
           <div className="actions">
             <button type="submit" className="primary">
               {status === "saving" ? t("common.saving") : t("common.save")}
             </button>
-            {status === "saved" && <span className="success">{t("guest.saved")}</span>}
+            {status === "saved" && (
+              <span className="success">
+                {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang) })}
+              </span>
+            )}
+            {unsaved && status === "idle" && <span className="unsaved">{t("guest.unsaved")}</span>}
             {error && <span className="error">{error}</span>}
           </div>
         </fieldset>
@@ -160,32 +209,107 @@ function Invitation({
   );
 }
 
+function PersonForm({
+  person,
+  draft,
+  questions,
+  tried,
+  onChange,
+}: {
+  person: Person;
+  draft: Draft;
+  questions: Question[];
+  tried: boolean;
+  onChange: (change: Partial<Draft>) => void;
+}) {
+  const { t } = useTranslation();
+  const sees = seesQuestions(draft.attendance);
+  const missing = draft.attendance === "yes" ? openRequired(questions, answersOf(draft)) : [];
+  // Saved as "yes" before the question became required: new to them, not a mistake.
+  const added = person.attendance === "yes" ? openRequired(questions, person.answers) : [];
+
+  return (
+    <fieldset id={`person-${person.id}`} className="card person">
+      <legend>{person.name}</legend>
+      <div className="choices">
+        {CHOICES.map((choice) => (
+          <label key={choice} className="choice">
+            <input
+              type="radio"
+              name={`attendance-${person.id}`}
+              checked={draft.attendance === choice}
+              onChange={() => onChange({ attendance: choice })}
+              required
+            />
+            {t(`guest.attendance.${choice}`)}
+          </label>
+        ))}
+      </div>
+      {tried && draft.attendance === "pending" && (
+        <span className="hint missing">{t("guest.missing")}</span>
+      )}
+      {/* Always rendered and folded open, so the questions slide in instead of popping up.
+          Disabled while folded, so their required fields don't block saving a "no". */}
+      <div className={sees ? "reveal open" : "reveal"} inert={!sees}>
+        <fieldset disabled={!sees} className="plain">
+          {questions.map((question) => (
+            <QuestionField
+              key={question.id}
+              name={`${person.id}-${question.id}`}
+              question={question}
+              required={question.required && draft.attendance === "yes"}
+              missing={tried && missing.includes(question)}
+              isNew={added.includes(question)}
+              answer={draft.answers[question.id] ?? { option_ids: [], text_value: "" }}
+              onChange={(answer) => onChange({ answers: { ...draft.answers, [question.id]: answer } })}
+            />
+          ))}
+        </fieldset>
+      </div>
+    </fieldset>
+  );
+}
+
 function QuestionField({
   name,
   question,
   required,
+  missing,
+  isNew,
   answer,
   onChange,
 }: {
   name: string;
   question: Question;
   required: boolean;
+  /** Required and still empty, after the guest tried to save. */
+  missing: boolean;
+  /** Became required after the guest answered. */
+  isNew: boolean;
   answer: Answer;
   onChange: (answer: Answer) => void;
 }) {
-  const { i18n } = useTranslation();
-  const label = pick(question.label, i18n.language) + (required ? " *" : "");
+  const { t, i18n } = useTranslation();
+  const label = (
+    <>
+      {pick(question.label, i18n.language) + (required ? " *" : "")}
+      {isNew && <span className="badge">{t("guest.new")}</span>}
+    </>
+  );
+  const labelClass = missing ? "missing" : undefined;
+  const note = missing && <span className="hint missing">{t("guest.missing")}</span>;
 
   if (question.kind === "text") {
     return (
       <label className="field">
-        <span>{label}</span>
+        <span className={labelClass}>{label}</span>
         <textarea
           rows={2}
           value={answer.text_value}
           required={required}
           onChange={(e) => onChange({ ...answer, text_value: e.target.value })}
         />
+        {note}
       </label>
     );
   }
@@ -198,7 +322,7 @@ function QuestionField({
 
   return (
     <fieldset className="field plain">
-      <legend>{label}</legend>
+      <legend className={labelClass}>{label}</legend>
       <div className="choices">
         {question.options.map((option) => (
           <label key={option.id} className="choice">
@@ -221,6 +345,7 @@ function QuestionField({
           </label>
         ))}
       </div>
+      {note}
     </fieldset>
   );
 }
@@ -242,22 +367,26 @@ function draftsOf(invite: Invite): Record<string, Draft> {
   );
 }
 
-/** The whole state, as the backend expects it (D30). Questions are only sent for yes/maybe. */
+/** The answers as the backend takes them. Questions are only answered for yes/maybe. */
+function answersOf(draft: Draft) {
+  if (!seesQuestions(draft.attendance)) return [];
+  return Object.entries(draft.answers)
+    .map(([question_id, a]) => ({
+      question_id,
+      option_ids: a.option_ids,
+      text_value: a.text_value.trim() || null,
+    }))
+    .filter((a) => a.option_ids.length > 0 || a.text_value !== null);
+}
+
+/** The whole state, as the backend expects it (D30). */
 function requestOf(drafts: Record<string, Draft>, comment: string): Schemas["GuestResponseIn"] {
   return {
     comment: comment.trim() || null,
     persons: Object.entries(drafts).map(([id, draft]) => ({
       id,
       attendance: draft.attendance,
-      answers: seesQuestions(draft.attendance)
-        ? Object.entries(draft.answers)
-            .map(([question_id, a]) => ({
-              question_id,
-              option_ids: a.option_ids,
-              text_value: a.text_value.trim() || null,
-            }))
-            .filter((a) => a.option_ids.length > 0 || a.text_value !== null)
-        : [],
+      answers: answersOf(draft),
     })),
   };
 }
