@@ -9,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
+import { InviteModeIcon } from "../../components/InviteModeIcon";
 import { Picker } from "../../components/Picker";
 import { type SuggestItem, SuggestInput } from "../../components/Suggest";
 import { useLoad } from "../../components/useLoad";
@@ -358,6 +359,7 @@ function GroupForm({
                       e.currentTarget.form?.requestSubmit();
                     }}
                   />
+                  <InviteModeIcon mode={m} />
                   {t(`contacts.inviteModes.${m}`)}
                 </label>
               ))}

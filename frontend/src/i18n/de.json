@@ -70,14 +70,15 @@
       "back": "Alle Events",
       "edit": "Event bearbeiten",
       "totals": "Auswahl",
-      "totalsHint": "Gezählt werden alle, die zugesagt haben.",
-      "invitesTally": "Einladungen",
+      "totalsHint": "Gezählt werden nur die, die kommen.",
       "personsTally": "Personen",
       "requiredOpen_one": "{{count}} Pflichtfrage offen",
       "requiredOpen_other": "{{count}} Pflichtfragen offen",
       "invites_one": "{{count}} Einladung",
       "invites_other": "{{count}} Einladungen",
       "noInvites": "Noch keine Einladungen.",
+      "onlyUnfinished": "Nur offene Einladungen",
+      "allFinished": "Alle Einladungen sind fertig.",
       "openLink": "Öffnen",
       "comment": "„{{comment}}“",
       "copy": {
@@ -172,11 +173,6 @@
       "deleteEvent": "Event löschen",
       "deleteEventHint": "Löscht das Event mit allen Einladungen und Antworten. Das dürfen nur Eigentümer.",
       "confirmDeleteEvent": "„{{title}}“ mit allen Einladungen und Antworten löschen? Das lässt sich nicht rückgängig machen."
-    },
-    "progress": {
-      "open": "Noch keine Antwort",
-      "partial": "Unvollständig",
-      "done": "Vollständig"
     },
     "attendance": {
       "yes": "Zugesagt",

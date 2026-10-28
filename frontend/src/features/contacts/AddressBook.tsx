@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
+import { InviteModeIcon } from "../../components/InviteModeIcon";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { SaveBar, useSave } from "../admin/forms";
@@ -137,7 +138,13 @@ function Groups({
           ) : (
             <li key={group.id} className="card">
               <div className="row">
-                <strong>{group.name}</strong>
+                <span>
+                  <strong>{group.name}</strong>
+                  <InviteModeIcon
+                    mode={group.invite_mode}
+                    label={t(`contacts.inviteModes.${group.invite_mode}`)}
+                  />
+                </span>
                 <span className="controls">
                   <button type="button" onClick={() => setEditing(group.id)}>
                     {t("common.edit")}
@@ -147,9 +154,6 @@ function Groups({
                   </button>
                 </span>
               </div>
-              <p className="tally">
-                <span className="badge">{t(`contacts.inviteModes.${group.invite_mode}`)}</span>
-              </p>
               <p className="muted">
                 {group.member_ids.length === 0
                   ? t("contacts.groups.noMembers")
@@ -224,6 +228,7 @@ function GroupForm({
                 checked={mode === m}
                 onChange={() => setMode(m)}
               />
+              <InviteModeIcon mode={m} />
               {t(`contacts.inviteModes.${m}`)}
             </label>
           ))}
