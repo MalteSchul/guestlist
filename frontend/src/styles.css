@@ -90,7 +90,7 @@ a {
   color: var(--error);
 }
 
-/* Stays at the top, above the sticky language bar (1) and suggestion lists (2). */
+/* Stays at the top, above sticky list heads (1) and suggestion lists (2). */
 .topbar {
   position: sticky;
   top: 0;
@@ -455,35 +455,6 @@ button.danger {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: 0 0.75rem;
-}
-
-/* Which language the text fields edit; stays in view while scrolling, under the header. */
-.edit-language {
-  position: sticky;
-  top: var(--topbar-height);
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-}
-
-.edit-language button[aria-pressed="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
-}
-
-/* The main-language text while translating. */
-.reference {
-  white-space: pre-wrap;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .controls {

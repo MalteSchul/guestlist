@@ -52,7 +52,7 @@ flowchart LR
 | Database access | SQLAlchemy 2 ORM (sync, psycopg 3), Alembic migrations |
 | Python tooling | uv (dependencies, lockfile), ruff (lint + format), pytest |
 | Frontend | React + Vite + TypeScript |
-| i18n | react-i18next with `de.json` / `en.json`; host-written text stored as JSONB `{"de", "en"}` |
+| i18n | react-i18next with `de.json` / `en.json` for the app's own texts; host-written text is plain text (D16) |
 | API contract | OpenAPI from FastAPI → openapi-typescript → openapi-fetch |
 | Auth | Microsoft Entra External ID (OIDC) for hosts; personal token links for guests |
 | Database | PostgreSQL 17: Neon in production, Docker locally |

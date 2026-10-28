@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Annotated, Any
 
 from sqlalchemy import CheckConstraint, DateTime, MetaData, Text, func
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Fixed constraint names, so Alembic migrations are predictable (see data-model.md).
@@ -16,9 +15,6 @@ NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
 }
 
-# DE/EN text guests see: {"de": "...", "en": "..."}. Pydantic checks the keys, not the database.
-Translated = dict[str, str]
-
 UuidPk = Annotated[uuid.UUID, mapped_column(primary_key=True, default=uuid.uuid4)]
 
 
@@ -27,7 +23,6 @@ class Base(DeclarativeBase):
     type_annotation_map = {
         str: Text,
         datetime: DateTime(timezone=True),
-        Translated: JSONB,
     }
 
 

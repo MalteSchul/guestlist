@@ -98,13 +98,12 @@ erDiagram
 | column | type | note |
 |---|---|---|
 | 🔑 id | UUID | |
-| title | DE/EN text | |
-| *description* | DE/EN text | |
+| title | text | |
+| *description* | text | |
 | *location* | text | address, used for the maps link and calendar invite |
 | starts_at | timestamp | |
 | *ends_at* | timestamp | multi-day events |
 | *rsvp_deadline* | timestamp | answers close here, otherwise at `starts_at` |
-| default_language | `de` / `en` | |
 | keep_data | yes/no | default no: deleted 90 days after the event |
 | guest_list_enabled | yes/no | default no: show the attendance list to guests |
 
@@ -113,8 +112,8 @@ erDiagram
 |---|---|---|
 | 🔑 id | UUID | |
 | event_id | → events | |
-| title | DE/EN text | |
-| body | DE/EN text | plain text, never rendered as HTML |
+| title | text | |
+| body | text | plain text, never rendered as HTML |
 | position | number | display order |
 
 **`event_questions`**: e.g. "Food", "Drinks", "Allergies"
@@ -122,7 +121,7 @@ erDiagram
 |---|---|---|
 | 🔑 id | UUID | |
 | event_id | → events | |
-| label | DE/EN text | |
+| label | text | |
 | kind | `choice` / `text` | pick from options, or free text |
 | multiple | yes/no | several options allowed |
 | required | yes/no | |
@@ -133,7 +132,7 @@ erDiagram
 |---|---|---|
 | 🔑 id | UUID | |
 | question_id | → event_questions | |
-| label | DE/EN text | |
+| label | text | |
 | active | yes/no | hide instead of delete |
 | position | number | display order |
 
@@ -203,12 +202,12 @@ first and gives a friendly message (D24).
 
 ## Conventions
 
-- **Allowed values** (role, attendance, kind, language, invite mode) are stored as text plus a CHECK
+- **Allowed values** (role, attendance, kind, invite mode) are stored as text plus a CHECK
   constraint, not as native Postgres enums. That keeps them easy to change in migrations.
 - **Constraint names** follow a fixed naming convention (`pk_`, `fk_`, `uq_`, `ck_`, `ix_`), so
   Alembic migrations are predictable.
-- **JSONB is only used for text guests see that needs translating.** Names, addresses and
-  comments are plain text. The database doesn't check what's inside JSONB; Pydantic does.
+- **Host-written text is plain text** in whatever language the host writes, like names,
+  addresses and comments (D16).
 - **Nothing derived is stored.** Invite status, headcounts and food totals are calculated from
   `persons` and `person_answers`.
 
@@ -219,8 +218,6 @@ Built (`backend/app/services/`):
   events you have no role on look like they don't exist (404)
 - children (sections, questions, options) are only looked up under their own event or question,
   so an ID from another event is "not found"
-- DE/EN text has only `de`/`en` keys (schema), and at least the event's `default_language` is
-  filled in (service)
 - an option someone picked can't be deleted, only set inactive (D24)
 - answers are only accepted until `rsvp_deadline`, otherwise until `starts_at`
   (`Event.answers_close_at`)

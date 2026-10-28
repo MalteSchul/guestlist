@@ -3,12 +3,12 @@ from datetime import datetime
 
 from pydantic import AwareDatetime, model_validator
 
-from app.models.event import Language, QuestionKind
-from app.schemas.common import Schema, ShortText, Translated
+from app.models.event import QuestionKind
+from app.schemas.common import LongText, Schema, ShortText
 
 
 class OptionIn(Schema):
-    label: Translated
+    label: LongText
     active: bool = True
     position: int = 0
 
@@ -18,7 +18,7 @@ class OptionOut(OptionIn):
 
 
 class QuestionUpdate(Schema):
-    label: Translated
+    label: LongText
     required: bool = False
     position: int = 0
 
@@ -47,8 +47,8 @@ class QuestionOut(QuestionUpdate):
 
 
 class SectionIn(Schema):
-    title: Translated
-    body: Translated
+    title: LongText
+    body: LongText
     position: int = 0
 
 
@@ -57,13 +57,12 @@ class SectionOut(SectionIn):
 
 
 class EventIn(Schema):
-    title: Translated
-    description: Translated | None = None
+    title: LongText
+    description: LongText | None = None
     location: ShortText | None = None
     starts_at: AwareDatetime
     ends_at: AwareDatetime | None = None
     rsvp_deadline: AwareDatetime | None = None
-    default_language: Language = "de"
     keep_data: bool = False
     guest_list_enabled: bool = False
 
@@ -76,7 +75,7 @@ class EventIn(Schema):
 
 class EventSummary(Schema):
     id: uuid.UUID
-    title: Translated
+    title: LongText
     starts_at: datetime
     ends_at: datetime | None
 

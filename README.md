@@ -67,10 +67,19 @@ if either is out of date, and `tsc` fails if the frontend no longer fits the API
 
 ### Changing the schema
 
-Change the models in `backend/app/models/`, then:
+Until the first deploy there is only one migration, the whole schema (A25). Change the models in
+`backend/app/models/`, then in `backend/` replace it and rebuild the local database:
 
 ```sh
-uv run alembic revision --autogenerate -m "what changed"
+rm migrations/versions/*.py
+docker compose exec db psql -U guestlist -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+uv run alembic revision --autogenerate -m "initial schema"
+uv run alembic upgrade head
 ```
 
-Read the generated file before committing; autogenerate doesn't catch everything (e.g. renames).
+Read the generated file before committing. The local data is gone afterwards; the tests rebuild
+their own database on every run.
+
+After the first deploy, changes get their own migration instead:
+`uv run alembic revision --autogenerate -m "what changed"`. Autogenerate doesn't catch everything
+(e.g. renames, CHECK constraints on existing tables).

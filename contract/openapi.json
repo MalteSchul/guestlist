@@ -176,24 +176,18 @@
       "EventIn": {
         "additionalProperties": false,
         "properties": {
-          "default_language": {
-            "default": "de",
-            "enum": [
-              "de",
-              "en"
-            ],
-            "title": "Default Language",
-            "type": "string"
-          },
           "description": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Translated"
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Description"
           },
           "ends_at": {
             "anyOf": [
@@ -248,7 +242,10 @@
             "type": "string"
           },
           "title": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
           }
         },
         "required": [
@@ -261,24 +258,18 @@
       "EventOut": {
         "additionalProperties": false,
         "properties": {
-          "default_language": {
-            "default": "de",
-            "enum": [
-              "de",
-              "en"
-            ],
-            "title": "Default Language",
-            "type": "string"
-          },
           "description": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Translated"
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Description"
           },
           "ends_at": {
             "anyOf": [
@@ -352,7 +343,10 @@
             "type": "string"
           },
           "title": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
           }
         },
         "required": [
@@ -391,7 +385,10 @@
             "type": "string"
           },
           "title": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
           }
         },
         "required": [
@@ -546,12 +543,13 @@
           "description": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Translated"
+                "type": "string"
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Description"
           },
           "ends_at": {
             "anyOf": [
@@ -568,19 +566,6 @@
           "guest_list_enabled": {
             "title": "Guest List Enabled",
             "type": "boolean"
-          },
-          "languages": {
-            "description": "The languages every text the guest sees is written in, so the page can show one of\nthem without mixing (A21).",
-            "items": {
-              "enum": [
-                "de",
-                "en"
-              ],
-              "type": "string"
-            },
-            "readOnly": true,
-            "title": "Languages",
-            "type": "array"
           },
           "location": {
             "anyOf": [
@@ -613,7 +598,8 @@
             "type": "string"
           },
           "title": {
-            "$ref": "#/components/schemas/Translated"
+            "title": "Title",
+            "type": "string"
           }
         },
         "required": [
@@ -626,8 +612,7 @@
           "answers_open",
           "guest_list_enabled",
           "sections",
-          "questions",
-          "languages"
+          "questions"
         ],
         "title": "GuestEvent",
         "type": "object"
@@ -727,7 +712,10 @@
             "type": "string"
           },
           "label": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
           },
           "multiple": {
             "title": "Multiple",
@@ -1014,7 +1002,10 @@
             "type": "boolean"
           },
           "label": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
           },
           "position": {
             "default": 0,
@@ -1042,7 +1033,10 @@
             "type": "string"
           },
           "label": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
           },
           "position": {
             "default": 0,
@@ -1194,7 +1188,10 @@
             "type": "string"
           },
           "label": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
           },
           "multiple": {
             "default": false,
@@ -1244,7 +1241,10 @@
             "type": "string"
           },
           "label": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
           },
           "multiple": {
             "title": "Multiple",
@@ -1282,7 +1282,10 @@
         "additionalProperties": false,
         "properties": {
           "label": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
           },
           "position": {
             "default": 0,
@@ -1305,7 +1308,10 @@
         "additionalProperties": false,
         "properties": {
           "body": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
           },
           "position": {
             "default": 0,
@@ -1313,7 +1319,10 @@
             "type": "integer"
           },
           "title": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
           }
         },
         "required": [
@@ -1327,7 +1336,10 @@
         "additionalProperties": false,
         "properties": {
           "body": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
           },
           "id": {
             "format": "uuid",
@@ -1340,7 +1352,10 @@
             "type": "integer"
           },
           "title": {
-            "$ref": "#/components/schemas/Translated"
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
           }
         },
         "required": [
@@ -1349,40 +1364,6 @@
           "id"
         ],
         "title": "SectionOut",
-        "type": "object"
-      },
-      "Translated": {
-        "additionalProperties": false,
-        "description": "Host-written text guests see, in German and/or English (D16). Missing languages are left\nout of the stored JSON instead of being stored as null.",
-        "properties": {
-          "de": {
-            "anyOf": [
-              {
-                "maxLength": 5000,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "De"
-          },
-          "en": {
-            "anyOf": [
-              {
-                "maxLength": 5000,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "En"
-          }
-        },
-        "title": "Translated",
         "type": "object"
       },
       "UserOut": {

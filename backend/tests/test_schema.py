@@ -23,13 +23,13 @@ from tests.helpers import check_deferred_constraints
 @pytest.fixture
 def picked_option(session: Session) -> EventQuestionOption:
     """An event with one choice question whose option one guest has picked."""
-    event = Event(title={"de": "Feier"}, starts_at=datetime.now(UTC), default_language="de")
+    event = Event(title="Feier", starts_at=datetime.now(UTC))
     session.add(event)
     session.flush()
-    question = EventQuestion(event_id=event.id, label={"de": "Essen"}, kind="choice", position=0)
+    question = EventQuestion(event_id=event.id, label="Essen", kind="choice", position=0)
     session.add(question)
     session.flush()
-    option = EventQuestionOption(question_id=question.id, label={"de": "Vegetarisch"}, position=0)
+    option = EventQuestionOption(question_id=question.id, label="Vegetarisch", position=0)
     invite = Invite(event_id=event.id, name="Familie Müller", token="t" * 43)
     session.add_all([option, invite])
     session.flush()
@@ -77,10 +77,9 @@ def test_event_cannot_end_before_it_starts(session: Session):
     now = datetime.now(UTC)
     session.add(
         Event(
-            title={"de": "x"},
+            title="x",
             starts_at=now,
             ends_at=now - timedelta(hours=1),
-            default_language="de",
         )
     )
     with pytest.raises(IntegrityError, match="ck_events_ends_after_start"):

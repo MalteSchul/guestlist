@@ -1,104 +1,34 @@
-import { createContext, type ReactNode, useContext, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ApiError, type Schemas } from "../../api/client";
-import { type Language, LANGUAGES } from "../../i18n";
+import { ApiError } from "../../api/client";
 
-/** Host-written text while it's edited: one string per language, empty when missing. */
-export type TextDraft = Record<Language, string>;
-
-export function textDraft(text: Schemas["Translated"] | null | undefined): TextDraft {
-  return { de: text?.de ?? "", en: text?.en ?? "" };
-}
-
-/** Empty languages are left out; no text at all is null. */
-export function translated(draft: TextDraft): Schemas["Translated"] | null {
-  const de = draft.de.trim();
-  const en = draft.en.trim();
-  if (!de && !en) return null;
-  return { ...(de ? { de } : {}), ...(en ? { en } : {}) };
-}
-
-/** For text that can't be left out. Empty, the backend answers "needs text in de or en". */
-export function requiredText(draft: TextDraft): Schemas["Translated"] {
-  return translated(draft) ?? {};
-}
-
-/** The language the text fields below edit, picked with LanguageTabs. Without tabs, fields edit
- * the event's main language (a new event: translations come later). */
-const EditingLanguage = createContext<Language | undefined>(undefined);
-
-/** One language at a time; `missing` counts the stored texts each language still lacks. */
-export function LanguageTabs({
-  initial,
-  missing,
-  children,
-}: {
-  initial: Language;
-  missing: Record<Language, number>;
-  children: ReactNode;
-}) {
-  const { t } = useTranslation();
-  const [editing, setEditing] = useState(initial);
-  return (
-    <>
-      <div className="edit-language" role="group" aria-label={t("admin.form.editLanguage")}>
-        <span className="muted">{t("admin.form.editLanguage")}</span>
-        {LANGUAGES.map((lang) => (
-          <button
-            key={lang}
-            type="button"
-            aria-pressed={editing === lang}
-            onClick={() => setEditing(lang)}
-          >
-            {t(`admin.form.languages.${lang}`)}
-            {missing[lang] > 0 && ` · ${t("admin.form.missing", { count: missing[lang] })}`}
-          </button>
-        ))}
-      </div>
-      <EditingLanguage.Provider value={editing}>{children}</EditingLanguage.Provider>
-    </>
-  );
-}
-
-/** Host-written text in the language being edited. Only the event's main language is required
- * (data-model.md); while translating, the main-language text is shown for reference. */
-export function TranslatedField({
+/** Host-written text, in whatever language the host writes (D16). */
+export function TextField({
   label,
   value,
   onChange,
-  language,
   required = false,
   multiline = false,
 }: {
   label: string;
-  value: TextDraft;
-  onChange: (value: TextDraft) => void;
-  language: Language;
+  value: string;
+  onChange: (value: string) => void;
   required?: boolean;
   multiline?: boolean;
 }) {
-  const { t } = useTranslation();
-  const lang = useContext(EditingLanguage) ?? language;
-  const reference = lang !== language && value[language].trim();
   const props = {
-    lang,
-    value: value[lang],
-    required: required && lang === language,
-    onChange: (e: { target: { value: string } }) => onChange({ ...value, [lang]: e.target.value }),
+    value,
+    required,
+    onChange: (e: { target: { value: string } }) => onChange(e.target.value),
   };
   return (
     <label className="field">
       <span>
         {label}
-        {props.required && " *"}
+        {required && " *"}
       </span>
       {multiline ? <textarea rows={3} {...props} /> : <input type="text" {...props} />}
-      {reference && (
-        <span className="hint reference">
-          {t(`admin.form.languages.${language}`)}: {reference}
-        </span>
-      )}
     </label>
   );
 }

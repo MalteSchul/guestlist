@@ -4,18 +4,13 @@ import { useTranslation } from "react-i18next";
 import { api, type Schemas, unwrap } from "../../api/client";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import type { Language } from "../../i18n";
-import { pick } from "../../i18n/text";
 import { EventForm } from "./EventForm";
 import {
   ItemControls,
-  LanguageTabs,
   moved,
   nextPosition,
-  requiredText,
   SaveBar,
-  textDraft,
-  TranslatedField,
+  TextField,
   useSave,
 } from "./forms";
 import { Questions } from "./Questions";
@@ -46,7 +41,7 @@ export function EventSetup({ eventId }: { eventId: string }) {
 }
 
 function Setup({ event, reload }: { event: Event; reload: () => Promise<void> }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const params = { path: { event_id: event.id } };
 
   async function update(body: Schemas["EventIn"]) {
@@ -56,12 +51,8 @@ function Setup({ event, reload }: { event: Event; reload: () => Promise<void> })
 
   return (
     <>
-      <h1>{t("admin.setup.title", { title: pick(event.title, i18n.language) })}</h1>
+      <h1>{t("admin.setup.title", { title: event.title })}</h1>
 
-      <LanguageTabs
-        initial={event.default_language}
-        missing={{ de: missing(event, "de"), en: missing(event, "en") }}
-      >
         <h2>{t("admin.setup.details")}</h2>
         <div className="card">
           <EventForm event={event} onSubmit={update} />
@@ -69,29 +60,13 @@ function Setup({ event, reload }: { event: Event; reload: () => Promise<void> })
 
         <Sections event={event} reload={reload} />
         <Questions event={event} reload={reload} />
-      </LanguageTabs>
       <DeleteEvent event={event} />
     </>
   );
 }
 
-/** Texts guests see that lack this language; the same ones the guest API checks for its
- * complete `languages` (A21). */
-function missing(event: Event, language: Language): number {
-  const texts = [
-    event.title,
-    event.description,
-    ...event.sections.flatMap((section) => [section.title, section.body]),
-    ...event.questions.flatMap((question) => [
-      question.label,
-      ...question.options.filter((option) => option.active).map((option) => option.label),
-    ]),
-  ];
-  return texts.filter((text) => text && !text[language]).length;
-}
-
 function Sections({ event, reload }: { event: Event; reload: () => Promise<void> }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const action = useSave();
   // Adding is its own state, so opening a new form never closes (and loses) an open editor.
   const [editing, setEditing] = useState<string>(); // a section's ID
@@ -116,7 +91,7 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
     });
 
   function remove(section: Section) {
-    const title = pick(section.title, i18n.language);
+    const title = section.title;
     if (!window.confirm(t("admin.setup.confirmDeleteSection", { title }))) return;
     void action.run(async () => {
       await unwrap(
@@ -156,7 +131,6 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
             <li key={section.id} className="card">
               <SectionForm
                 section={section}
-                language={event.default_language}
                 onSubmit={(text) => change(section, text)}
                 onCancel={() => setEditing(undefined)}
               />
@@ -164,7 +138,7 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
           ) : (
             <li key={section.id} className="card">
               <div className="row">
-                <strong>{pick(section.title, i18n.language)}</strong>
+                <strong>{section.title}</strong>
                 <ItemControls
                   index={index}
                   count={sections.length}
@@ -174,18 +148,14 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
                   onDelete={() => remove(section)}
                 />
               </div>
-              <p className="prose muted clamp">{pick(section.body, i18n.language)}</p>
+              <p className="prose muted clamp">{section.body}</p>
             </li>
           ),
         )}
       </ul>
       {adding ? (
         <div className="card">
-          <SectionForm
-            language={event.default_language}
-            onSubmit={add}
-            onCancel={() => setAdding(false)}
-          />
+          <SectionForm onSubmit={add} onCancel={() => setAdding(false)} />
         </div>
       ) : (
         <p>
@@ -202,40 +172,36 @@ type SectionText = Pick<Section, "title" | "body">;
 
 function SectionForm({
   section,
-  language,
   onSubmit,
   onCancel,
 }: {
   section?: Section;
-  language: Language;
   onSubmit: (text: SectionText) => Promise<void>;
   onCancel: () => void;
 }) {
   const { t } = useTranslation();
   const save = useSave();
   const reveal = useReveal<HTMLFormElement>();
-  const [title, setTitle] = useState(textDraft(section?.title));
-  const [body, setBody] = useState(textDraft(section?.body));
+  const [title, setTitle] = useState(section?.title ?? "");
+  const [body, setBody] = useState(section?.body ?? "");
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    void save.run(() => onSubmit({ title: requiredText(title), body: requiredText(body) }));
+    void save.run(() => onSubmit({ title, body }));
   }
 
   return (
     <form onSubmit={submit} onChange={save.reset} ref={reveal}>
-      <TranslatedField
+      <TextField
         label={t("admin.setup.sectionTitle")}
         value={title}
         onChange={setTitle}
-        language={language}
         required
       />
-      <TranslatedField
+      <TextField
         label={t("admin.setup.sectionBody")}
         value={body}
         onChange={setBody}
-        language={language}
         required
         multiline
       />
@@ -246,11 +212,11 @@ function SectionForm({
 
 /** Only owners may; the backend says so if someone else tries. */
 function DeleteEvent({ event }: { event: Event }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const action = useSave();
 
   function remove() {
-    const title = pick(event.title, i18n.language);
+    const title = event.title;
     if (!window.confirm(t("admin.setup.confirmDeleteEvent", { title }))) return;
     void action.run(async () => {
       await unwrap(api.DELETE("/api/admin/events/{event_id}", { params: { path: { event_id: event.id } } }));

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { api, unwrap } from "../../api/client";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { formatDateTime, pick } from "../../i18n/text";
+import { formatDateTime } from "../../i18n/text";
 
 export function EventList() {
   const { t, i18n } = useTranslation();
@@ -24,7 +24,7 @@ export function EventList() {
               {events.map((event) => (
                 <li key={event.id} className="card">
                   <a href={`/admin/events/${event.id}`}>
-                    <strong>{pick(event.title, i18n.language)}</strong>
+                    <strong>{event.title}</strong>
                   </a>
                   <span className="muted">{formatDateTime(event.starts_at, i18n.language)}</span>
                 </li>

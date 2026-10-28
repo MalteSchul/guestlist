@@ -1,5 +1,4 @@
 import type { Schemas } from "../api/client";
-import { pick } from "../i18n/text";
 
 /** What guests answered, read the same way by hosts and guests. */
 
@@ -46,7 +45,6 @@ export function openRequired<Q extends Question>(questions: Q[], answers: Answer
 export function summary(
   questions: Pick<Schemas["QuestionOut"], "id" | "label" | "options">[],
   answers: Answer[],
-  lang: string,
 ): string {
   return questions
     .flatMap((question) => {
@@ -56,9 +54,9 @@ export function summary(
         answer.text_value ??
         question.options
           .filter((option) => answer.option_ids.includes(option.id))
-          .map((option) => pick(option.label, lang))
+          .map((option) => option.label)
           .join(", ");
-      return [`${pick(question.label, lang)}: ${value}`];
+      return [`${question.label}: ${value}`];
     })
     .join("; ");
 }

@@ -113,15 +113,6 @@
       "create": "Create event"
     },
     "form": {
-      "languages": {
-        "de": "Deutsch",
-        "en": "English"
-      },
-      "editLanguage": "Texts in",
-      "missing_one": "{{count}} missing",
-      "missing_other": "{{count}} missing",
-      "defaultLanguage": "Main language",
-      "defaultLanguageHint": "Text in this language is required, the other one is optional. Guests can only switch when everything is filled in both.",
       "title": "Title",
       "description": "Description",
       "location": "Location",

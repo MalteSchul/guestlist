@@ -2,17 +2,12 @@ import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
-import { pick } from "../../i18n/text";
 import {
   ItemControls,
   moved,
   nextPosition,
-  requiredText,
   SaveBar,
-  type TextDraft,
-  textDraft,
-  translated,
-  TranslatedField,
+  TextField,
   useSave,
 } from "./forms";
 import { useReveal } from "../../components/useReveal";
@@ -25,7 +20,7 @@ const KINDS = ["single", "multiple", "text"] as const;
 type Kind = (typeof KINDS)[number];
 
 export function Questions({ event, reload }: { event: Event; reload: () => Promise<void> }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const action = useSave();
   const [editing, setEditing] = useState<string>(); // a question's ID
   const [adding, setAdding] = useState(false);
@@ -48,7 +43,7 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
     });
 
   function remove(question: Question) {
-    const label = pick(question.label, i18n.language);
+    const label = question.label;
     if (!window.confirm(t("admin.setup.confirmDeleteQuestion", { label }))) return;
     void action.run(async () => {
       await unwrap(
@@ -78,7 +73,7 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
           ) : (
             <li key={question.id} className="card">
               <div className="row">
-                <strong>{pick(question.label, i18n.language)}</strong>
+                <strong>{question.label}</strong>
                 <ItemControls
                   index={index}
                   count={questions.length}
@@ -107,7 +102,7 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
 }
 
 function QuestionSummary({ question }: { question: Question }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   return (
     <>
       <p className="tally">
@@ -119,7 +114,7 @@ function QuestionSummary({ question }: { question: Question }) {
           {question.options
             .map(
               (option) =>
-                pick(option.label, i18n.language) +
+                option.label +
                 (option.active ? "" : ` (${t("admin.setup.hidden")})`),
             )
             .join(" · ")}
@@ -153,7 +148,7 @@ function QuestionEditor({
   const { t } = useTranslation();
   const save = useSave();
   const reveal = useReveal<HTMLLIElement>();
-  const [label, setLabel] = useState(textDraft(question.label));
+  const [label, setLabel] = useState(question.label ?? "");
   const [required, setRequired] = useState(question.required);
 
   function submit(e: FormEvent) {
@@ -162,7 +157,7 @@ function QuestionEditor({
       await unwrap(
         api.PUT("/api/admin/events/{event_id}/questions/{question_id}", {
           params: { path: { event_id: event.id, question_id: question.id } },
-          body: { ...questionUpdate(question), label: requiredText(label), required },
+          body: { ...questionUpdate(question), label: label, required },
         }),
       );
       await reload();
@@ -172,11 +167,10 @@ function QuestionEditor({
   return (
     <li className="card" ref={reveal}>
       <form onSubmit={submit} onChange={save.reset}>
-        <TranslatedField
+        <TextField
           label={t("admin.setup.question")}
           value={label}
           onChange={setLabel}
-          language={event.default_language}
           required
         />
         <RequiredField value={required} onChange={setRequired} />
@@ -217,7 +211,7 @@ function Options({
   question: Question;
   reload: () => Promise<void>;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const action = useSave();
   const [editing, setEditing] = useState<string>(); // an option's ID
   const [adding, setAdding] = useState(false);
@@ -246,7 +240,7 @@ function Options({
     });
 
   function remove(option: Option) {
-    const label = pick(option.label, i18n.language);
+    const label = option.label;
     if (!window.confirm(t("admin.setup.confirmDeleteOption", { label }))) return;
     run(() =>
       unwrap(
@@ -257,7 +251,7 @@ function Options({
     );
   }
 
-  async function add(label: Schemas["Translated"]) {
+  async function add(label: string) {
     await unwrap(
       api.POST("/api/admin/events/{event_id}/questions/{question_id}/options", {
         params: { path: { event_id: event.id, question_id: question.id } },
@@ -268,7 +262,7 @@ function Options({
     setAdding(false);
   }
 
-  async function change(option: Option, label: Schemas["Translated"]) {
+  async function change(option: Option, label: string) {
     await put({ ...option, label });
     await reload();
     setEditing(undefined);
@@ -285,7 +279,6 @@ function Options({
             <li key={option.id}>
               <OptionForm
                 option={option}
-                event={event}
                 onSubmit={(label) => change(option, label)}
                 onCancel={() => setEditing(undefined)}
               />
@@ -293,7 +286,7 @@ function Options({
           ) : (
             <li key={option.id} className="row">
               <span className={option.active ? undefined : "muted"}>
-                {pick(option.label, i18n.language)}
+                {option.label}
                 {!option.active && ` (${t("admin.setup.hidden")})`}
               </span>
               <ItemControls
@@ -317,7 +310,7 @@ function Options({
         )}
       </ul>
       {adding ? (
-        <OptionForm event={event} onSubmit={add} onCancel={() => setAdding(false)} />
+        <OptionForm onSubmit={add} onCancel={() => setAdding(false)} />
       ) : (
         <p>
           <button type="button" onClick={() => setAdding(true)}>
@@ -331,32 +324,29 @@ function Options({
 
 function OptionForm({
   option,
-  event,
   onSubmit,
   onCancel,
 }: {
   option?: Option;
-  event: Event;
-  onSubmit: (label: Schemas["Translated"]) => Promise<void>;
+  onSubmit: (label: string) => Promise<void>;
   onCancel: () => void;
 }) {
   const { t } = useTranslation();
   const save = useSave();
   const reveal = useReveal<HTMLFormElement>();
-  const [label, setLabel] = useState(textDraft(option?.label));
+  const [label, setLabel] = useState(option?.label ?? "");
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    void save.run(() => onSubmit(requiredText(label)));
+    void save.run(() => onSubmit(label));
   }
 
   return (
     <form onSubmit={submit} onChange={save.reset} className="nested" ref={reveal}>
-      <TranslatedField
+      <TextField
         label={t("admin.setup.option")}
         value={label}
         onChange={setLabel}
-        language={event.default_language}
         required
       />
       <SaveBar save={save} onCancel={onCancel} />
@@ -375,23 +365,23 @@ function NewQuestion({
 }) {
   const { t } = useTranslation();
   const save = useSave();
-  const [label, setLabel] = useState(textDraft(null));
+  const [label, setLabel] = useState("");
   const [kind, setKind] = useState<Kind>("single");
   const [required, setRequired] = useState(false);
-  const [options, setOptions] = useState<TextDraft[]>([textDraft(null), textDraft(null)]);
+  const [options, setOptions] = useState<string[]>(["", ""]);
   // Grows with the option rows of a choice question.
   const reveal = useReveal<HTMLFormElement>();
 
   function submit(e: FormEvent) {
     e.preventDefault();
     // Empty option rows are left out; a choice question without any gets the backend's message.
-    const labels = kind !== "text" ? options.flatMap((o) => translated(o) ?? []) : [];
+    const labels = kind !== "text" ? options.map((o) => o.trim()).filter(Boolean) : [];
     void save.run(async () => {
       await unwrap(
         api.POST("/api/admin/events/{event_id}/questions", {
           params: { path: { event_id: event.id } },
           body: {
-            label: requiredText(label),
+            label: label,
             kind: kind === "text" ? "text" : "choice",
             multiple: kind === "multiple",
             required,
@@ -407,11 +397,10 @@ function NewQuestion({
 
   return (
     <form onSubmit={submit} onChange={save.reset} className="card" ref={reveal}>
-      <TranslatedField
+      <TextField
         label={t("admin.setup.question")}
         value={label}
         onChange={setLabel}
-        language={event.default_language}
         required
       />
 
@@ -435,13 +424,12 @@ function NewQuestion({
           <legend>{t("admin.setup.options")}</legend>
           {options.map((option, index) => (
             <div key={index} className="nested">
-              <TranslatedField
+              <TextField
                 label={t("admin.setup.optionNumber", { number: index + 1 })}
                 value={option}
                 onChange={(value) =>
                   setOptions((all) => all.map((o, i) => (i === index ? value : o)))
                 }
-                language={event.default_language}
               />
               {options.length > 1 && (
                 <button
@@ -454,7 +442,7 @@ function NewQuestion({
             </div>
           ))}
           <p>
-            <button type="button" onClick={() => setOptions((all) => [...all, textDraft(null)])}>
+            <button type="button" onClick={() => setOptions((all) => [...all, ""])}>
               + {t("admin.setup.addOption")}
             </button>
           </p>
