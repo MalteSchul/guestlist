@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
@@ -6,7 +6,8 @@ import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime, pick } from "../../i18n/text";
 import { openRequired, PROGRESS, type Progress, personProgress, summary } from "../answers";
-import { SaveBar, useSave } from "./forms";
+import { useSave } from "./forms";
+import { NewInvite } from "./NewInvite";
 
 type Event = Schemas["EventOut"];
 type Invite = Schemas["InviteOut"];
@@ -25,7 +26,7 @@ export function EventPage({ eventId }: { eventId: string }) {
   );
 
   return (
-    <Layout>
+    <Layout admin>
       <p>
         <a href="/">← {t("admin.event.back")}</a>
       </p>
@@ -118,7 +119,11 @@ function EventDetails({
           />
         ))}
       </ul>
-      <NewInvite event={event} onCreated={(invite) => onChange([...invites, invite])} />
+      <NewInvite
+        event={event}
+        invites={invites}
+        onCreated={(created) => onChange([...invites, ...created])}
+      />
     </>
   );
 }
@@ -200,6 +205,9 @@ function InviteCard({
                 {open > 0 && ` · ${t("admin.event.requiredOpen", { count: open })}`}
               </span>{" "}
               {person.name}
+              {event.guest_list_enabled && person.attendance_public && (
+                <span className="badge">{t("admin.event.onGuestList")}</span>
+              )}
               {person.answers.length > 0 && (
                 <span className="muted">
                   {" "}
@@ -214,62 +222,6 @@ function InviteCard({
         <p className="prose muted">{t("admin.event.comment", { comment: invite.comment })}</p>
       )}
     </li>
-  );
-}
-
-/** Names are typed in for now, not taken from the address book (D29). */
-function NewInvite({ event, onCreated }: { event: Event; onCreated: (invite: Invite) => void }) {
-  const { t } = useTranslation();
-  const save = useSave();
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [persons, setPersons] = useState("");
-
-  function submit(e: FormEvent) {
-    e.preventDefault();
-    const names = persons
-      .split("\n")
-      .map((person) => person.trim())
-      .filter(Boolean);
-    void save.run(async () => {
-      const invite = await unwrap(
-        api.POST("/api/admin/events/{event_id}/invites", {
-          params: { path: { event_id: event.id } },
-          // One person, named like the invite, when no names are given.
-          body: { name, persons: names.length > 0 ? names : [name] },
-        }),
-      );
-      onCreated(invite);
-      setName("");
-      setPersons("");
-    });
-  }
-
-  if (!open) {
-    return (
-      <p>
-        <button type="button" onClick={() => setOpen(true)}>
-          + {t("admin.event.newInvite")}
-        </button>
-      </p>
-    );
-  }
-
-  return (
-    <form onSubmit={submit} onChange={save.reset} className="card">
-      <h2>{t("admin.event.newInvite")}</h2>
-      <label className="field">
-        <span>{t("admin.event.inviteName")} *</span>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-        <span className="hint">{t("admin.event.inviteNameHint")}</span>
-      </label>
-      <label className="field">
-        <span>{t("admin.event.persons")}</span>
-        <textarea rows={4} value={persons} onChange={(e) => setPersons(e.target.value)} />
-        <span className="hint">{t("admin.event.personsHint")}</span>
-      </label>
-      <SaveBar save={save} label={t("admin.event.createInvite")} onCancel={() => setOpen(false)} />
-    </form>
   );
 }
 

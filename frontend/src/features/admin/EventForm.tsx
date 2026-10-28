@@ -38,6 +38,7 @@ export function EventForm({
     event?.default_language ?? (i18n.language === "en" ? "en" : "de"),
   );
   const [keepData, setKeepData] = useState(event?.keep_data ?? false);
+  const [guestList, setGuestList] = useState(event?.guest_list_enabled ?? false);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -51,8 +52,7 @@ export function EventForm({
         rsvp_deadline: isoOf(deadline),
         default_language: language,
         keep_data: keepData,
-        // Not shown to guests yet, so not offered here; PUT replaces everything, so keep it.
-        guest_list_enabled: event?.guest_list_enabled ?? false,
+        guest_list_enabled: guestList,
       }),
     );
   }
@@ -130,6 +130,18 @@ export function EventForm({
           {t("admin.form.keepData")}
         </label>
         <span className="hint">{t("admin.form.keepDataHint")}</span>
+      </div>
+
+      <div className="field">
+        <label className="choice">
+          <input
+            type="checkbox"
+            checked={guestList}
+            onChange={(e) => setGuestList(e.target.checked)}
+          />
+          {t("admin.form.guestList")}
+        </label>
+        <span className="hint">{t("admin.form.guestListHint")}</span>
       </div>
 
       <SaveBar save={save} label={label} />

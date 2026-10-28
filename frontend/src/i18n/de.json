@@ -19,8 +19,6 @@
     "close": "Schließen"
   },
   "guest": {
-    "yourAnswer": "Eure Antwort, {{name}}",
-    "answerUntil": "Ihr könnt bis {{date}} antworten und eure Antwort bis dahin jederzeit ändern.",
     "closed": "Die Antwortfrist ist vorbei.",
     "attendance": {
       "yes": "Komme",
@@ -28,7 +26,6 @@
       "no": "Komme nicht"
     },
     "comment": "Nachricht an die Gastgeber (optional)",
-    "saved": "✓ Gespeichert – ihr könnt es bis {{date}} ändern.",
     "unsaved": "Noch nicht gespeichert",
     "missing": "Bitte noch beantworten",
     "toAnswer": "Noch zu beantworten",
@@ -38,7 +35,23 @@
     "answered": {
       "yes": "kommt",
       "no": "kommt nicht"
-    }
+    },
+    "yourAnswer_one": "Deine Antwort, {{name}}",
+    "yourAnswer_other": "Eure Antwort, {{name}}",
+    "answerUntil_one": "Du kannst bis {{date}} antworten und deine Antwort bis dahin jederzeit ändern.",
+    "answerUntil_other": "Ihr könnt bis {{date}} antworten und eure Antwort bis dahin jederzeit ändern.",
+    "saved_one": "✓ Gespeichert – du kannst es bis {{date}} ändern.",
+    "saved_other": "✓ Gespeichert – ihr könnt es bis {{date}} ändern.",
+    "showOnList": "Auf der Gästeliste erscheinen",
+    "showOnListHint": "Andere Gäste sehen dann nur den Namen und ob jemand kommt.",
+    "listed": "auf der Gästeliste",
+    "guestList": "Wer kommt",
+    "guestListEmpty": "Noch hat sich niemand eingetragen.",
+    "guestListHint": "Hier steht nur, wer zugestimmt hat.",
+    "listComing_one": "Kommt:",
+    "listComing_other": "Kommen:",
+    "listMaybe_one": "Vielleicht:",
+    "listMaybe_other": "Vielleicht:"
   },
   "admin": {
     "events": {
@@ -67,11 +80,25 @@
       },
       "newInvite": "Neue Einladung",
       "inviteName": "Name auf der Einladung",
-      "inviteNameHint": "Zum Beispiel „Familie Müller“ oder „Anna & Tom“.",
+      "inviteNameHint": "Leer lassen, dann stehen die Namen der Personen darauf.",
       "persons": "Personen",
-      "personsHint": "Ein Name pro Zeile. Leer lassen für eine Person mit dem Namen der Einladung.",
+      "personsHint": "Enter fügt die nächste Person hinzu. Eine Liste mit einem Namen pro Zeile lässt sich einfügen.",
       "createInvite": "Einladung anlegen",
-      "confirmDeleteInvite": "Einladung für {{name}} löschen? Der Link funktioniert dann nicht mehr und die Antworten werden gelöscht."
+      "confirmDeleteInvite": "Einladung für {{name}} löschen? Der Link funktioniert dann nicht mehr und die Antworten werden gelöscht.",
+      "inviteGroup": "Gruppe einladen",
+      "personNumber": "Person {{number}}",
+      "personPlaceholder": "Name",
+      "fromContacts": "Adressbuch",
+      "personsHintContacts": "Namen aus dem Adressbuch werden vorgeschlagen. Enter fügt die nächste Person hinzu.",
+      "addPerson": "Person",
+      "createInvites_one": "{{count}} Einladung anlegen",
+      "createInvites_other": "{{count}} Einladungen anlegen",
+      "group": "Gruppe",
+      "groupMode": "Für dieses Event",
+      "alreadyInvited": "bereits eingeladen",
+      "skipped_one": "{{count}} Person ist schon eingeladen und wird übersprungen.",
+      "skipped_other": "{{count}} Personen sind schon eingeladen und werden übersprungen.",
+      "onGuestList": "Gästeliste"
     },
     "newEvent": {
       "title": "Neues Event",
@@ -95,7 +122,9 @@
       "rsvpDeadline": "Antworten bis",
       "rsvpDeadlineHint": "Leer lassen, dann können Gäste bis zum Beginn antworten.",
       "keepData": "Daten nach dem Event behalten",
-      "keepDataHint": "Sonst werden Einladungen und Antworten 90 Tage nach dem Event gelöscht."
+      "keepDataHint": "Sonst werden Einladungen und Antworten 90 Tage nach dem Event gelöscht.",
+      "guestList": "Gästen zeigen, wer kommt",
+      "guestListHint": "Auf der Liste steht nur, wer zustimmt – mit Name und Zusage, sonst nichts."
     },
     "setup": {
       "title": "„{{title}}“ bearbeiten",

@@ -560,6 +560,55 @@ h3 {
   padding: 0.25rem 0;
 }
 
+/* One input per person on a new invite. */
+.name-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.name-rows li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.name-input {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.name-input input {
+  flex: 1;
+  min-width: 0;
+}
+
+.name-input input.linked {
+  padding-right: 7.5rem;
+}
+
+.name-input .badge {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+button.icon {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
 /* Buttons side by side at the start of a line, e.g. "New invite" and "Invite a group". */
 .row-start {
   display: flex;

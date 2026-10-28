@@ -19,8 +19,6 @@
     "close": "Close"
   },
   "guest": {
-    "yourAnswer": "Your answer, {{name}}",
-    "answerUntil": "You can answer until {{date}} and change your answer any time before then.",
     "closed": "Answers are closed.",
     "attendance": {
       "yes": "Coming",
@@ -28,7 +26,6 @@
       "no": "Not coming"
     },
     "comment": "Message to the hosts (optional)",
-    "saved": "✓ Saved – you can change it until {{date}}.",
     "unsaved": "Not saved yet",
     "missing": "Please answer this",
     "toAnswer": "Still to answer",
@@ -38,7 +35,23 @@
     "answered": {
       "yes": "coming",
       "no": "not coming"
-    }
+    },
+    "yourAnswer_one": "Your answer, {{name}}",
+    "yourAnswer_other": "Your answer, {{name}}",
+    "answerUntil_one": "You can answer until {{date}} and change your answer any time before then.",
+    "answerUntil_other": "You can answer until {{date}} and change your answer any time before then.",
+    "saved_one": "✓ Saved – you can change it until {{date}}.",
+    "saved_other": "✓ Saved – you can change it until {{date}}.",
+    "showOnList": "Appear on the guest list",
+    "showOnListHint": "Other guests then only see the name and whether someone is coming.",
+    "listed": "on the guest list",
+    "guestList": "Who's coming",
+    "guestListEmpty": "Nobody has signed up for the list yet.",
+    "guestListHint": "Only people who agreed are listed here.",
+    "listComing_one": "Coming:",
+    "listComing_other": "Coming:",
+    "listMaybe_one": "Maybe:",
+    "listMaybe_other": "Maybe:"
   },
   "admin": {
     "events": {
@@ -67,11 +80,25 @@
       },
       "newInvite": "New invite",
       "inviteName": "Name on the invite",
-      "inviteNameHint": "For example “Family Miller” or “Anna & Tom”.",
+      "inviteNameHint": "Leave it empty to use the people's names.",
       "persons": "People",
-      "personsHint": "One name per line. Leave it empty for a single person named like the invite.",
+      "personsHint": "Enter adds the next person. A list with one name per line can be pasted.",
       "createInvite": "Create invite",
-      "confirmDeleteInvite": "Delete the invite for {{name}}? Its link stops working and their answers are deleted."
+      "confirmDeleteInvite": "Delete the invite for {{name}}? Its link stops working and their answers are deleted.",
+      "inviteGroup": "Invite a group",
+      "personNumber": "Person {{number}}",
+      "personPlaceholder": "Name",
+      "fromContacts": "Address book",
+      "personsHintContacts": "Names from your address book are suggested. Enter adds the next person.",
+      "addPerson": "Person",
+      "createInvites_one": "Create {{count}} invite",
+      "createInvites_other": "Create {{count}} invites",
+      "group": "Group",
+      "groupMode": "For this event",
+      "alreadyInvited": "already invited",
+      "skipped_one": "{{count}} person is already invited and will be skipped.",
+      "skipped_other": "{{count}} people are already invited and will be skipped.",
+      "onGuestList": "Guest list"
     },
     "newEvent": {
       "title": "New event",
@@ -95,7 +122,9 @@
       "rsvpDeadline": "Answer by",
       "rsvpDeadlineHint": "Leave it empty and guests can answer until the event starts.",
       "keepData": "Keep the data after the event",
-      "keepDataHint": "Otherwise invites and answers are deleted 90 days after the event."
+      "keepDataHint": "Otherwise invites and answers are deleted 90 days after the event.",
+      "guestList": "Show guests who's coming",
+      "guestListHint": "Only people who agree are listed – with name and attendance, nothing else."
     },
     "setup": {
       "title": "Edit “{{title}}”",

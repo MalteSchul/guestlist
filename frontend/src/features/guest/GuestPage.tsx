@@ -14,7 +14,7 @@ type Person = Schemas["PersonOut"];
 type Question = Schemas["GuestQuestion"];
 type Attendance = Person["attendance"];
 type Answer = { option_ids: string[]; text_value: string };
-type Draft = { attendance: Attendance; answers: Record<string, Answer> };
+type Draft = { attendance: Attendance; attendance_public: boolean; answers: Record<string, Answer> };
 
 const CHOICES = ["yes", "maybe", "no"] as const;
 // "yes" and "maybe" see the questions; only "yes" must answer the required ones (D27).
@@ -53,6 +53,7 @@ function Invitation({
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const { event } = invite;
+  const count = invite.persons.length; // "du" for one person, "ihr" for several (A23)
   const [drafts, setDrafts] = useState(() => draftsOf(invite));
   const [comment, setComment] = useState(invite.comment ?? "");
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
@@ -100,6 +101,8 @@ function Invitation({
       person={person}
       draft={drafts[person.id]!}
       questions={event.questions}
+      guestList={event.guest_list_enabled}
+      named={count > 1}
       tried={tried}
       onChange={(change) => update(person.id, change)}
     />
@@ -128,10 +131,12 @@ function Invitation({
         </section>
       ))}
 
-      <h2>{t("guest.yourAnswer", { name: invite.name })}</h2>
+      {invite.guest_list && <GuestList entries={invite.guest_list} />}
+
+      <h2>{t("guest.yourAnswer", { name: invite.name, count })}</h2>
       <p className="muted">
         {event.answers_open
-          ? t("guest.answerUntil", { date: formatDateTime(event.answers_close_at, lang) })
+          ? t("guest.answerUntil", { date: formatDateTime(event.answers_close_at, lang), count })
           : t("guest.closed")}
       </p>
 
@@ -159,6 +164,9 @@ function Invitation({
                       <span>
                         <strong>{person.name}</strong> –{" "}
                         {t(`guest.answered.${person.attendance}`)}
+                        {event.guest_list_enabled && person.attendance_public && (
+                          <span className="muted"> · {t("guest.listed")}</span>
+                        )}
                         {person.answers.length > 0 && (
                           <span className="muted">
                             {" "}
@@ -197,7 +205,7 @@ function Invitation({
             </button>
             {status === "saved" && (
               <span className="success">
-                {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang) })}
+                {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang), count })}
               </span>
             )}
             {unsaved && status === "idle" && <span className="unsaved">{t("guest.unsaved")}</span>}
@@ -213,12 +221,18 @@ function PersonForm({
   person,
   draft,
   questions,
+  guestList,
+  named,
   tried,
   onChange,
 }: {
   person: Person;
   draft: Draft;
   questions: Question[];
+  /** The host shows a guest list, so this person may agree to be on it (D33). */
+  guestList: boolean;
+  /** Several people answer here, so each card says whose it is. */
+  named: boolean;
   tried: boolean;
   onChange: (change: Partial<Draft>) => void;
 }) {
@@ -230,7 +244,7 @@ function PersonForm({
 
   return (
     <fieldset id={`person-${person.id}`} className="card person">
-      <legend>{person.name}</legend>
+      <legend className={named ? undefined : "sr-only"}>{person.name}</legend>
       <div className="choices">
         {CHOICES.map((choice) => (
           <label key={choice} className="choice">
@@ -252,6 +266,19 @@ function PersonForm({
           Disabled while folded, so their required fields don't block saving a "no". */}
       <div className={sees ? "reveal open" : "reveal"} inert={!sees}>
         <fieldset disabled={!sees} className="plain">
+          {guestList && (
+            <div className="field">
+              <label className="choice">
+                <input
+                  type="checkbox"
+                  checked={draft.attendance_public}
+                  onChange={(e) => onChange({ attendance_public: e.target.checked })}
+                />
+                {t("guest.showOnList")}
+              </label>
+              <span className="hint">{t("guest.showOnListHint")}</span>
+            </div>
+          )}
           {questions.map((question) => (
             <QuestionField
               key={question.id}
@@ -350,12 +377,44 @@ function QuestionField({
   );
 }
 
+/** Who's coming, for guests: only people who agreed, nothing but names (D33). */
+function GuestList({ entries }: { entries: Schemas["GuestListEntry"][] }) {
+  const { t } = useTranslation();
+  const names = (attendance: Attendance) =>
+    entries.filter((entry) => entry.attendance === attendance).map((entry) => entry.name);
+  const coming = names("yes");
+  const maybe = names("maybe");
+  return (
+    <section className="card">
+      <h2>{t("guest.guestList")}</h2>
+      {entries.length === 0 ? (
+        <p className="muted">{t("guest.guestListEmpty")}</p>
+      ) : (
+        <>
+          {coming.length > 0 && (
+            <p>
+              <strong>{t("guest.listComing", { count: coming.length })}</strong> {coming.join(", ")}
+            </p>
+          )}
+          {maybe.length > 0 && (
+            <p>
+              <strong>{t("guest.listMaybe", { count: maybe.length })}</strong> {maybe.join(", ")}
+            </p>
+          )}
+        </>
+      )}
+      <p className="hint">{t("guest.guestListHint")}</p>
+    </section>
+  );
+}
+
 function draftsOf(invite: Invite): Record<string, Draft> {
   return Object.fromEntries(
     invite.persons.map((person) => [
       person.id,
       {
         attendance: person.attendance,
+        attendance_public: person.attendance_public,
         answers: Object.fromEntries(
           person.answers.map((a) => [
             a.question_id,
@@ -386,6 +445,7 @@ function requestOf(drafts: Record<string, Draft>, comment: string): Schemas["Gue
     persons: Object.entries(drafts).map(([id, draft]) => ({
       id,
       attendance: draft.attendance,
+      attendance_public: draft.attendance_public,
       answers: answersOf(draft),
     })),
   };
