@@ -441,6 +441,15 @@ button.danger {
   margin-bottom: 0.5rem;
 }
 
+/* A heading with a control next to it: the row takes the heading's spacing, so both centre. */
+.row:has(> h2) {
+  margin: 2rem 0 0.75rem;
+}
+
+.row > h2 {
+  margin: 0;
+}
+
 /* Start and end side by side when there's room. */
 .columns {
   display: grid;
@@ -781,6 +790,92 @@ button.icon {
   color: var(--muted);
 }
 
+/* Line icons (Icon) in icon buttons and links. */
+.line-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* An action shown as its icon alone: no frame until hovered, so a row of them stays quiet. */
+a.icon,
+button.icon.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+}
+
+a.icon:hover,
+button.icon.ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text);
+}
+
+button.icon.ghost.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--error) 12%, transparent);
+  color: var(--error);
+}
+
+button.icon.ghost.done {
+  color: var(--accent);
+}
+
+/* A one-person invite: the person's row is the first line, next to the actions. */
+.row.single {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+.row.single > .persons {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+/* InfoTip: a "?" after a heading or label, its explanation in a bubble under it. */
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  vertical-align: -0.15em; /* centred on the capitals; "middle" is the lowercase centre, lower */
+  margin: -0.4rem 0; /* the icon's padding, so the heading keeps its height */
+}
+
+.info-tip .bubble {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 2;
+  width: max-content;
+  max-width: min(18rem, 80vw);
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+  animation: appear 120ms ease-out;
+}
+
+/* The actions of a card, at the end of its first line. */
+.actions {
+  display: flex;
+  gap: 0.15rem;
+  margin: -0.4rem -0.4rem -0.4rem 0; /* the icons' padding, so the line keeps its height */
+}
+
 /* Buttons side by side at the start of a line, e.g. "New invite" and "Invite a group". */
 .row-start {
   display: flex;
@@ -888,6 +983,35 @@ button.icon {
   border-left: 4px solid var(--progress);
 }
 
+/* A filter that is on or off, e.g. only the unfinished invites. */
+button.icon.ghost.toggle[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* How many people gave which answer: the count and the answer's icon, the name as tooltip. */
+.stats {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin: 0.75rem 0;
+  padding: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.stats li {
+  cursor: default;
+  white-space: nowrap;
+}
+
+.stats .attendance-icon {
+  margin: 0 0 0 0.2em;
+  color: var(--muted);
+}
+
 .persons,
 .totals {
   list-style: none;
@@ -897,19 +1021,30 @@ button.icon {
   gap: 0.35rem;
 }
 
-/* Name on the left, status badge on the right, so names and badges each line up in a column. */
+/* Status icon first, all the same width, so the names line up; the details are its tooltip.
+   No colour: how far an invite is shows in its stripe. */
 .persons li {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.75rem;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
-.persons li > .badge {
-  flex-shrink: 0;
+.persons .status {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 1.5em; /* one line, so the icon sits on the first line of a wrapped row */
+  color: var(--muted);
+  cursor: default;
 }
 
-.persons li > span:first-child .badge {
+.persons .status .attendance-icon {
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0;
+}
+
+.persons li .badge {
   margin-left: 0.4rem;
 }
 
