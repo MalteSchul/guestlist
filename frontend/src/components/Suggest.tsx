@@ -2,12 +2,15 @@ import {
   type InputHTMLAttributes,
   type KeyboardEvent,
   type Ref,
+  useEffect,
   useId,
+  useRef,
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 
 import { rank } from "./search";
+import { scrollIntoViewGently } from "./useReveal";
 
 export type SuggestItem = { id: string; label: string; detail?: string };
 
@@ -17,7 +20,8 @@ const SHOWN = 8;
  * first (see `rank`), the first one highlighted, so Enter takes it. ↑/↓ move, Esc closes the list until the next keystroke.
  * Esc, keys the list doesn't use, and Enter without a suggestion go on to `onKeyDown`.
  * `emptyText` is shown when nothing matches; without it the list just stays closed, for
- * fields that also take free text. */
+ * fields that also take free text. A list that opens below the window's edge is scrolled
+ * into view. */
 export function SuggestInput({
   value,
   onValueChange,
@@ -51,6 +55,12 @@ export function SuggestInput({
   const open =
     focused && !closed && value.trim() !== "" && (shown.length > 0 || emptyText !== undefined);
   const current = open ? shown[Math.min(active, shown.length - 1)] : undefined;
+  const list = useRef<HTMLUListElement>(null);
+  const more = found.length > SHOWN;
+
+  useEffect(() => {
+    if (list.current) scrollIntoViewGently(list.current);
+  }, [open, shown.length, more]); // whenever the list opens or grows
 
   function pick(item: SuggestItem) {
     setActive(0);
@@ -103,7 +113,7 @@ export function SuggestInput({
         onKeyDown={keyDown}
       />
       {open && (
-        <ul id={listId} role="listbox" className="options-list">
+        <ul id={listId} ref={list} role="listbox" className="options-list">
           {shown.map((item) => (
             <li
               key={item.id}
@@ -123,7 +133,7 @@ export function SuggestInput({
             </li>
           ))}
           {found.length === 0 && <li className="muted empty">{emptyText}</li>}
-          {found.length > SHOWN && (
+          {more && (
             <li className="muted empty">
               {t("common.moreMatches", { count: found.length - SHOWN })}
             </li>

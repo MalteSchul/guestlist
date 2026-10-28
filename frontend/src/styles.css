@@ -675,6 +675,11 @@ h3 {
   border-radius: 8px;
   box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
   animation: appear 120ms ease-out;
+  /* Scrolled into view (SuggestInput) together with the input above it, and never taller than
+     the room for both under the header. */
+  scroll-margin-top: 3rem;
+  max-height: calc(100dvh - var(--topbar-height) - 4.5rem);
+  overflow-y: auto;
 }
 
 .options-list > li {

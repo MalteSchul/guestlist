@@ -380,7 +380,7 @@ function NewQuestion({
   const [required, setRequired] = useState(false);
   const [options, setOptions] = useState<TextDraft[]>([textDraft(null), textDraft(null)]);
   // Grows with the option rows of a choice question.
-  const reveal = useReveal<HTMLFormElement>([kind === "text", options.length]);
+  const reveal = useReveal<HTMLFormElement>();
 
   function submit(e: FormEvent) {
     e.preventDefault();

@@ -94,10 +94,7 @@ function PersonsForm({
   const save = useSave();
   const nextKey = useRef(1);
   const [rows, setRows] = useState<Row[]>([{ key: 0, name: "" }]);
-  // Grows by a row per name; once taller than the window, the free row at the end stays in view.
-  const reveal = useReveal<HTMLFormElement>([rows.length], (form) =>
-    form.querySelector(".name-rows > li:last-child"),
-  );
+  const reveal = useReveal<HTMLFormElement>();
   const [name, setName] = useState("");
   const [focus, setFocus] = useState<number>(0);
   const inputs = useRef(new Map<number, HTMLInputElement>());
@@ -293,8 +290,7 @@ function GroupForm({
   const { t } = useTranslation();
   const save = useSave();
   const [groupId, setGroupId] = useState<string>();
-  // Mode, members and the button only appear once a group is chosen.
-  const reveal = useReveal<HTMLFormElement>([groupId]);
+  const reveal = useReveal<HTMLFormElement>();
   const group = groups.find((g) => g.id === groupId);
   // The group's own setting, until the host picks the other one for this event (D31).
   const [mode, setMode] = useState<InviteMode>("together");
