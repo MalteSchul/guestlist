@@ -36,6 +36,19 @@ class GroupOut(Schema):
     member_ids: list[uuid.UUID]
 
 
+class AddressBookDelete(Schema):
+    """Contacts and groups chosen together, to be deleted in one go."""
+
+    contact_ids: Annotated[list[uuid.UUID], Field(max_length=2000)] = []
+    group_ids: Annotated[list[uuid.UUID], Field(max_length=200)] = []
+
+
+class DeleteResult(Schema):
+    contacts: int
+    groups: int
+    """What was deleted; an ID that isn't in the address book (any more) isn't counted."""
+
+
 class ImportedContact(Schema):
     """One contact from an address book export, read in the browser (D32)."""
 

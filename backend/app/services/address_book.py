@@ -4,11 +4,18 @@ simply not found."""
 import uuid
 from collections.abc import Iterable, Sequence
 
-from sqlalchemy import func, select, true
+from sqlalchemy import delete, func, select, true
 from sqlalchemy.orm import Session
 
 from app.models import Contact, ContactGroup, ContactGroupMember, User
-from app.schemas.address_book import ContactImport, ContactIn, GroupIn, ImportResult
+from app.schemas.address_book import (
+    AddressBookDelete,
+    ContactImport,
+    ContactIn,
+    DeleteResult,
+    GroupIn,
+    ImportResult,
+)
 from app.services.errors import Conflict, NotFound
 
 # Contacts
@@ -166,6 +173,27 @@ def _set_members(
 
 def _member(contact_id: uuid.UUID, position: int) -> ContactGroupMember:
     return ContactGroupMember(contact_id=contact_id, position=position)
+
+
+# Deleting several at once
+
+
+def delete_selection(session: Session, user: User, data: AddressBookDelete) -> DeleteResult:
+    """The chosen contacts and groups, all or none. As when deleting one: a group's contacts
+    stay, and invited persons stay in their events (D9). IDs that aren't the user's, or are
+    already gone, are skipped: another user's IDs are simply not found."""
+    groups = session.scalars(
+        delete(ContactGroup)
+        .where(ContactGroup.owner_user_id == user.id, ContactGroup.id.in_(data.group_ids))
+        .returning(ContactGroup.id)
+    ).all()
+    contacts = session.scalars(
+        delete(Contact)
+        .where(Contact.owner_user_id == user.id, Contact.id.in_(data.contact_ids))
+        .returning(Contact.id)
+    ).all()
+    session.commit()
+    return DeleteResult(contacts=len(contacts), groups=len(groups))
 
 
 # Import

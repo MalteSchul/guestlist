@@ -67,7 +67,13 @@ export function useSave() {
     }
   }
 
-  return { status, error, run, reset: () => setStatus("idle") };
+  return {
+    status,
+    error,
+    run,
+    reset: () => setStatus("idle"),
+    clearError: () => setError(undefined),
+  };
 }
 
 export type Save = ReturnType<typeof useSave>;

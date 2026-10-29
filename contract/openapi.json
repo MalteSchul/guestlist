@@ -1,6 +1,34 @@
 {
   "components": {
     "schemas": {
+      "AddressBookDelete": {
+        "additionalProperties": false,
+        "description": "Contacts and groups chosen together, to be deleted in one go.",
+        "properties": {
+          "contact_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 2000,
+            "title": "Contact Ids",
+            "type": "array"
+          },
+          "group_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Group Ids",
+            "type": "array"
+          }
+        },
+        "title": "AddressBookDelete",
+        "type": "object"
+      },
       "AnswerIn": {
         "additionalProperties": false,
         "properties": {
@@ -208,6 +236,25 @@
           "group_ids"
         ],
         "title": "ContactOut",
+        "type": "object"
+      },
+      "DeleteResult": {
+        "additionalProperties": false,
+        "properties": {
+          "contacts": {
+            "title": "Contacts",
+            "type": "integer"
+          },
+          "groups": {
+            "title": "Groups",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "contacts",
+          "groups"
+        ],
+        "title": "DeleteResult",
         "type": "object"
       },
       "EventIn": {
@@ -1528,6 +1575,52 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/admin/address-book/delete": {
+      "post": {
+        "operationId": "delete_selection_api_admin_address_book_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressBookDelete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Selection",
+        "tags": [
+          "address book"
+        ]
+      }
+    },
     "/api/admin/contacts": {
       "get": {
         "operationId": "list_contacts_api_admin_contacts_get",

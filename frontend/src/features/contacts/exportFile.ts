@@ -35,6 +35,28 @@ function csvLine(fields: string[]): string {
     .join(",");
 }
 
+/** What a selection exports: the chosen contacts and groups, and the people in the chosen groups
+ * (a group without them would be empty). A contact is only in the chosen groups: the file holds
+ * what was ticked, not the rest of the address book around it. */
+export function exportSelection<C extends Contact, G extends Group>(
+  contacts: C[],
+  groups: G[],
+  chosen: Set<string>,
+): { contacts: C[]; groups: G[] } {
+  const picked = groups.filter((group) => chosen.has(group.id));
+  const inPicked = new Set(picked.flatMap((group) => group.member_ids));
+  const pickedIds = new Set(picked.map((group) => group.id));
+  return {
+    contacts: contacts
+      .filter((contact) => chosen.has(contact.id) || inPicked.has(contact.id))
+      .map((contact) => ({
+        ...contact,
+        group_ids: contact.group_ids.filter((id) => pickedIds.has(id)),
+      })),
+    groups: picked,
+  };
+}
+
 /** Contacts have unique names, so a group names its members instead of pointing at IDs: the file
  * says the same wherever it is restored. */
 export function toJson(contacts: Contact[], groups: Group[]): string {

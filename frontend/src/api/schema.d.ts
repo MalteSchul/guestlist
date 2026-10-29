@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/admin/address-book/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Selection */
+        post: operations["delete_selection_api_admin_address_book_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/contacts": {
         parameters: {
             query?: never;
@@ -360,6 +377,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AddressBookDelete
+         * @description Contacts and groups chosen together, to be deleted in one go.
+         */
+        AddressBookDelete: {
+            /**
+             * Contact Ids
+             * @default []
+             */
+            contact_ids: string[];
+            /**
+             * Group Ids
+             * @default []
+             */
+            group_ids: string[];
+        };
         /** AnswerIn */
         AnswerIn: {
             /**
@@ -448,6 +481,13 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** DeleteResult */
+        DeleteResult: {
+            /** Contacts */
+            contacts: number;
+            /** Groups */
+            groups: number;
         };
         /** EventIn */
         EventIn: {
@@ -992,6 +1032,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    delete_selection_api_admin_address_book_delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddressBookDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_contacts_api_admin_contacts_get: {
         parameters: {
             query?: never;

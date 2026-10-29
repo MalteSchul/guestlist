@@ -376,10 +376,24 @@ input[type="datetime-local"] {
   flex-wrap: nowrap;
 }
 
+/* The heading keeps its line; the search gives way on a narrow screen. */
+.heading-search > h2 {
+  flex: none;
+  white-space: nowrap;
+}
+
+.heading-search > h2 + * {
+  margin-left: auto;
+}
+
 .heading-search > .search {
   flex: 0 1 14rem;
   min-width: 0;
-  margin-left: auto;
+}
+
+/* "Select all", close to the search it sits beside. */
+.heading-search > .select-box {
+  margin-right: -0.35rem;
 }
 
 .heading-search > .search > input {
@@ -891,6 +905,99 @@ button.icon.ghost.done {
   margin-top: 0.35rem; /* h1's top margin less half the icons' extra height: centred on line 1 */
 }
 
+/* A checkbox as big as the icon buttons around it, to tick a row or, in a heading, all rows. */
+.select-box {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  cursor: pointer;
+}
+
+.select-box input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* A ticked row: a card gets the accent's border, a row of a list its colour across the card. */
+.card.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+
+.rows > li.selected {
+  margin: 0 -1rem;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.rows > li.selected:first-child {
+  border-top-left-radius: calc(var(--radius) - 1px);
+  border-top-right-radius: calc(var(--radius) - 1px);
+}
+
+.rows > li.selected:last-child {
+  border-bottom-right-radius: calc(var(--radius) - 1px);
+  border-bottom-left-radius: calc(var(--radius) - 1px);
+}
+
+/* What is ticked in the address book and what to do with it, floating at the bottom of the
+   window so it stays in reach while the lists scroll (SelectionBar). */
+.selection-bar {
+  position: fixed;
+  right: 0;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  left: 0;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  box-sizing: border-box;
+  width: min(26rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+  animation: rise 160ms ease-out;
+}
+
+.selection-count {
+  flex: 1;
+  font-weight: 600;
+}
+
+.selection-bar > .error {
+  flex-basis: 100%;
+  margin: 0 0.5rem 0.4rem;
+}
+
+/* Room under the last row for the bar. */
+main:has(.selection-bar) {
+  padding-bottom: 7rem;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selection-bar {
+    animation: none;
+  }
+}
+
 /* A short list of choices under the button that opened it, e.g. the export's file types. */
 .menu-wrap {
   position: relative;
@@ -910,6 +1017,12 @@ button.icon.ghost.done {
   border-radius: 8px;
   background: var(--surface);
   box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+}
+
+/* From a button at the bottom of the window: opens upwards. */
+.menu.up {
+  top: auto;
+  bottom: calc(100% + 0.25rem);
 }
 
 .menu button {

@@ -7,9 +7,11 @@ from fastapi import APIRouter, status
 from app.auth.dependencies import CurrentUser
 from app.db import SessionDep
 from app.schemas.address_book import (
+    AddressBookDelete,
     ContactImport,
     ContactIn,
     ContactOut,
+    DeleteResult,
     GroupIn,
     GroupOut,
     ImportResult,
@@ -50,6 +52,16 @@ def update_contact(
 @router.delete("/contacts/{contact_id}", **NO_CONTENT)
 def delete_contact(session: SessionDep, user: CurrentUser, contact_id: uuid.UUID) -> None:
     address_book.delete_contact(session, user, contact_id)
+
+
+# Several at once
+
+
+@router.post("/address-book/delete")
+def delete_selection(
+    session: SessionDep, user: CurrentUser, data: AddressBookDelete
+) -> DeleteResult:
+    return address_book.delete_selection(session, user, data)
 
 
 # Groups

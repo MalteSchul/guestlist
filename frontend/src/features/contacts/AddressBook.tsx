@@ -4,10 +4,13 @@ import { useTranslation } from "react-i18next";
 import { api, type Schemas, unwrap } from "../../api/client";
 import { InviteModeIcon } from "../../components/InviteModeIcon";
 import { Layout, Loaded } from "../../components/Layout";
+import { SelectBox } from "../../components/SelectBox";
 import { useLoad } from "../../components/useLoad";
 import { IconButton, SaveBar, useSave } from "../admin/forms";
 import { ExportMenu } from "./ExportMenu";
+import { exportSelection } from "./exportFile";
 import { ImportContacts } from "./ImportContacts";
+import { SelectionBar } from "./SelectionBar";
 import { Picker } from "../../components/Picker";
 import { rank, searchList } from "../../components/search";
 import { SearchField } from "../../components/SearchField";
@@ -60,6 +63,80 @@ function Book({
 }) {
   const { t } = useTranslation();
   const [importing, setImporting] = useState(false);
+  const [groupSearch, setGroupSearch] = useState("");
+  const [contactSearch, setContactSearch] = useState("");
+  // Contacts and groups are ticked in one go, so the selection is the page's, not a list's.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const bulk = useSave();
+
+  const contactNames = new Map(contacts.map((contact) => [contact.id, contact.name]));
+  const groupNames = new Map(groups.map((group) => [group.id, group.name]));
+  const shownGroups = searchList(
+    groups,
+    groupSearch,
+    (group) => group.name,
+    (group) => group.member_ids.map((id) => contactNames.get(id) ?? ""),
+  );
+  const shownContacts = searchList(
+    contacts,
+    contactSearch,
+    (contact) => contact.name,
+    (contact) => contact.group_ids.map((id) => groupNames.get(id) ?? ""),
+  );
+
+  // Only what can be seen counts: a search that hides a ticked row takes it out of what the
+  // buttons act on (it is ticked again when the search is cleared).
+  const pickedGroups = shownGroups.filter((group) => selected.has(group.id));
+  const pickedContacts = shownContacts.filter((contact) => selected.has(contact.id));
+  const count = pickedGroups.length + pickedContacts.length;
+  const chosen = exportSelection(
+    contacts,
+    groups,
+    new Set([...pickedGroups, ...pickedContacts].map((item) => item.id)),
+  );
+
+  function pick(ids: string[], on: boolean) {
+    bulk.clearError(); // a failed delete says nothing about a different selection
+    setSelected((all) => {
+      const next = new Set(all);
+      for (const id of ids) {
+        if (on) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+  }
+
+  function removeSelected() {
+    const what = [
+      pickedContacts.length > 0 &&
+        t("contacts.selection.contacts", { count: pickedContacts.length }),
+      pickedGroups.length > 0 && t("contacts.selection.groups", { count: pickedGroups.length }),
+    ].filter(Boolean);
+    const notes = [
+      pickedContacts.length > 0 && t("contacts.selection.contactsNote"),
+      pickedGroups.length > 0 && t("contacts.selection.groupsNote"),
+    ].filter(Boolean);
+    const question = t("contacts.selection.confirmDelete", {
+      what:
+        what.length === 2
+          ? t("contacts.selection.both", { contacts: what[0], groups: what[1] })
+          : what[0],
+    });
+    if (!window.confirm(`${question}\n\n${notes.join(" ")}`)) return;
+    void bulk.run(async () => {
+      await unwrap(
+        api.POST("/api/admin/address-book/delete", {
+          body: {
+            contact_ids: pickedContacts.map((contact) => contact.id),
+            group_ids: pickedGroups.map((group) => group.id),
+          },
+        }),
+      );
+      setSelected(new Set());
+      await reload();
+    });
+  }
 
   return (
     <>
@@ -83,35 +160,80 @@ function Book({
           onClose={() => setImporting(false)}
         />
       )}
-      <Groups contacts={contacts} groups={groups} reload={reload} />
-      <Contacts contacts={contacts} groups={groups} reload={reload} />
+      <Groups
+        contacts={contacts}
+        groups={groups}
+        shown={shownGroups}
+        names={contactNames}
+        search={groupSearch}
+        onSearch={setGroupSearch}
+        selected={selected}
+        onPick={pick}
+        reload={reload}
+      />
+      <Contacts
+        contacts={contacts}
+        groups={groups}
+        shown={shownContacts}
+        names={groupNames}
+        search={contactSearch}
+        onSearch={setContactSearch}
+        selected={selected}
+        onPick={pick}
+        reload={reload}
+      />
+      {count > 0 && (
+        <SelectionBar
+          count={count}
+          contacts={chosen.contacts}
+          groups={chosen.groups}
+          busy={bulk.status === "saving"}
+          error={bulk.error}
+          onClear={() => {
+            bulk.clearError();
+            setSelected(new Set());
+          }}
+          onDelete={removeSelected}
+        />
+      )}
     </>
   );
 }
+
+/** What the two lists share to tick rows (see Book). */
+type Picking = {
+  selected: Set<string>;
+  onPick: (ids: string[], on: boolean) => void;
+};
 
 // Groups
 
 function Groups({
   contacts,
   groups,
+  shown,
+  names,
+  search,
+  onSearch,
+  selected,
+  onPick,
   reload,
 }: {
   contacts: Contact[];
   groups: Group[];
+  /** The groups the search finds, best first. */
+  shown: Group[];
+  /** Contact names by ID. */
+  names: Map<string, string>;
+  search: string;
+  onSearch: (search: string) => void;
   reload: () => Promise<void>;
-}) {
+} & Picking) {
   const { t } = useTranslation();
   const action = useSave();
   const [editing, setEditing] = useState<string>(); // a group's ID
   const [adding, setAdding] = useState(false);
-  const [search, setSearch] = useState("");
-  const names = new Map(contacts.map((contact) => [contact.id, contact.name]));
-  const shown = searchList(
-    groups,
-    search,
-    (group) => group.name,
-    (group) => group.member_ids.map((id) => names.get(id) ?? ""),
-  );
+  const ticked = shown.filter((group) => selected.has(group.id)).length;
 
   function remove(group: Group) {
     if (!window.confirm(t("contacts.groups.confirmDelete", { name: group.name }))) return;
@@ -127,11 +249,24 @@ function Groups({
     <>
       <div className="row heading-search">
         <h2>{t("contacts.groups.title")}</h2>
+        {shown.length > 0 && (
+          <SelectBox
+            label={t("contacts.selection.allGroups")}
+            checked={ticked === shown.length}
+            indeterminate={ticked > 0 && ticked < shown.length}
+            onChange={(on) =>
+              onPick(
+                shown.map((group) => group.id),
+                on,
+              )
+            }
+          />
+        )}
         {groups.length > 0 && (
           <SearchField
             label={t("contacts.groups.searchList")}
             value={search}
-            onChange={setSearch}
+            onChange={onSearch}
           />
         )}
         {!adding && (
@@ -169,7 +304,7 @@ function Groups({
               />
             </li>
           ) : (
-            <li key={group.id} className="card">
+            <li key={group.id} className={selected.has(group.id) ? "card selected" : "card"}>
               <div className="row">
                 <span>
                   <strong>{group.name}</strong>
@@ -179,6 +314,11 @@ function Groups({
                   />
                 </span>
                 <span className="card-actions">
+                  <SelectBox
+                    label={t("contacts.selection.select", { name: group.name })}
+                    checked={selected.has(group.id)}
+                    onChange={(on) => onPick([group.id], on)}
+                  />
                   <IconButton
                     icon="edit"
                     label={t("common.edit")}
@@ -307,24 +447,29 @@ function GroupForm({
 function Contacts({
   contacts,
   groups,
+  shown,
+  names: groupNames,
+  search,
+  onSearch,
+  selected,
+  onPick,
   reload,
 }: {
   contacts: Contact[];
   groups: Group[];
+  /** The contacts the search finds, best first. */
+  shown: Contact[];
+  /** Group names by ID. */
+  names: Map<string, string>;
+  search: string;
+  onSearch: (search: string) => void;
   reload: () => Promise<void>;
-}) {
+} & Picking) {
   const { t } = useTranslation();
   const action = useSave();
   const [editing, setEditing] = useState<string>(); // a contact's ID
   const [adding, setAdding] = useState(false);
-  const [search, setSearch] = useState("");
-  const groupNames = new Map(groups.map((group) => [group.id, group.name]));
-  const shown = searchList(
-    contacts,
-    search,
-    (contact) => contact.name,
-    (contact) => contact.group_ids.map((id) => groupNames.get(id) ?? ""),
-  );
+  const ticked = shown.filter((contact) => selected.has(contact.id)).length;
 
   function remove(contact: Contact) {
     if (!window.confirm(t("contacts.confirmDelete", { name: contact.name }))) return;
@@ -342,8 +487,21 @@ function Contacts({
     <>
       <div className="row heading-search">
         <h2>{t("contacts.list", { count: contacts.length })}</h2>
+        {shown.length > 0 && (
+          <SelectBox
+            label={t("contacts.selection.allContacts")}
+            checked={ticked === shown.length}
+            indeterminate={ticked > 0 && ticked < shown.length}
+            onChange={(on) =>
+              onPick(
+                shown.map((contact) => contact.id),
+                on,
+              )
+            }
+          />
+        )}
         {contacts.length > 0 && (
-          <SearchField label={t("contacts.searchHint")} value={search} onChange={setSearch} />
+          <SearchField label={t("contacts.searchHint")} value={search} onChange={onSearch} />
         )}
         {!adding && (
           <IconButton
@@ -382,7 +540,10 @@ function Contacts({
                 />
               </li>
             ) : (
-              <li key={contact.id} className="item-row">
+              <li
+                key={contact.id}
+                className={selected.has(contact.id) ? "item-row selected" : "item-row"}
+              >
                 <span>
                   <strong>{contact.name}</strong>
                   {contact.birth_year && <span className="muted">{contact.birth_year}</span>}
@@ -403,6 +564,11 @@ function Contacts({
                   ))}
                 </span>
                 <span className="card-actions">
+                  <SelectBox
+                    label={t("contacts.selection.select", { name: contact.name })}
+                    checked={selected.has(contact.id)}
+                    onChange={(on) => onPick([contact.id], on)}
+                  />
                   <IconButton
                     icon="edit"
                     label={t("common.edit")}

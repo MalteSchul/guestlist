@@ -80,6 +80,7 @@ const PATHS = {
       <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
     </>
   ),
+  close: <path d="M6 6l12 12M18 6 6 18" />,
   search: (
     <>
       <circle cx="11" cy="11" r="6.5" />

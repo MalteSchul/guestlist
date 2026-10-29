@@ -1,4 +1,7 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+
+from app.models import Contact, ContactGroup
 
 CONTACTS = "/api/admin/contacts"
 GROUPS = "/api/admin/groups"
@@ -264,3 +267,54 @@ def test_import_declared_members_are_only_new_contacts(client: TestClient):
 def test_import_checks_declared_groups(client: TestClient):
     body = {"contacts": [{"name": "Anna"}], "groups": [{"name": "X", "invite_mode": "all"}]}
     assert client.post(f"{CONTACTS}/import", json=body).status_code == 422
+
+
+# Deleting several at once
+
+DELETE_SELECTION = "/api/admin/address-book/delete"
+
+
+def test_delete_a_selection_of_contacts_and_groups(client: TestClient):
+    anna, ben, carla = (contact(client, name) for name in ("Anna", "Ben", "Carla"))
+    family = group(client, "Familie", [anna, ben])
+    group(client, "Freunde", [carla, ben])
+    event_id = event(client)
+    invite = {"name": "Anna", "persons": [{"name": "Anna", "contact_id": anna["id"]}]}
+    client.post(f"{EVENTS}/{event_id}/invites", json=invite)
+
+    # A group goes together with one of its own members, and another's member leaves it.
+    body = {"contact_ids": [anna["id"], carla["id"]], "group_ids": [family["id"]]}
+    response = client.post(DELETE_SELECTION, json=body)
+    assert response.status_code == 200, response.text
+    assert response.json() == {"contacts": 2, "groups": 1}
+
+    assert [c["name"] for c in client.get(CONTACTS).json()] == ["Ben"]  # the group's other member
+    [remaining] = client.get(GROUPS).json()
+    assert remaining["name"] == "Freunde"
+    assert remaining["member_ids"] == [ben["id"]]
+    [invited] = client.get(f"{EVENTS}/{event_id}/invites").json()
+    assert invited["persons"][0]["name"] == "Anna"  # stays in the event (D9)
+    assert invited["persons"][0]["contact_id"] is None
+
+
+def test_delete_a_selection_skips_what_is_not_there(client: TestClient, session, log_in_as):
+    anna = contact(client, "Anna")
+    family = group(client, "Familie", [anna])
+    unknown = "6f1f4b6e-0000-4000-8000-000000000000"
+
+    log_in_as("stranger@example.com")
+    mine = contact(client, "Mine")
+    body = {
+        "contact_ids": [anna["id"], mine["id"], mine["id"], unknown],
+        "group_ids": [family["id"]],
+    }
+    assert client.post(DELETE_SELECTION, json=body).json() == {"contacts": 1, "groups": 0}
+
+    # Anna and her group, someone else's, are untouched.
+    assert session.scalars(select(Contact.name)).all() == ["Anna"]
+    assert session.scalars(select(ContactGroup.name)).all() == ["Familie"]
+
+
+def test_delete_a_selection_checks_its_input(client: TestClient):
+    assert client.post(DELETE_SELECTION, json={}).json() == {"contacts": 0, "groups": 0}
+    assert client.post(DELETE_SELECTION, json={"contact_ids": ["nope"]}).status_code == 422

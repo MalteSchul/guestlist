@@ -7,8 +7,19 @@ import { download, toCsv, toJson } from "./exportFile";
 type Contact = Parameters<typeof toCsv>[0][number];
 type Group = Parameters<typeof toCsv>[1][number];
 
-/** The export icon, and under it the choice of file: a spreadsheet (CSV) or a backup (JSON). */
-export function ExportMenu({ contacts, groups }: { contacts: Contact[]; groups: Group[] }) {
+/** The export icon, and next to it the choice of file: a spreadsheet (CSV) or a backup (JSON).
+ * `up` opens the choice above the icon, for one at the bottom of the window. */
+export function ExportMenu({
+  contacts,
+  groups,
+  label,
+  up = false,
+}: {
+  contacts: Contact[];
+  groups: Group[];
+  label?: string;
+  up?: boolean;
+}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
@@ -45,13 +56,13 @@ export function ExportMenu({ contacts, groups }: { contacts: Contact[]; groups: 
     <span className="menu-wrap" ref={ref}>
       <IconButton
         icon="export"
-        label={t("contacts.export.label")}
-        disabled={contacts.length === 0}
+        label={label ?? t("contacts.export.label")}
+        disabled={contacts.length === 0 && groups.length === 0}
         expanded={open}
         onClick={() => setOpen(!open)}
       />
       {open && (
-        <div className="menu" role="menu">
+        <div className={up ? "menu up" : "menu"} role="menu">
           {(["csv", "json"] as const).map((kind) => (
             <button key={kind} type="button" role="menuitem" onClick={() => save(kind)}>
               <strong>{kind.toUpperCase()}</strong>
