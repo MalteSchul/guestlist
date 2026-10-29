@@ -323,90 +323,91 @@ function Groups({
       {groups.length > 0 && shown.length === 0 && (
         <p className="muted">{t("contacts.groups.noMatch", { query: search.trim() })}</p>
       )}
-      <ul className="cards">
-        {shown.map((group) =>
-          editing === group.id && !selecting ? (
-            <li key={group.id} className="card">
-              <GroupForm
-                group={group}
-                contacts={contacts}
-                onSubmit={async (body) => {
-                  await unwrap(
-                    api.PUT("/api/admin/groups/{group_id}", {
-                      params: { path: { group_id: group.id } },
-                      body,
-                    }),
-                  );
-                  await reload();
-                  setEditing(undefined);
-                }}
-                onCancel={() => setEditing(undefined)}
-              />
-            </li>
-          ) : (
-            <li
-              key={group.id}
-              className={classes(
-                "card",
-                selecting && "pickable",
-                selecting && selected.has(group.id) && "selected",
-              )}
-              onClick={tickOnClick({ selecting, selected, onPick }, group.id)}
-            >
-              <div className="row">
-                <span>
-                  <strong>{group.name}</strong>
-                  <InviteModeIcon
-                    mode={group.invite_mode}
-                    label={t(`contacts.inviteModes.${group.invite_mode}`)}
-                  />
-                </span>
-                <span className="card-actions">
-                  {selecting ? (
-                    <SelectBox
-                      label={t("contacts.selection.select", { name: group.name })}
-                      checked={selected.has(group.id)}
-                      onChange={(on) => onPick([group.id], on)}
+      {shown.length > 0 && (
+        <ul className="card rows">
+          {shown.map((group) =>
+            editing === group.id && !selecting ? (
+              <li key={group.id}>
+                <GroupForm
+                  group={group}
+                  contacts={contacts}
+                  onSubmit={async (body) => {
+                    await unwrap(
+                      api.PUT("/api/admin/groups/{group_id}", {
+                        params: { path: { group_id: group.id } },
+                        body,
+                      }),
+                    );
+                    await reload();
+                    setEditing(undefined);
+                  }}
+                  onCancel={() => setEditing(undefined)}
+                />
+              </li>
+            ) : (
+              <li
+                key={group.id}
+                className={classes(
+                  selecting && "pickable",
+                  selecting && selected.has(group.id) && "selected",
+                )}
+                onClick={tickOnClick({ selecting, selected, onPick }, group.id)}
+              >
+                <div className="row">
+                  <span>
+                    <strong>{group.name}</strong>
+                    <InviteModeIcon
+                      mode={group.invite_mode}
+                      label={t(`contacts.inviteModes.${group.invite_mode}`)}
                     />
-                  ) : (
-                    <>
-                      <IconButton
-                        icon="edit"
-                        label={t("common.edit")}
-                        onClick={() => setEditing(group.id)}
+                  </span>
+                  <span className="card-actions">
+                    {selecting ? (
+                      <SelectBox
+                        label={t("contacts.selection.select", { name: group.name })}
+                        checked={selected.has(group.id)}
+                        onChange={(on) => onPick([group.id], on)}
                       />
-                      <IconButton
-                        icon="delete"
-                        label={t("common.delete")}
-                        danger
-                        onClick={() => remove(group)}
-                      />
-                    </>
-                  )}
-                </span>
-              </div>
-              <p className="muted">
-                {group.member_ids.length === 0
-                  ? t("contacts.groups.noMembers")
-                  : group.member_ids.map((id, i) => {
-                      const member = names.get(id) ?? "";
-                      // Found only through a member: that member stands out in the list.
-                      const hit =
-                        search.trim() !== "" &&
-                        rank(search, group.name) === null &&
-                        rank(search, member) !== null;
-                      return (
-                        <Fragment key={id}>
-                          {i > 0 && ", "}
-                          <span className={hit ? "hit" : undefined}>{member}</span>
-                        </Fragment>
-                      );
-                    })}
-              </p>
-            </li>
-          ),
-        )}
-      </ul>
+                    ) : (
+                      <>
+                        <IconButton
+                          icon="edit"
+                          label={t("common.edit")}
+                          onClick={() => setEditing(group.id)}
+                        />
+                        <IconButton
+                          icon="delete"
+                          label={t("common.delete")}
+                          danger
+                          onClick={() => remove(group)}
+                        />
+                      </>
+                    )}
+                  </span>
+                </div>
+                <p className="muted">
+                  {group.member_ids.length === 0
+                    ? t("contacts.groups.noMembers")
+                    : group.member_ids.map((id, i) => {
+                        const member = names.get(id) ?? "";
+                        // Found only through a member: that member stands out in the list.
+                        const hit =
+                          search.trim() !== "" &&
+                          rank(search, group.name) === null &&
+                          rank(search, member) !== null;
+                        return (
+                          <Fragment key={id}>
+                            {i > 0 && ", "}
+                            <span className={hit ? "hit" : undefined}>{member}</span>
+                          </Fragment>
+                        );
+                      })}
+                </p>
+              </li>
+            ),
+          )}
+        </ul>
+      )}
       {adding && !selecting && (
         <div className="card">
           <GroupForm

@@ -617,6 +617,11 @@ h3 {
   border-top: 1px dashed var(--border);
 }
 
+/* A group's members under its name. */
+.rows > li > p {
+  margin: 0.5rem 0 0;
+}
+
 .done-row,
 .item-row {
   display: flex;
@@ -929,16 +934,11 @@ button.icon.ghost.done {
   cursor: pointer;
 }
 
-/* A ticked row: a card gets the accent's border, a row of a list its colour across the card. */
+/* A ticked row: its colour across the card. */
 /* In select mode a whole row can be tapped. */
 .pickable {
   cursor: pointer;
   user-select: none;
-}
-
-.card.selected {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
 }
 
 .rows > li.selected {
