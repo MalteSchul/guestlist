@@ -74,6 +74,34 @@
         "title": "AnswerOut",
         "type": "object"
       },
+      "AttendanceCounts": {
+        "additionalProperties": false,
+        "description": "How many invited people answered what, over all of an event's invites.",
+        "properties": {
+          "maybe": {
+            "default": 0,
+            "title": "Maybe",
+            "type": "integer"
+          },
+          "no": {
+            "default": 0,
+            "title": "No",
+            "type": "integer"
+          },
+          "pending": {
+            "default": 0,
+            "title": "Pending",
+            "type": "integer"
+          },
+          "yes": {
+            "default": 0,
+            "title": "Yes",
+            "type": "integer"
+          }
+        },
+        "title": "AttendanceCounts",
+        "type": "object"
+      },
       "ContactImport": {
         "additionalProperties": false,
         "properties": {
@@ -84,6 +112,15 @@
             "maxItems": 2000,
             "minItems": 1,
             "title": "Contacts",
+            "type": "array"
+          },
+          "groups": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ImportedGroup"
+            },
+            "maxItems": 200,
+            "title": "Groups",
             "type": "array"
           }
         },
@@ -362,6 +399,9 @@
       "EventSummary": {
         "additionalProperties": false,
         "properties": {
+          "attendance": {
+            "$ref": "#/components/schemas/AttendanceCounts"
+          },
           "ends_at": {
             "anyOf": [
               {
@@ -395,7 +435,8 @@
           "id",
           "title",
           "starts_at",
-          "ends_at"
+          "ends_at",
+          "attendance"
         ],
         "title": "EventSummary",
         "type": "object"
@@ -872,10 +913,15 @@
           "groups": {
             "title": "Groups",
             "type": "integer"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
           }
         },
         "required": [
           "contacts",
+          "skipped",
           "groups"
         ],
         "title": "ImportResult",
@@ -920,6 +966,43 @@
           "name"
         ],
         "title": "ImportedContact",
+        "type": "object"
+      },
+      "ImportedGroup": {
+        "additionalProperties": false,
+        "description": "A group as this app's own export wrote it down: the setting, and who is in it, in order.",
+        "properties": {
+          "invite_mode": {
+            "default": "separately",
+            "enum": [
+              "together",
+              "separately"
+            ],
+            "title": "Invite Mode",
+            "type": "string"
+          },
+          "members": {
+            "default": [],
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 2000,
+            "title": "Members",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ImportedGroup",
         "type": "object"
       },
       "InviteIn": {
@@ -1874,6 +1957,54 @@
           }
         ],
         "summary": "Update Event",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/events/{event_id}/duplicate": {
+      "post": {
+        "operationId": "duplicate_event_api_admin_events__event_id__duplicate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Duplicate Event",
         "tags": [
           "admin"
         ]

@@ -4,6 +4,7 @@ import { EventPage } from "./features/admin/EventPage";
 import { EventSetup } from "./features/admin/EventSetup";
 import { NewEvent } from "./features/admin/NewEvent";
 import { GuestPage } from "./features/guest/GuestPage";
+import { Settings } from "./features/settings/Settings";
 
 // Routing by hand while there are only a few pages; full page loads between them are fine (A18).
 export function App() {
@@ -11,6 +12,8 @@ export function App() {
 
   const guest = path.match(/^\/i\/([^/]+)\/?$/);
   if (guest?.[1]) return <GuestPage token={decodeURIComponent(guest[1])} />;
+
+  if (/^\/settings\/?$/.test(path)) return <Settings />;
 
   if (/^\/admin\/contacts\/?$/.test(path)) return <AddressBook />;
 

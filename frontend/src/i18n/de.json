@@ -4,9 +4,7 @@
     "nav": "Navigation",
     "events": "Events",
     "contacts": "Adressbuch",
-    "theme": "Darstellung",
-    "light": "Hell",
-    "dark": "Dunkel"
+    "settings": "Einstellungen"
   },
   "common": {
     "loading": "Lädt …",
@@ -39,6 +37,8 @@
     "done": "Erledigt",
     "change": "Ändern",
     "new": "Neu",
+    "newRequired_one": "Deine Antwort ist gespeichert. Neu dazugekommen ist nur: {{questions}}",
+    "newRequired_other": "Eure Antwort ist gespeichert. Neu dazugekommen ist nur: {{questions}}",
     "answered": {
       "yes": "kommt",
       "no": "kommt nicht"
@@ -54,17 +54,17 @@
     "listed": "auf der Gästeliste",
     "guestList": "Wer kommt",
     "guestListEmpty": "Noch hat sich niemand eingetragen.",
-    "guestListHint": "Hier steht nur, wer zugestimmt hat.",
-    "listComing_one": "Kommt:",
-    "listComing_other": "Kommen:",
-    "listMaybe_one": "Vielleicht:",
-    "listMaybe_other": "Vielleicht:"
+    "listComing_one": "Kommt",
+    "listComing_other": "Kommen",
+    "listMaybe_one": "Vielleicht",
+    "listMaybe_other": "Vielleicht"
   },
   "admin": {
     "events": {
       "title": "Deine Events",
       "empty": "Noch keine Events.",
-      "new": "Neues Event"
+      "new": "Neues Event",
+      "duplicate": "Duplizieren"
     },
     "event": {
       "back": "Alle Events",
@@ -105,7 +105,7 @@
       "alreadyInvited": "bereits eingeladen",
       "skipped_one": "{{count}} Person ist schon eingeladen und wird übersprungen.",
       "skipped_other": "{{count}} Personen sind schon eingeladen und werden übersprungen.",
-      "onGuestList": "Gästeliste",
+      "onGuestList": "Steht auf der Gästeliste",
       "morePlaceholder": "Weitere Person"
     },
     "newEvent": {
@@ -151,6 +151,8 @@
       "kindFixed": "Die Art lässt sich später nicht ändern.",
       "required": "Pflichtfrage",
       "requiredHint": "Beantworten müssen sie nur Gäste, die zusagen.",
+      "askedAgain_one": "{{count}} Person hat schon zugesagt und wird dazu noch einmal gefragt.",
+      "askedAgain_other": "{{count}} Personen haben schon zugesagt und werden dazu noch einmal gefragt.",
       "confirmDeleteQuestion": "Frage „{{label}}“ löschen? Alle Antworten darauf werden mitgelöscht.",
       "options": "Optionen",
       "option": "Option",
@@ -174,12 +176,16 @@
   },
   "contacts": {
     "title": "Adressbuch",
-    "search": "Suchen",
+    "export": {
+      "label": "Exportieren",
+      "csv": "Tabelle",
+      "json": "Sicherung"
+    },
     "list_one": "{{count}} Kontakt",
     "list_other": "{{count}} Kontakte",
     "empty": "Noch keine Kontakte. Lege welche an oder importiere sie aus Google Kontakte.",
-    "add": "Kontakt",
     "name": "Name",
+    "nameTaken": "Diesen Namen gibt es im Adressbuch schon.",
     "birthYear": "Geburtsjahr",
     "confirmDelete": "{{name}} löschen? Personen, die schon eingeladen sind, bleiben in ihren Events.",
     "inviteModes": {
@@ -188,9 +194,7 @@
     },
     "groups": {
       "title": "Gruppen",
-      "hint": "Zum Beispiel ein Haushalt oder ein Freundeskreis – mit einem Klick eingeladen.",
       "empty": "Noch keine Gruppen.",
-      "add": "Gruppe",
       "name": "Name der Gruppe",
       "inviteMode": "Beim Einladen",
       "inviteModeHint": "Ein Haushalt teilt sich meist einen Link, ein Freundeskreis bekommt einen pro Person. Beim Einladen lässt es sich für das Event ändern.",
@@ -200,23 +204,31 @@
       "confirmDelete": "Gruppe „{{name}}“ löschen? Die Kontakte bleiben.",
       "search": "Gruppe suchen …",
       "memberCount_one": "{{count}} Mitglied",
-      "memberCount_other": "{{count}} Mitglieder"
+      "memberCount_other": "{{count}} Mitglieder",
+      "new": "Neue Gruppe",
+      "searchList": "Gruppe oder Mitglied suchen …",
+      "noMatch": "Keine Gruppen zu „{{query}}“."
     },
     "import": {
       "open": "Importieren",
-      "title": "Aus Google Kontakte importieren",
-      "how": "Auf contacts.google.com: Exportieren → „Google CSV“ oder „vCard“. Andere vCard- und CSV-Dateien gehen auch.",
+      "title": "Kontakte importieren",
+      "how": "Auf contacts.google.com: Exportieren → „Google CSV“ oder „vCard“. Andere vCard- und CSV-Dateien gehen auch, ebenso Dateien aus dem Export hier (CSV oder JSON).",
       "privacy": "Die Datei wird nur in deinem Browser gelesen. Übertragen werden nur Name, Geburtsjahr und Labels der Kontakte, die du auswählst; Labels werden zu Gruppen.",
       "file": "Datei",
       "choose": "Datei auswählen",
       "nothing": "In der Datei sind keine Kontakte.",
       "found_one": "{{count}} Kontakt gefunden",
       "found_other": "{{count}} Kontakte gefunden",
-      "known": "schon im Adressbuch",
+      "knownHidden_one": "{{count}} Kontakt ist schon im Adressbuch und fehlt deshalb hier.",
+      "knownHidden_other": "{{count}} Kontakte sind schon im Adressbuch und fehlen deshalb hier.",
+      "twiceHidden_one": "{{count}} Name steht mehrfach in der Datei und ist nur einmal aufgeführt.",
+      "twiceHidden_other": "{{count}} Namen stehen mehrfach in der Datei und sind nur einmal aufgeführt.",
       "submit_one": "{{count}} Kontakt importieren",
       "submit_other": "{{count}} Kontakte importieren",
       "done_one": "✓ {{count}} Kontakt importiert, {{groups}} neue Gruppen.",
       "done_other": "✓ {{count}} Kontakte importiert, {{groups}} neue Gruppen.",
+      "skipped_one": "{{count}} übersprungen, den Namen gab es schon.",
+      "skipped_other": "{{count}} übersprungen, die Namen gab es schon.",
       "picked_one": "{{count}} ausgewählt",
       "picked_other": "{{count}} ausgewählt",
       "withoutName_one": "{{count}} Eintrag ohne Namen (zum Beispiel nur eine Telefonnummer) wird übersprungen.",
@@ -226,6 +238,22 @@
     },
     "searchHint": "Name oder Gruppe suchen …",
     "noMatch": "Keine Kontakte zu „{{query}}“.",
-    "searchName": "Name suchen …"
+    "searchName": "Name suchen …",
+    "new": "Neuer Kontakt"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "back": "Zurück",
+    "theme": "Darstellung",
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "Wie das Gerät"
+    },
+    "language": "Sprache",
+    "version": "Version",
+    "unknown": "unbekannt",
+    "dev": "Entwicklung",
+    "built": "Gebaut"
   }
 }

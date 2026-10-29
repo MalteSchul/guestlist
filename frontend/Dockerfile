@@ -3,6 +3,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+# The commit, for the settings page; CI passes it (there's no .git in this context).
+ARG GIT_SHA=""
 RUN npm run build
 
 FROM nginx:1.30-alpine

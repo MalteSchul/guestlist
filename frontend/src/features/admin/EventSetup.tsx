@@ -6,6 +6,7 @@ import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { EventForm } from "./EventForm";
 import {
+  IconButton,
   ItemControls,
   moved,
   nextPosition,
@@ -122,7 +123,17 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
 
   return (
     <>
-      <h2>{t("admin.setup.sections")}</h2>
+      <div className="row">
+        <h2>{t("admin.setup.sections")}</h2>
+        {!adding && (
+          <IconButton
+            icon="plus"
+            label={t("admin.setup.addSection")}
+            accent
+            onClick={() => setAdding(true)}
+          />
+        )}
+      </div>
       <p className="muted">{t("admin.setup.sectionsHint")}</p>
       {action.error && <p className="error">{action.error}</p>}
       <ul className="cards">
@@ -153,16 +164,10 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
           ),
         )}
       </ul>
-      {adding ? (
+      {adding && (
         <div className="card">
           <SectionForm onSubmit={add} onCancel={() => setAdding(false)} />
         </div>
-      ) : (
-        <p>
-          <button type="button" onClick={() => setAdding(true)}>
-            + {t("admin.setup.addSection")}
-          </button>
-        </p>
       )}
     </>
   );

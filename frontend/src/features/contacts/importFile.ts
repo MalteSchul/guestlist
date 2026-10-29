@@ -1,18 +1,115 @@
-/** Reads an address book export (Google Contacts: "Google CSV" or vCard) in the browser. Only
- * names, birth years and labels are kept; nothing else in the file is ever sent (D32). */
+/** Reads an address book export in the browser: Google Contacts ("Google CSV" or vCard), or this
+ * app's own CSV or JSON. Only names, birth years and labels are kept (from JSON also the groups'
+ * settings and members); nothing else in the file is ever sent (D32). */
+
+import { JSON_FORMAT } from "./exportFile";
 
 export type ImportedContact = { name: string; birth_year: number | null; groups: string[] };
+/** A group as this app's JSON wrote it down: its setting, and its members' names in order. */
+export type ImportedGroup = {
+  name: string;
+  invite_mode: "together" | "separately";
+  members: string[];
+};
 
 const MAX_NAME = 200; // ShortText in the backend
 const MAX_GROUPS = 20;
+const MAX_DECLARED_GROUPS = 200;
+const MAX_MEMBERS = 2000;
 
 /** `withoutName`: entries skipped because nothing in them is a name, e.g. only a phone number,
- * which must not end up in the address book as one. */
-export function parseContacts(text: string): { contacts: ImportedContact[]; withoutName: number } {
-  const clean = text.replace(/^﻿/, "");
-  const all = /^\s*BEGIN:VCARD/im.test(clean) ? parseVCards(clean) : parseCsv(clean);
+ * which must not end up in the address book as one. `groups` are only in this app's JSON. */
+export function parseContacts(text: string): {
+  contacts: ImportedContact[];
+  withoutName: number;
+  groups: ImportedGroup[];
+} {
+  const clean = text.replace(/^\uFEFF/, "");
+  const { contacts: all, groups } = /^\s*[{[]/.test(clean)
+    ? parseJson(clean)
+    : {
+        contacts: /^\s*BEGIN:VCARD/im.test(clean) ? parseVCards(clean) : parseCsv(clean),
+        groups: [],
+      };
   const contacts = all.filter((contact) => /\p{L}/u.test(contact.name));
-  return { contacts, withoutName: all.length - contacts.length };
+  return { contacts, withoutName: all.length - contacts.length, groups };
+}
+
+/** What the backend gets for the picked contacts. A file with groups of its own says who is in
+ * each, in order, so its contacts carry no labels; a group stays if someone in it is picked, or
+ * it never had members. */
+export function importBody(
+  contacts: ImportedContact[],
+  groups: ImportedGroup[],
+  picked: Set<number>,
+): { contacts: ImportedContact[]; groups: ImportedGroup[] } {
+  const chosen = contacts.filter((_, i) => picked.has(i));
+  if (groups.length === 0) return { contacts: chosen, groups: [] };
+  const names = new Set(chosen.map((contact) => contact.name.toLocaleLowerCase()));
+  return {
+    contacts: chosen.map((contact) => ({ ...contact, groups: [] })),
+    groups: groups.flatMap((group) => {
+      const members = group.members.filter((name) => names.has(name.toLocaleLowerCase()));
+      return members.length > 0 || group.members.length === 0 ? [{ ...group, members }] : [];
+    }),
+  };
+}
+
+// This app's JSON (exportFile.ts)
+
+function parseJson(text: string): { contacts: ImportedContact[]; groups: ImportedGroup[] } {
+  const nothing = { contacts: [], groups: [] };
+  let file: unknown;
+  try {
+    file = JSON.parse(text);
+  } catch {
+    return nothing;
+  }
+  if (!isRecord(file) || file.format !== JSON_FORMAT) return nothing;
+
+  const seen = new Set<string>();
+  const groups = list(file.groups).flatMap((entry): ImportedGroup[] => {
+    if (!isRecord(entry) || typeof entry.name !== "string") return [];
+    const name = tidy(entry.name);
+    if (!name || seen.has(name.toLocaleLowerCase())) return [];
+    seen.add(name.toLocaleLowerCase());
+    return [
+      {
+        name,
+        invite_mode: entry.invite_mode === "together" ? "together" : "separately",
+        members: list(entry.members)
+          .flatMap((member) => (typeof member === "string" ? [tidy(member)] : []))
+          .filter(Boolean)
+          .slice(0, MAX_MEMBERS),
+      },
+    ];
+  }).slice(0, MAX_DECLARED_GROUPS);
+
+  // Each contact lists its groups for the picking list and its search; the groups themselves
+  // are what the import sends.
+  const groupsOf = new Map<string, string[]>();
+  for (const group of groups) {
+    for (const member of group.members) {
+      const key = member.toLocaleLowerCase();
+      groupsOf.set(key, [...(groupsOf.get(key) ?? []), group.name]);
+    }
+  }
+  const contacts = list(file.contacts).flatMap((entry): ImportedContact[] => {
+    if (!isRecord(entry) || typeof entry.name !== "string") return [];
+    const name = tidy(entry.name);
+    return [
+      contact(name, birthYear(String(entry.birth_year ?? "")), groupsOf.get(name.toLocaleLowerCase()) ?? []),
+    ];
+  });
+  return { contacts, groups };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function list(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
 }
 
 // vCard (RFC 6350; Google exports 3.0)
@@ -132,7 +229,7 @@ function csvRows(text: string): string[][] {
 
 function contact(name: string, birth_year: number | null, groups: string[]): ImportedContact {
   return {
-    name: name.replace(/\s+/g, " ").trim().slice(0, MAX_NAME),
+    name: tidy(name),
     birth_year,
     groups: [...new Set(groups.map((g) => g.trim().slice(0, MAX_NAME)).filter(Boolean))].slice(
       0,
@@ -141,14 +238,19 @@ function contact(name: string, birth_year: number | null, groups: string[]): Imp
   };
 }
 
+/** One line, no stray spaces, as long as the backend takes. */
+function tidy(name: string): string {
+  return name.replace(/\s+/g, " ").trim().slice(0, MAX_NAME);
+}
+
 function words(...parts: string[]): string {
   return parts.map((part) => unescapeText(part).trim()).filter(Boolean).join(" ");
 }
 
-/** "1990-05-17", "19900517" or "1990-05-17T00:00:00Z"; birthdays without a year ("--05-17")
- * have none. */
+/** "1990-05-17", "19900517", "1990-05-17T00:00:00Z" or just "1990" (the export's); birthdays
+ * without a year ("--05-17") have none. */
 function birthYear(value: string): number | null {
-  const match = value.trim().match(/^(\d{4})-?\d{2}-?\d{2}/);
+  const match = value.trim().match(/^(\d{4})(?:-?\d{2}-?\d{2})?(?!\d)/);
   const year = match ? Number(match[1]) : NaN;
   return year >= 1900 && year <= 2100 ? year : null;
 }

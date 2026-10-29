@@ -94,6 +94,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/events/{event_id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Duplicate Event */
+        post: operations["duplicate_event_api_admin_events__event_id__duplicate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/events/{event_id}/invites": {
         parameters: {
             query?: never;
@@ -370,10 +387,41 @@ export interface components {
             /** Text Value */
             text_value: string | null;
         };
+        /**
+         * AttendanceCounts
+         * @description How many invited people answered what, over all of an event's invites.
+         */
+        AttendanceCounts: {
+            /**
+             * Maybe
+             * @default 0
+             */
+            maybe: number;
+            /**
+             * No
+             * @default 0
+             */
+            no: number;
+            /**
+             * Pending
+             * @default 0
+             */
+            pending: number;
+            /**
+             * Yes
+             * @default 0
+             */
+            yes: number;
+        };
         /** ContactImport */
         ContactImport: {
             /** Contacts */
             contacts: components["schemas"]["ImportedContact"][];
+            /**
+             * Groups
+             * @default []
+             */
+            groups: components["schemas"]["ImportedGroup"][];
         };
         /** ContactIn */
         ContactIn: {
@@ -468,6 +516,7 @@ export interface components {
         };
         /** EventSummary */
         EventSummary: {
+            attendance: components["schemas"]["AttendanceCounts"];
             /** Ends At */
             ends_at: string | null;
             /**
@@ -657,6 +706,8 @@ export interface components {
             contacts: number;
             /** Groups */
             groups: number;
+            /** Skipped */
+            skipped: number;
         };
         /**
          * ImportedContact
@@ -670,6 +721,25 @@ export interface components {
              * @default []
              */
             groups: string[];
+            /** Name */
+            name: string;
+        };
+        /**
+         * ImportedGroup
+         * @description A group as this app's own export wrote it down: the setting, and who is in it, in order.
+         */
+        ImportedGroup: {
+            /**
+             * Invite Mode
+             * @default separately
+             * @enum {string}
+             */
+            invite_mode: "together" | "separately";
+            /**
+             * Members
+             * @default []
+             */
+            members: string[];
             /** Name */
             name: string;
         };
@@ -1208,6 +1278,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    duplicate_event_api_admin_events__event_id__duplicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
             };
             /** @description Validation Error */
             422: {

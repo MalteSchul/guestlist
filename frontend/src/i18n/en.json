@@ -4,9 +4,7 @@
     "nav": "Navigation",
     "events": "Events",
     "contacts": "Address book",
-    "theme": "Theme",
-    "light": "Light",
-    "dark": "Dark"
+    "settings": "Settings"
   },
   "common": {
     "loading": "Loading …",
@@ -39,6 +37,8 @@
     "done": "Done",
     "change": "Change",
     "new": "New",
+    "newRequired_one": "Your answer is saved. The only new question: {{questions}}",
+    "newRequired_other": "Your answer is saved. The only new question: {{questions}}",
     "answered": {
       "yes": "coming",
       "no": "not coming"
@@ -54,17 +54,17 @@
     "listed": "on the guest list",
     "guestList": "Who's coming",
     "guestListEmpty": "Nobody has signed up for the list yet.",
-    "guestListHint": "Only people who agreed are listed here.",
-    "listComing_one": "Coming:",
-    "listComing_other": "Coming:",
-    "listMaybe_one": "Maybe:",
-    "listMaybe_other": "Maybe:"
+    "listComing_one": "Coming",
+    "listComing_other": "Coming",
+    "listMaybe_one": "Maybe",
+    "listMaybe_other": "Maybe"
   },
   "admin": {
     "events": {
       "title": "Your events",
       "empty": "No events yet.",
-      "new": "New event"
+      "new": "New event",
+      "duplicate": "Duplicate"
     },
     "event": {
       "back": "All events",
@@ -105,7 +105,7 @@
       "alreadyInvited": "already invited",
       "skipped_one": "{{count}} person is already invited and will be skipped.",
       "skipped_other": "{{count}} people are already invited and will be skipped.",
-      "onGuestList": "Guest list",
+      "onGuestList": "On the guest list",
       "morePlaceholder": "Another person"
     },
     "newEvent": {
@@ -151,6 +151,8 @@
       "kindFixed": "The kind can't be changed later.",
       "required": "Required",
       "requiredHint": "Only guests who say yes have to answer it.",
+      "askedAgain_one": "{{count}} person already said yes and will be asked this again.",
+      "askedAgain_other": "{{count}} people already said yes and will be asked this again.",
       "confirmDeleteQuestion": "Delete the question “{{label}}”? All answers to it are deleted too.",
       "options": "Options",
       "option": "Option",
@@ -174,12 +176,16 @@
   },
   "contacts": {
     "title": "Address book",
-    "search": "Search",
+    "export": {
+      "label": "Export",
+      "csv": "Spreadsheet",
+      "json": "Backup"
+    },
     "list_one": "{{count}} contact",
     "list_other": "{{count}} contacts",
     "empty": "No contacts yet. Add some or import them from Google Contacts.",
-    "add": "Contact",
     "name": "Name",
+    "nameTaken": "Your address book already has this name.",
     "birthYear": "Year of birth",
     "confirmDelete": "Delete {{name}}? People who are already invited stay in their events.",
     "inviteModes": {
@@ -188,9 +194,7 @@
     },
     "groups": {
       "title": "Groups",
-      "hint": "For example a household or a circle of friends – invited with one click.",
       "empty": "No groups yet.",
-      "add": "Group",
       "name": "Group name",
       "inviteMode": "When inviting",
       "inviteModeHint": "A household usually shares one link, friends get one each. You can change it for an event when inviting.",
@@ -200,23 +204,31 @@
       "confirmDelete": "Delete the group “{{name}}”? Its contacts stay.",
       "search": "Search for a group …",
       "memberCount_one": "{{count}} member",
-      "memberCount_other": "{{count}} members"
+      "memberCount_other": "{{count}} members",
+      "new": "New group",
+      "searchList": "Search groups or members …",
+      "noMatch": "No groups for “{{query}}”."
     },
     "import": {
       "open": "Import",
-      "title": "Import from Google Contacts",
-      "how": "At contacts.google.com: Export → “Google CSV” or “vCard”. Other vCard and CSV files work too.",
+      "title": "Import contacts",
+      "how": "At contacts.google.com: Export → “Google CSV” or “vCard”. Other vCard and CSV files work too, and so do files from the export here (CSV or JSON).",
       "privacy": "The file is only read in your browser. Only the name, year of birth and labels of the contacts you pick are sent; labels become groups.",
       "file": "File",
       "choose": "Choose file",
       "nothing": "No contacts found in this file.",
       "found_one": "{{count}} contact found",
       "found_other": "{{count}} contacts found",
-      "known": "already in your address book",
+      "knownHidden_one": "{{count}} contact is already in your address book, so it isn't listed.",
+      "knownHidden_other": "{{count}} contacts are already in your address book, so they aren't listed.",
+      "twiceHidden_one": "{{count}} name appears more than once in the file and is listed once.",
+      "twiceHidden_other": "{{count}} names appear more than once in the file and are listed once.",
       "submit_one": "Import {{count}} contact",
       "submit_other": "Import {{count}} contacts",
       "done_one": "✓ Imported {{count}} contact, {{groups}} new groups.",
       "done_other": "✓ Imported {{count}} contacts, {{groups}} new groups.",
+      "skipped_one": "{{count}} skipped, the name was already there.",
+      "skipped_other": "{{count}} skipped, the names were already there.",
       "picked_one": "{{count}} selected",
       "picked_other": "{{count}} selected",
       "withoutName_one": "{{count}} entry without a name (for example only a phone number) is skipped.",
@@ -226,6 +238,22 @@
     },
     "searchHint": "Search by name or group …",
     "noMatch": "No contacts match “{{query}}”.",
-    "searchName": "Search by name …"
+    "searchName": "Search by name …",
+    "new": "New contact"
+  },
+  "settings": {
+    "title": "Settings",
+    "back": "Back",
+    "theme": "Appearance",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "Like the device"
+    },
+    "language": "Language",
+    "version": "Version",
+    "unknown": "unknown",
+    "dev": "development",
+    "built": "Built"
   }
 }

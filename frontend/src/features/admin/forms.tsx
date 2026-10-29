@@ -2,6 +2,7 @@ import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ApiError } from "../../api/client";
+import { Icon, type IconName } from "../../components/Icon";
 
 /** Host-written text, in whatever language the host writes (D16). */
 export function TextField({
@@ -71,19 +72,23 @@ export function useSave() {
 
 export type Save = ReturnType<typeof useSave>;
 
+/** The submit button, Cancel if given, and how the save went. `disabled` while there's nothing to
+ * submit yet, e.g. no group chosen. */
 export function SaveBar({
   save,
   label,
   onCancel,
+  disabled = false,
 }: {
   save: Save;
   label?: string;
   onCancel?: () => void;
+  disabled?: boolean;
 }) {
   const { t } = useTranslation();
   return (
     <div className="actions">
-      <button type="submit" className="primary" disabled={save.status === "saving"}>
+      <button type="submit" className="primary" disabled={disabled || save.status === "saving"}>
         {save.status === "saving" ? t("common.saving") : (label ?? t("common.save"))}
       </button>
       {onCancel && (
@@ -114,7 +119,8 @@ export function moved<T extends Positioned>(items: T[], index: number, by: -1 | 
   return order.flatMap((it, position) => (it.position === position ? [] : [{ ...it, position }]));
 }
 
-/** Move, edit and delete buttons for one item in an ordered list. */
+/** Move, edit and delete buttons for one item in an ordered list, as icons; `children` go
+ * before edit, e.g. hiding an option. */
 export function ItemControls({
   index,
   count,
@@ -134,32 +140,63 @@ export function ItemControls({
 }) {
   const { t } = useTranslation();
   return (
-    <span className="controls">
-      <button
-        type="button"
-        aria-label={t("admin.setup.up")}
-        title={t("admin.setup.up")}
+    <span className="card-actions">
+      <IconButton
+        icon="up"
+        label={t("admin.setup.up")}
         disabled={busy || index === 0}
         onClick={() => onMove(-1)}
-      >
-        ↑
-      </button>
-      <button
-        type="button"
-        aria-label={t("admin.setup.down")}
-        title={t("admin.setup.down")}
+      />
+      <IconButton
+        icon="down"
+        label={t("admin.setup.down")}
         disabled={busy || index === count - 1}
         onClick={() => onMove(1)}
-      >
-        ↓
-      </button>
+      />
       {children}
-      <button type="button" disabled={busy} onClick={onEdit}>
-        {t("common.edit")}
-      </button>
-      <button type="button" className="danger" disabled={busy} onClick={onDelete}>
-        {t("common.delete")}
-      </button>
+      <IconButton icon="edit" label={t("common.edit")} disabled={busy} onClick={onEdit} />
+      <IconButton
+        icon="delete"
+        label={t("common.delete")}
+        danger
+        disabled={busy}
+        onClick={onDelete}
+      />
     </span>
+  );
+}
+
+/** An action shown as its icon alone; the label is its tooltip and what screen readers say. */
+export function IconButton({
+  icon,
+  label,
+  onClick,
+  disabled = false,
+  danger = false,
+  accent = false,
+  expanded,
+}: {
+  icon: IconName;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+  accent?: boolean;
+  /** For a button that opens a menu: whether it is open. */
+  expanded?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className={accent ? "icon accent" : danger ? "icon ghost danger" : "icon ghost"}
+      aria-label={label}
+      title={label}
+      aria-haspopup={expanded === undefined ? undefined : "menu"}
+      aria-expanded={expanded}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <Icon name={icon} />
+    </button>
   );
 }

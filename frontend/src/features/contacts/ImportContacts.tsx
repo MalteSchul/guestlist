@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
 import { SaveBar, useSave } from "../admin/forms";
-import { type ImportedContact, parseContacts } from "./importFile";
+import { type ImportedContact, type ImportedGroup, importBody, parseContacts } from "./importFile";
 import { matches } from "../../components/search";
+import { SearchField } from "../../components/SearchField";
 import { useReveal } from "../../components/useReveal";
 
 /** Import from a Google Contacts export (or any vCard/CSV). The file never leaves the browser;
@@ -22,6 +23,7 @@ export function ImportContacts({
   const save = useSave();
   const reveal = useReveal<HTMLElement>();
   const [found, setFound] = useState<ImportedContact[]>();
+  const [declared, setDeclared] = useState<ImportedGroup[]>([]); // a JSON file's own groups
   const [picked, setPicked] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string>();
   const [result, setResult] = useState<Schemas["ImportResult"]>();
@@ -30,13 +32,29 @@ export function ImportContacts({
   const [search, setSearch] = useState("");
   const known = new Set(contacts.map((contact) => contact.name.toLocaleLowerCase()));
   const isKnown = (contact: ImportedContact) => known.has(contact.name.toLocaleLowerCase());
+  // Names are unique (the backend skips the rest too): a name already in the address book, or
+  // one the file had earlier, can't be imported, so it isn't listed; a line says how many.
+  const twice = new Set(
+    (found ?? []).flatMap((contact, i) =>
+      (found ?? [])
+        .slice(0, i)
+        .some((earlier) => earlier.name.toLocaleLowerCase() === contact.name.toLocaleLowerCase())
+        ? [i]
+        : [],
+    ),
+  );
+  const blocked = (i: number) => isKnown(found![i]!) || twice.has(i);
+  const knownCount = (found ?? []).filter(isKnown).length;
+  const twiceCount = [...twice].filter((i) => !isKnown(found![i]!)).length;
+  const importable = (found ?? []).flatMap((_, i) => (blocked(i) ? [] : [i]));
 
   async function read(file: File | undefined) {
     setError(undefined);
     setResult(undefined);
     if (!file) return;
-    const { contacts: parsed, withoutName: skipped } = parseContacts(await file.text());
+    const { contacts: parsed, withoutName: skipped, groups } = parseContacts(await file.text());
     setWithoutName(skipped);
+    setDeclared(groups);
     if (parsed.length === 0) {
       setFound(undefined);
       setError(t("contacts.import.nothing"));
@@ -44,13 +62,22 @@ export function ImportContacts({
     }
     setFound(parsed);
     setSearch("");
-    // Already in the address book (same name): left out unless picked, so a second import of
-    // the same file adds nothing twice.
-    setPicked(new Set(parsed.flatMap((contact, i) => (isKnown(contact) ? [] : [i]))));
+    // Everything that can be imported, i.e. not a name already there or earlier in the file.
+    const seen = new Set(known);
+    setPicked(
+      new Set(
+        parsed.flatMap((contact, i) => {
+          const key = contact.name.toLocaleLowerCase();
+          if (seen.has(key)) return [];
+          seen.add(key);
+          return [i];
+        }),
+      ),
+    );
   }
 
-  const visible = (found ?? []).flatMap((contact, i) =>
-    matches(search, contact.name, ...contact.groups) ? [i] : [],
+  const visible = importable.filter((i) =>
+    matches(search, found![i]!.name, ...found![i]!.groups),
   );
   const visiblePicked = visible.filter((i) => picked.has(i)).length;
 
@@ -77,7 +104,7 @@ export function ImportContacts({
   function submit(e: FormEvent) {
     e.preventDefault();
     if (!found) return;
-    const body = { contacts: found.filter((_, i) => picked.has(i)) };
+    const body = importBody(found, declared, picked);
     void save.run(async () => {
       setResult(await unwrap(api.POST("/api/admin/contacts/import", { body })));
       setFound(undefined);
@@ -100,7 +127,7 @@ export function ImportContacts({
             <input
               type="file"
               className="sr-only"
-              accept=".vcf,.csv,text/vcard,text/csv"
+              accept=".vcf,.csv,.json,text/vcard,text/csv,application/json"
               onChange={(e) => {
                 setFileName(e.target.files?.[0]?.name);
                 void read(e.target.files?.[0]);
@@ -114,6 +141,7 @@ export function ImportContacts({
       {result && (
         <p className="success">
           {t("contacts.import.done", { count: result.contacts, groups: result.groups })}
+          {result.skipped > 0 && ` ${t("contacts.import.skipped", { count: result.skipped })}`}
         </p>
       )}
 
@@ -122,15 +150,14 @@ export function ImportContacts({
           {withoutName > 0 && (
             <p className="hint">{t("contacts.import.withoutName", { count: withoutName })}</p>
           )}
-          {found.length > 8 && (
-            <input
-              type="search"
-              className="search"
-              aria-label={t("contacts.search")}
-              placeholder={t("contacts.searchHint")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          {knownCount > 0 && (
+            <p className="hint">{t("contacts.import.knownHidden", { count: knownCount })}</p>
+          )}
+          {twiceCount > 0 && (
+            <p className="hint">{t("contacts.import.twiceHidden", { count: twiceCount })}</p>
+          )}
+          {importable.length > 8 && (
+            <SearchField label={t("contacts.searchHint")} value={search} onChange={setSearch} />
           )}
           {/* One checkbox for everything the search shows, as in a mail client: a dash while
               only some of them are ticked. */}
@@ -147,9 +174,12 @@ export function ImportContacts({
                   onChange={(e) => pickVisible(e.target.checked)}
                 />
                 <strong>
-                  {visible.length < found.length
-                    ? t("contacts.import.matching", { count: visible.length, total: found.length })
-                    : t("contacts.import.found", { count: found.length })}
+                  {visible.length < importable.length
+                    ? t("contacts.import.matching", {
+                        count: visible.length,
+                        total: importable.length,
+                      })
+                    : t("contacts.import.found", { count: importable.length })}
                 </strong>
               </label>
               <span className="muted">{t("contacts.import.picked", { count: picked.size })}</span>
@@ -173,9 +203,6 @@ export function ImportContacts({
                         {contact.groups.length > 0 && (
                           <span className="muted"> · {contact.groups.join(", ")}</span>
                         )}
-                        {isKnown(contact) && (
-                          <span className="badge">{t("contacts.import.known")}</span>
-                        )}
                       </span>
                     </label>
                   </li>
@@ -187,6 +214,7 @@ export function ImportContacts({
             save={save}
             label={t("contacts.import.submit", { count: picked.size })}
             onCancel={() => setFound(undefined)}
+            disabled={picked.size === 0}
           />
         </form>
       )}

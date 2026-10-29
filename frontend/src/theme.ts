@@ -2,14 +2,15 @@ import { useSyncExternalStore } from "react";
 
 export const THEMES = ["light", "dark"] as const;
 export type Theme = (typeof THEMES)[number];
+/** What the settings offer: a theme, or the system's (the CSS follows it without a choice). */
+export type ThemeChoice = Theme | "system";
 
 const STORAGE_KEY = "theme"; // also read by the script in index.html, before the first paint
 
-const system = window.matchMedia("(prefers-color-scheme: dark)");
 const listeners = new Set<() => void>();
 let chosen = stored();
 
-/** The theme picked with the switch on an earlier visit, if any. Storage can be blocked or empty. */
+/** The theme picked in the settings on an earlier visit, if any. Storage can be blocked or empty. */
 function stored(): Theme | undefined {
   try {
     const value = localStorage.getItem(STORAGE_KEY);
@@ -19,33 +20,26 @@ function stored(): Theme | undefined {
   }
 }
 
-/** The theme in effect: the choice, else the system's, which can change while the page is open. */
-export function currentTheme(): Theme {
-  return chosen ?? (system.matches ? "dark" : "light");
-}
-
-/** Switch and remember the choice; from then on it wins over the system's. */
-export function chooseTheme(theme: Theme) {
-  chosen = theme;
+/** Switch and remember the choice; a theme wins over the system's, "system" follows it again. */
+export function chooseTheme(choice: ThemeChoice) {
+  chosen = choice === "system" ? undefined : choice;
   try {
-    localStorage.setItem(STORAGE_KEY, theme);
+    if (chosen) localStorage.setItem(STORAGE_KEY, chosen);
+    else localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // Not remembered then; the switch still works for this visit.
+    // Not remembered then; the choice still holds for this visit.
   }
-  document.documentElement.dataset.theme = theme;
+  if (chosen) document.documentElement.dataset.theme = chosen;
+  else delete document.documentElement.dataset.theme;
   listeners.forEach((listener) => listener());
 }
 
-/** The theme in effect, for the switch to show it as pressed. */
-export function useTheme(): Theme {
-  return useSyncExternalStore(subscribe, currentTheme);
+/** The choice, for the settings to show it as picked. */
+export function useThemeChoice(): ThemeChoice {
+  return useSyncExternalStore(subscribe, () => chosen ?? "system");
 }
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
-  system.addEventListener("change", listener);
-  return () => {
-    listeners.delete(listener);
-    system.removeEventListener("change", listener);
-  };
+  return () => listeners.delete(listener);
 }

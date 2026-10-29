@@ -1,14 +1,16 @@
-import { type FormEvent, useState } from "react";
+import { Fragment, type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
 import { InviteModeIcon } from "../../components/InviteModeIcon";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { SaveBar, useSave } from "../admin/forms";
+import { IconButton, SaveBar, useSave } from "../admin/forms";
+import { ExportMenu } from "./ExportMenu";
 import { ImportContacts } from "./ImportContacts";
 import { Picker } from "../../components/Picker";
-import { matches } from "../../components/search";
+import { rank, searchList } from "../../components/search";
+import { SearchField } from "../../components/SearchField";
 import { useReveal } from "../../components/useReveal";
 
 type Contact = Schemas["ContactOut"];
@@ -63,11 +65,16 @@ function Book({
     <>
       <div className="row">
         <h1>{t("contacts.title")}</h1>
-        {!importing && (
-          <button type="button" onClick={() => setImporting(true)}>
-            {t("contacts.import.open")}
-          </button>
-        )}
+        <span className="heading-actions">
+          <ExportMenu contacts={contacts} groups={groups} />
+          {!importing && (
+            <IconButton
+              icon="import"
+              label={t("contacts.import.open")}
+              onClick={() => setImporting(true)}
+            />
+          )}
+        </span>
       </div>
       {importing && (
         <ImportContacts
@@ -97,7 +104,14 @@ function Groups({
   const action = useSave();
   const [editing, setEditing] = useState<string>(); // a group's ID
   const [adding, setAdding] = useState(false);
+  const [search, setSearch] = useState("");
   const names = new Map(contacts.map((contact) => [contact.id, contact.name]));
+  const shown = searchList(
+    groups,
+    search,
+    (group) => group.name,
+    (group) => group.member_ids.map((id) => names.get(id) ?? ""),
+  );
 
   function remove(group: Group) {
     if (!window.confirm(t("contacts.groups.confirmDelete", { name: group.name }))) return;
@@ -111,12 +125,31 @@ function Groups({
 
   return (
     <>
-      <h2>{t("contacts.groups.title")}</h2>
-      <p className="muted">{t("contacts.groups.hint")}</p>
+      <div className="row heading-search">
+        <h2>{t("contacts.groups.title")}</h2>
+        {groups.length > 0 && (
+          <SearchField
+            label={t("contacts.groups.searchList")}
+            value={search}
+            onChange={setSearch}
+          />
+        )}
+        {!adding && (
+          <IconButton
+            icon="groupAdd"
+            label={t("contacts.groups.new")}
+            accent
+            onClick={() => setAdding(true)}
+          />
+        )}
+      </div>
       {action.error && <p className="error">{action.error}</p>}
       {groups.length === 0 && !adding && <p className="muted">{t("contacts.groups.empty")}</p>}
+      {groups.length > 0 && shown.length === 0 && (
+        <p className="muted">{t("contacts.groups.noMatch", { query: search.trim() })}</p>
+      )}
       <ul className="cards">
-        {groups.map((group) =>
+        {shown.map((group) =>
           editing === group.id ? (
             <li key={group.id} className="card">
               <GroupForm
@@ -145,25 +178,43 @@ function Groups({
                     label={t(`contacts.inviteModes.${group.invite_mode}`)}
                   />
                 </span>
-                <span className="controls">
-                  <button type="button" onClick={() => setEditing(group.id)}>
-                    {t("common.edit")}
-                  </button>
-                  <button type="button" className="danger" onClick={() => remove(group)}>
-                    {t("common.delete")}
-                  </button>
+                <span className="card-actions">
+                  <IconButton
+                    icon="edit"
+                    label={t("common.edit")}
+                    onClick={() => setEditing(group.id)}
+                  />
+                  <IconButton
+                    icon="delete"
+                    label={t("common.delete")}
+                    danger
+                    onClick={() => remove(group)}
+                  />
                 </span>
               </div>
               <p className="muted">
                 {group.member_ids.length === 0
                   ? t("contacts.groups.noMembers")
-                  : group.member_ids.map((id) => names.get(id)).join(", ")}
+                  : group.member_ids.map((id, i) => {
+                      const member = names.get(id) ?? "";
+                      // Found only through a member: that member stands out in the list.
+                      const hit =
+                        search.trim() !== "" &&
+                        rank(search, group.name) === null &&
+                        rank(search, member) !== null;
+                      return (
+                        <Fragment key={id}>
+                          {i > 0 && ", "}
+                          <span className={hit ? "hit" : undefined}>{member}</span>
+                        </Fragment>
+                      );
+                    })}
               </p>
             </li>
           ),
         )}
       </ul>
-      {adding ? (
+      {adding && (
         <div className="card">
           <GroupForm
             contacts={contacts}
@@ -175,12 +226,6 @@ function Groups({
             onCancel={() => setAdding(false)}
           />
         </div>
-      ) : (
-        <p>
-          <button type="button" onClick={() => setAdding(true)}>
-            + {t("contacts.groups.add")}
-          </button>
-        </p>
       )}
     </>
   );
@@ -274,8 +319,11 @@ function Contacts({
   const [adding, setAdding] = useState(false);
   const [search, setSearch] = useState("");
   const groupNames = new Map(groups.map((group) => [group.id, group.name]));
-  const shown = contacts.filter((contact) =>
-    matches(search, contact.name, ...contact.group_ids.map((id) => groupNames.get(id) ?? "")),
+  const shown = searchList(
+    contacts,
+    search,
+    (contact) => contact.name,
+    (contact) => contact.group_ids.map((id) => groupNames.get(id) ?? ""),
   );
 
   function remove(contact: Contact) {
@@ -292,20 +340,21 @@ function Contacts({
 
   return (
     <>
-      <h2>{t("contacts.list", { count: contacts.length })}</h2>
-      {action.error && <p className="error">{action.error}</p>}
-      {contacts.length > 0 && (
-        <p>
-          <input
-            type="search"
-            className="search"
-            aria-label={t("contacts.search")}
-            placeholder={t("contacts.searchHint")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+      <div className="row heading-search">
+        <h2>{t("contacts.list", { count: contacts.length })}</h2>
+        {contacts.length > 0 && (
+          <SearchField label={t("contacts.searchHint")} value={search} onChange={setSearch} />
+        )}
+        {!adding && (
+          <IconButton
+            icon="personAdd"
+            label={t("contacts.new")}
+            accent
+            onClick={() => setAdding(true)}
           />
-        </p>
-      )}
+        )}
+      </div>
+      {action.error && <p className="error">{action.error}</p>}
       {contacts.length === 0 && !adding && <p className="muted">{t("contacts.empty")}</p>}
       {contacts.length > 0 && shown.length === 0 && (
         <p className="muted">{t("contacts.noMatch", { query: search.trim() })}</p>
@@ -317,6 +366,7 @@ function Contacts({
               <li key={contact.id}>
                 <ContactForm
                   contact={contact}
+                  contacts={contacts}
                   groups={groups}
                   onSubmit={async (body) => {
                     await unwrap(
@@ -337,27 +387,43 @@ function Contacts({
                   <strong>{contact.name}</strong>
                   {contact.birth_year && <span className="muted">{contact.birth_year}</span>}
                   {contact.group_ids.map((id) => (
-                    <span key={id} className="badge">
+                    <span
+                      key={id}
+                      className={
+                        // Found only through this group: it stands out.
+                        search.trim() !== "" &&
+                        rank(search, contact.name) === null &&
+                        rank(search, groupNames.get(id) ?? "") !== null
+                          ? "badge hit"
+                          : "badge"
+                      }
+                    >
                       {groupNames.get(id)}
                     </span>
                   ))}
                 </span>
-                <span className="controls">
-                  <button type="button" onClick={() => setEditing(contact.id)}>
-                    {t("common.edit")}
-                  </button>
-                  <button type="button" className="danger" onClick={() => remove(contact)}>
-                    {t("common.delete")}
-                  </button>
+                <span className="card-actions">
+                  <IconButton
+                    icon="edit"
+                    label={t("common.edit")}
+                    onClick={() => setEditing(contact.id)}
+                  />
+                  <IconButton
+                    icon="delete"
+                    label={t("common.delete")}
+                    danger
+                    onClick={() => remove(contact)}
+                  />
                 </span>
               </li>
             ),
           )}
         </ul>
       )}
-      {adding ? (
+      {adding && (
         <div className="card">
           <ContactForm
+            contacts={contacts}
             groups={groups}
             onSubmit={async (body) => {
               await unwrap(api.POST("/api/admin/contacts", { body }));
@@ -367,12 +433,6 @@ function Contacts({
             onCancel={() => setAdding(false)}
           />
         </div>
-      ) : (
-        <p>
-          <button type="button" onClick={() => setAdding(true)}>
-            + {t("contacts.add")}
-          </button>
-        </p>
       )}
     </>
   );
@@ -380,11 +440,14 @@ function Contacts({
 
 function ContactForm({
   contact,
+  contacts,
   groups,
   onSubmit,
   onCancel,
 }: {
   contact?: Contact;
+  /** All contacts: no two share a name. */
+  contacts: Contact[];
   groups: Group[];
   onSubmit: (body: Schemas["ContactIn"]) => Promise<void>;
   onCancel: () => void;
@@ -395,6 +458,10 @@ function ContactForm({
   const [name, setName] = useState(contact?.name ?? "");
   const [birthYear, setBirthYear] = useState(contact?.birth_year?.toString() ?? "");
   const [groupIds, setGroupIds] = useState(contact?.group_ids ?? []);
+  const key = name.trim().toLocaleLowerCase();
+  const taken =
+    key !== "" &&
+    contacts.some((other) => other.id !== contact?.id && other.name.toLocaleLowerCase() === key);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -408,6 +475,7 @@ function ContactForm({
         <label className="field">
           <span>{t("contacts.name")} *</span>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          {taken && <span className="hint missing">{t("contacts.nameTaken")}</span>}
         </label>
         <label className="field">
           <span>{t("contacts.birthYear")}</span>
@@ -434,7 +502,7 @@ function ContactForm({
           onChange={setGroupIds}
         />
       )}
-      <SaveBar save={save} onCancel={onCancel} />
+      <SaveBar save={save} onCancel={onCancel} disabled={taken} />
     </form>
   );
 }

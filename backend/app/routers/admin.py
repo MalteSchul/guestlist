@@ -7,6 +7,7 @@ from fastapi import APIRouter, status
 from app.auth.dependencies import CurrentUser
 from app.db import SessionDep
 from app.schemas.events import (
+    AttendanceCounts,
     EventIn,
     EventOut,
     EventSummary,
@@ -38,7 +39,18 @@ def me(user: CurrentUser) -> UserOut:
 
 @router.get("/events")
 def list_events(session: SessionDep, user: CurrentUser) -> list[EventSummary]:
-    return [EventSummary.model_validate(e) for e in events.list_events(session, user)]
+    found = events.list_events(session, user)
+    counts = events.attendance_counts(session, [e.id for e in found])
+    return [
+        EventSummary(
+            id=e.id,
+            title=e.title,
+            starts_at=e.starts_at,
+            ends_at=e.ends_at,
+            attendance=AttendanceCounts(**counts.get(e.id, {})),
+        )
+        for e in found
+    ]
 
 
 @router.post("/events", **CREATED)
@@ -56,6 +68,11 @@ def update_event(
     session: SessionDep, user: CurrentUser, event_id: uuid.UUID, data: EventIn
 ) -> EventOut:
     return EventOut.model_validate(events.update_event(session, user, event_id, data))
+
+
+@router.post("/events/{event_id}/duplicate", **CREATED)
+def duplicate_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> EventOut:
+    return EventOut.model_validate(events.duplicate_event(session, user, event_id))
 
 
 @router.delete("/events/{event_id}", **NO_CONTENT)

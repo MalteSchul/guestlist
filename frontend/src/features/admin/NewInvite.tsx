@@ -22,57 +22,48 @@ type Contact = Schemas["ContactOut"];
 type Group = Schemas["GroupOut"];
 type InviteMode = Group["invite_mode"];
 
-/** Typed-in names or contacts from the host's address book (D9), or a whole group (D31). */
+export type NewInviteKind = "persons" | "group";
+
+/** Typed-in names or contacts from the host's address book (D9), or a whole group (D31). Opened
+ * with the icons next to the invites' heading. */
 export function NewInvite({
+  kind,
   event,
   invites,
+  groups,
   onCreated,
+  onClose,
 }: {
+  kind: NewInviteKind;
   event: Event;
   invites: Invite[];
+  groups: Group[];
   onCreated: (created: Invite[]) => void;
+  onClose: () => void;
 }) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState<"persons" | "group">();
   const contacts = useLoad(() => unwrap(api.GET("/api/admin/contacts")), []);
-  const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   // A contact gets at most one invite per event (D21).
   const invited = new Set(invites.flatMap((i) => i.persons.map((p) => p.contact_id)));
 
-  if (!open) {
-    return (
-      <p className="row-start">
-        <button type="button" onClick={() => setOpen("persons")}>
-          + {t("admin.event.newInvite")}
-        </button>
-        {(groups.data?.length ?? 0) > 0 && (
-          <button type="button" onClick={() => setOpen("group")}>
-            + {t("admin.event.inviteGroup")}
-          </button>
-        )}
-      </p>
-    );
-  }
-
   const done = (created: Invite[]) => {
     onCreated(created);
-    setOpen(undefined);
+    onClose();
   };
-  return open === "persons" ? (
+  return kind === "persons" ? (
     <PersonsForm
       event={event}
       contacts={(contacts.data ?? []).filter((contact) => !invited.has(contact.id))}
       onCreated={(invite) => done([invite])}
-      onCancel={() => setOpen(undefined)}
+      onCancel={onClose}
     />
   ) : (
     <GroupForm
       event={event}
-      groups={groups.data ?? []}
+      groups={groups}
       contacts={contacts.data ?? []}
       invited={invited}
       onCreated={done}
-      onCancel={() => setOpen(undefined)}
+      onCancel={onClose}
     />
   );
 }
@@ -268,7 +259,12 @@ function PersonsForm({
         />
         <span className="hint">{t("admin.event.inviteNameHint")}</span>
       </label>
-      <SaveBar save={save} label={t("admin.event.createInvite")} onCancel={onCancel} />
+      <SaveBar
+        save={save}
+        label={t("admin.event.createInvite")}
+        onCancel={onCancel}
+        disabled={names.length === 0}
+      />
     </form>
   );
 }
@@ -386,23 +382,18 @@ function GroupForm({
           )}
         </>
       )}
-      {group ? (
-        <SaveBar
-          save={save}
-          label={
-            mode === "together"
-              ? t("admin.event.createInvite")
-              : t("admin.event.createInvites", { count: fresh.length })
-          }
-          onCancel={onCancel}
-        />
-      ) : (
-        <div className="actions">
-          <button type="button" onClick={onCancel}>
-            {t("common.cancel")}
-          </button>
-        </div>
-      )}
+      {/* The same bar as for a new invite; nothing to create until a group with someone not yet
+          invited is chosen. */}
+      <SaveBar
+        save={save}
+        label={
+          group && mode === "separately"
+            ? t("admin.event.createInvites", { count: fresh.length })
+            : t("admin.event.createInvite")
+        }
+        onCancel={onCancel}
+        disabled={fresh.length === 0}
+      />
     </form>
   );
 }

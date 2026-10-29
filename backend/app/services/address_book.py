@@ -4,12 +4,12 @@ simply not found."""
 import uuid
 from collections.abc import Iterable, Sequence
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, true
 from sqlalchemy.orm import Session
 
 from app.models import Contact, ContactGroup, ContactGroupMember, User
 from app.schemas.address_book import ContactImport, ContactIn, GroupIn, ImportResult
-from app.services.errors import NotFound
+from app.services.errors import Conflict, NotFound
 
 # Contacts
 
@@ -36,7 +36,24 @@ def own_contacts(session: Session, user: User, ids: Iterable[uuid.UUID]) -> list
     return [found[contact_id] for contact_id in wanted]
 
 
+def _require_free_name(
+    session: Session, user: User, name: str, contact_id: uuid.UUID | None = None
+) -> None:
+    """No two of a host's contacts share a name, whatever the case: picking from the address
+    book by name has to be unambiguous."""
+    taken = session.scalar(
+        select(Contact.id).where(
+            Contact.owner_user_id == user.id,
+            func.lower(Contact.name) == func.lower(name),
+            Contact.id != contact_id if contact_id else true(),
+        )
+    )
+    if taken:
+        raise Conflict("a contact with this name already exists")
+
+
 def create_contact(session: Session, user: User, data: ContactIn) -> Contact:
+    _require_free_name(session, user, data.name)
     contact = Contact(owner_user_id=user.id, name=data.name, birth_year=data.birth_year)
     session.add(contact)
     session.flush()
@@ -48,6 +65,7 @@ def create_contact(session: Session, user: User, data: ContactIn) -> Contact:
 
 def update_contact(session: Session, user: User, contact_id: uuid.UUID, data: ContactIn) -> Contact:
     [contact] = own_contacts(session, user, [contact_id])
+    _require_free_name(session, user, data.name, contact.id)
     contact.name = data.name
     contact.birth_year = data.birth_year
     _set_groups(session, user, contact, data.group_ids)
@@ -156,13 +174,31 @@ def _member(contact_id: uuid.UUID, position: int) -> ContactGroupMember:
 def import_contacts(session: Session, user: User, data: ContactImport) -> ImportResult:
     """Contacts picked from an export (D32). Labels join an existing group with the same name,
     whatever its case, or become new groups, which invite one link per person: labels are
-    usually circles like "Work", not households (D31)."""
+    usually circles like "Work", not households (D31). A name the address book already has, or
+    that came earlier in the same import, is skipped: names are unique. Groups the file declares
+    (a backup of this app's own) are created with their setting, and the new contacts it lists
+    join in its order; an existing group of the same name keeps its setting."""
     groups = {group.name.casefold(): group for group in list_groups(session, user)}
-    created_groups = 0
+    names = {contact.name.casefold() for contact in list_contacts(session, user)}
+    created_contacts = created_groups = 0
+    created: dict[str, Contact] = {}
+    for declared in data.groups:
+        if declared.name.casefold() not in groups:
+            group = ContactGroup(
+                owner_user_id=user.id, name=declared.name, invite_mode=declared.invite_mode
+            )
+            session.add(group)
+            groups[declared.name.casefold()] = group
+            created_groups += 1
     for imported in data.contacts:
+        if imported.name.casefold() in names:
+            continue
+        names.add(imported.name.casefold())
+        created_contacts += 1
         contact = Contact(owner_user_id=user.id, name=imported.name, birth_year=imported.birth_year)
         session.add(contact)
         session.flush()
+        created[imported.name.casefold()] = contact
         for label in dict.fromkeys(imported.groups):
             group = groups.get(label.casefold())
             if group is None:
@@ -172,5 +208,15 @@ def import_contacts(session: Session, user: User, data: ContactImport) -> Import
                 created_groups += 1
             if contact.id not in group.member_ids:
                 group.members.append(_member(contact.id, len(group.members)))
+    for declared in data.groups:
+        group = groups[declared.name.casefold()]
+        for name in declared.members:
+            contact = created.get(name.casefold())
+            if contact is not None and contact.id not in group.member_ids:
+                group.members.append(_member(contact.id, len(group.members)))
     session.commit()
-    return ImportResult(contacts=len(data.contacts), groups=created_groups)
+    return ImportResult(
+        contacts=created_contacts,
+        skipped=len(data.contacts) - created_contacts,
+        groups=created_groups,
+    )

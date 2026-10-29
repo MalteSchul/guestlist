@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ApiError, api, type Schemas, unwrap } from "../../api/client";
+import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime } from "../../i18n/text";
@@ -84,6 +85,14 @@ function Invitation({
     personProgress(event.questions, person.attendance, person.answers) === "done";
   const toAnswer = invite.persons.filter((person) => !isDone(person));
   const done = invite.persons.filter(isDone);
+  // Required questions added after someone said yes: why their saved answer is open again.
+  const added = event.questions.filter((question) =>
+    invite.persons.some(
+      (person) =>
+        person.attendance === "yes" &&
+        openRequired(event.questions, person.answers).includes(question),
+    ),
+  );
 
   const form = (person: Person) => (
     <PersonForm
@@ -129,6 +138,14 @@ function Invitation({
           ? t("guest.answerUntil", { date: formatDateTime(event.answers_close_at, lang), count })
           : t("guest.closed")}
       </p>
+      {added.length > 0 && (
+        <p className="notice">
+          {t("guest.newRequired", {
+            count,
+            questions: added.map((question) => question.label).join(", "),
+          })}
+        </p>
+      )}
 
       {/* Native validation stops the save on the first gap; from then on all gaps are marked. */}
       <form onSubmit={submit} onInvalidCapture={() => setTried(true)}>
@@ -367,33 +384,39 @@ function QuestionField({
   );
 }
 
-/** Who's coming, for guests: only people who agreed, nothing but names (D33). */
+/** Who's coming, for guests: only people who agreed, nothing but names (D33). A part of the
+ * app, not a card the host wrote, so it looks like the answer form below, not like the sections. */
 function GuestList({ entries }: { entries: Schemas["GuestListEntry"][] }) {
   const { t } = useTranslation();
   const names = (attendance: Attendance) =>
     entries.filter((entry) => entry.attendance === attendance).map((entry) => entry.name);
-  const coming = names("yes");
-  const maybe = names("maybe");
+  const rows = [
+    { attendance: "yes" as const, names: names("yes"), label: "guest.listComing" },
+    { attendance: "maybe" as const, names: names("maybe"), label: "guest.listMaybe" },
+  ].filter((row) => row.names.length > 0);
   return (
-    <section className="card">
+    <section>
+      {/* No explanation here: the guest list checkbox in each person's form says who is shown. */}
       <h2>{t("guest.guestList")}</h2>
-      {entries.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="muted">{t("guest.guestListEmpty")}</p>
       ) : (
-        <>
-          {coming.length > 0 && (
-            <p>
-              <strong>{t("guest.listComing", { count: coming.length })}</strong> {coming.join(", ")}
-            </p>
-          )}
-          {maybe.length > 0 && (
-            <p>
-              <strong>{t("guest.listMaybe", { count: maybe.length })}</strong> {maybe.join(", ")}
-            </p>
-          )}
-        </>
+        <ul className="persons">
+          {rows.map((row) => (
+            <li key={row.attendance}>
+              <span
+                className="status"
+                role="img"
+                aria-label={t(row.label, { count: row.names.length })}
+                title={t(row.label, { count: row.names.length })}
+              >
+                <AttendanceIcon attendance={row.attendance} />
+              </span>
+              <span>{row.names.join(", ")}</span>
+            </li>
+          ))}
+        </ul>
       )}
-      <p className="hint">{t("guest.guestListHint")}</p>
     </section>
   );
 }

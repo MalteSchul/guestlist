@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { Icon } from "./Icon";
 
@@ -7,6 +7,15 @@ import { Icon } from "./Icon";
 export function InfoTip({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
+  const bubble = useRef<HTMLSpanElement>(null);
+
+  // The bubble starts under the "?"; near the window's right edge it moves left to stay inside.
+  useLayoutEffect(() => {
+    const el = bubble.current;
+    if (!el) return;
+    const over = el.getBoundingClientRect().right - (document.documentElement.clientWidth - 16);
+    el.style.transform = over > 0 ? `translateX(${-over}px)` : "";
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -43,7 +52,7 @@ export function InfoTip({ text }: { text: string }) {
         <Icon name="help" />
       </button>
       {open && (
-        <span className="bubble" role="tooltip">
+        <span className="bubble" role="tooltip" ref={bubble}>
           {text}
         </span>
       )}

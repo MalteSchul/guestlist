@@ -112,7 +112,7 @@ def test_import_creates_contacts_and_groups_from_labels(client: TestClient):
     }
     response = client.post(f"{CONTACTS}/import", json=body)
     assert response.status_code == 200, response.text
-    assert response.json() == {"contacts": 3, "groups": 1}
+    assert response.json() == {"contacts": 3, "skipped": 0, "groups": 1}
 
     contacts = {c["name"]: c for c in client.get(CONTACTS).json()}
     groups = {g["name"]: g for g in client.get(GROUPS).json()}
@@ -202,3 +202,65 @@ def test_inviting_a_group_needs_the_admin_role(client: TestClient, log_in_as):
     friends = group(client, "Freunde", [anna])
     url = f"{EVENTS}/{event_id}/invites/group"
     assert client.post(url, json={"group_id": friends["id"]}).status_code == 403
+
+
+def test_contact_names_are_unique(client: TestClient):
+    anna = client.post(CONTACTS, json={"name": "Anna"}).json()
+    response = client.post(CONTACTS, json={"name": "anna"})
+    assert response.status_code == 409
+    ben = client.post(CONTACTS, json={"name": "Ben"}).json()
+    assert client.put(f"{CONTACTS}/{ben['id']}", json={"name": "ANNA"}).status_code == 409
+    # Saving a contact under its own name, or a new spelling of it, is fine.
+    assert client.put(f"{CONTACTS}/{anna['id']}", json={"name": "Anna"}).status_code == 200
+    assert client.put(f"{CONTACTS}/{anna['id']}", json={"name": "ANNA"}).status_code == 200
+
+
+def test_import_skips_names_already_there(client: TestClient):
+    client.post(CONTACTS, json={"name": "Anna"})
+    body = {"contacts": [{"name": "anna"}, {"name": "Ben"}, {"name": "Ben"}]}
+    result = client.post(f"{CONTACTS}/import", json=body).json()
+    assert (result["contacts"], result["skipped"]) == (1, 2)
+    assert sorted(c["name"] for c in client.get(CONTACTS).json()) == ["Anna", "Ben"]
+
+
+def test_import_restores_declared_groups(client: TestClient):
+    existing = group(client, "Tennis", [], invite_mode="together")
+    body = {
+        "contacts": [{"name": "Anna"}, {"name": "Ben"}, {"name": "Carla"}],
+        "groups": [
+            {"name": "Familie", "invite_mode": "together", "members": ["Carla", "Anna", "Nobody"]},
+            {"name": "Tennis", "invite_mode": "separately", "members": ["Ben"]},  # exists
+            {"name": "Leer", "invite_mode": "together"},  # nobody in it
+        ],
+    }
+    response = client.post(f"{CONTACTS}/import", json=body)
+    assert response.status_code == 200, response.text
+    assert response.json() == {"contacts": 3, "skipped": 0, "groups": 2}  # Familie, Leer
+
+    contacts = {c["name"]: c["id"] for c in client.get(CONTACTS).json()}
+    groups = {g["name"]: g for g in client.get(GROUPS).json()}
+    assert set(groups) == {"Familie", "Leer", "Tennis"}
+    assert groups["Familie"]["invite_mode"] == "together"  # as declared
+    assert groups["Familie"]["member_ids"] == [contacts["Carla"], contacts["Anna"]]  # in order
+    assert groups["Leer"]["invite_mode"] == "together"
+    assert groups["Leer"]["member_ids"] == []
+    assert groups["Tennis"]["id"] == existing["id"]
+    assert groups["Tennis"]["invite_mode"] == "together"  # the existing one keeps its setting
+    assert groups["Tennis"]["member_ids"] == [contacts["Ben"]]
+
+
+def test_import_declared_members_are_only_new_contacts(client: TestClient):
+    anna = contact(client, "Anna")
+    body = {
+        "contacts": [{"name": "anna"}, {"name": "Ben"}],
+        "groups": [{"name": "Familie", "members": ["Anna", "Ben"]}],
+    }
+    assert client.post(f"{CONTACTS}/import", json=body).json()["skipped"] == 1
+    [familie] = client.get(GROUPS).json()
+    assert anna["id"] not in familie["member_ids"]  # skipped: left as it was
+    assert len(familie["member_ids"]) == 1
+
+
+def test_import_checks_declared_groups(client: TestClient):
+    body = {"contacts": [{"name": "Anna"}], "groups": [{"name": "X", "invite_mode": "all"}]}
+    assert client.post(f"{CONTACTS}/import", json=body).status_code == 422
