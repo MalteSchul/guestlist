@@ -73,6 +73,14 @@ function EventDetails({
           </a>
           <a
             className="icon"
+            href={`/admin/events/${event.id}/stats`}
+            aria-label={t("admin.event.stats")}
+            title={t("admin.event.stats")}
+          >
+            <Icon name="chart" />
+          </a>
+          <a
+            className="icon"
             href={`/admin/events/${event.id}/edit`}
             aria-label={t("admin.event.edit")}
             title={t("admin.event.edit")}

@@ -106,7 +106,28 @@
       "skipped_one": "{{count}} person is already invited and will be skipped.",
       "skipped_other": "{{count}} people are already invited and will be skipped.",
       "onGuestList": "On the guest list",
-      "morePlaceholder": "Another person"
+      "morePlaceholder": "Another person",
+      "stats": "Statistics"
+    },
+    "stats": {
+      "title": "Statistics",
+      "timeline": "Answers over time",
+      "timelineSummary": "Answers over time, latest {{yes}} coming, {{maybe}} maybe, {{no}} not coming, {{pending}} no answer",
+      "ages": "Age of the guests",
+      "agesHint": "on the day of the event",
+      "agesSummary_one": "{{count}} person with a known age, most often {{band}} years",
+      "agesSummary_other": "{{count}} people with a known age, most often {{band}} years",
+      "years": "years",
+      "table": "Table",
+      "time": "Time",
+      "age": "Age",
+      "total": "Total",
+      "unknown": "Age unknown",
+      "ageUnknown_one": "{{count}} with no known age",
+      "ageUnknown_other": "{{count}} with no known age",
+      "noAges": "No one coming with a known age yet.",
+      "noAgesHint": "The age comes from the birth year in the address book.",
+      "noInvites": "Nobody invited yet."
     },
     "newEvent": {
       "title": "New event",

@@ -81,6 +81,13 @@ const PATHS = {
     </>
   ),
   close: <path d="M6 6l12 12M18 6 6 18" />,
+  chart: <path d="M5 20v-7M12 20V5M19 20V10" />,
+  table: (
+    <>
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M4 10h16M10 10v9" />
+    </>
+  ),
   select: (
     <>
       <rect x="4" y="4" width="16" height="16" rx="3" />
