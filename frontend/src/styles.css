@@ -109,6 +109,11 @@ a {
   font-weight: 600;
 }
 
+a.brand {
+  color: inherit;
+  text-decoration: none;
+}
+
 /* Host pages: events and address book. A line sets the menu off from the app's name; each
    link is a tab, so "Address book" reads as one item. */
 .nav {

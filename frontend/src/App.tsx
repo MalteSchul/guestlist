@@ -15,6 +15,8 @@ export function App() {
 
   if (/^\/settings\/?$/.test(path)) return <Settings />;
 
+  if (/^\/admin\/settings\/?$/.test(path)) return <Settings admin />;
+
   if (/^\/admin\/contacts\/?$/.test(path)) return <AddressBook />;
 
   if (/^\/admin\/events\/new\/?$/.test(path)) return <NewEvent />;

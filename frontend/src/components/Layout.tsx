@@ -4,8 +4,9 @@ import { useTranslation } from "react-i18next";
 import { ApiError } from "../api/client";
 import { Icon } from "./Icon";
 
-/** `admin` adds the host navigation. Theme and language are on the settings page, behind the
- * gear; the settings page itself leaves the gear out. */
+/** `admin` is the host's header: the name leads back to the events, with the tabs next to it.
+ * Theme and language are on the settings page, behind the gear; the settings page itself leaves
+ * the gear out. */
 export function Layout({
   children,
   admin = false,
@@ -18,6 +19,7 @@ export function Layout({
   const { t } = useTranslation();
   const path = window.location.pathname;
   const inContacts = path.startsWith("/admin/contacts");
+  const inEvents = path === "/" || path.startsWith("/admin/events");
   const header = useRef<HTMLElement>(null);
 
   // The header stays at the top and can wrap on a phone: its height, for what has to stay
@@ -36,10 +38,16 @@ export function Layout({
   return (
     <>
       <header className="topbar" ref={header}>
-        <span className="brand">{t("app.name")}</span>
+        {admin ? (
+          <a className="brand" href="/">
+            {t("app.name")}
+          </a>
+        ) : (
+          <span className="brand">{t("app.name")}</span>
+        )}
         {admin && (
           <nav className="nav" aria-label={t("app.nav")}>
-            <a href="/" aria-current={inContacts ? undefined : "page"}>
+            <a href="/" aria-current={inEvents ? "page" : undefined}>
               {t("app.events")}
             </a>
             <a href="/admin/contacts" aria-current={inContacts ? "page" : undefined}>
@@ -50,7 +58,7 @@ export function Layout({
         {settings && (
           <a
             className="icon topbar-settings"
-            href="/settings"
+            href={admin ? "/admin/settings" : "/settings"}
             aria-label={t("app.settings")}
             title={t("app.settings")}
           >

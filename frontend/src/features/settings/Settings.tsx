@@ -11,8 +11,9 @@ const THEME_CHOICES: ThemeChoice[] = ["light", "dark", "system"];
 /** Each language in its own words, so it can be found whatever the page is in. */
 const LANGUAGE_NAMES: Record<Language, string> = { de: "Deutsch", en: "English" };
 
-/** For hosts and guests alike, so it asks for no login: theme, language and which build runs. */
-export function Settings() {
+/** For hosts and guests alike, so it asks for no login: theme, language and which build runs.
+ * Behind the host's gear (`admin`) it has the host's header, with the way back to the events. */
+export function Settings({ admin = false }: { admin?: boolean }) {
   const { t, i18n } = useTranslation();
   const theme = useThemeChoice();
   const built = new Intl.DateTimeFormat(i18n.language, {
@@ -30,7 +31,7 @@ export function Settings() {
   }
 
   return (
-    <Layout settings={false}>
+    <Layout admin={admin} settings={false}>
       <div className="row title-row">
         <h1>{t("settings.title")}</h1>
         <span className="heading-actions">
