@@ -20,8 +20,9 @@ from app.schemas.events import (
     SectionOut,
 )
 from app.schemas.invites import GroupInviteIn, GroupInviteOut, InviteIn, InviteOut
+from app.schemas.stats import EventStats
 from app.schemas.users import UserOut
-from app.services import events, invites
+from app.services import events, invites, stats
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -78,6 +79,11 @@ def duplicate_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID)
 @router.delete("/events/{event_id}", **NO_CONTENT)
 def delete_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> None:
     events.delete_event(session, user, event_id)
+
+
+@router.get("/events/{event_id}/stats")
+def event_stats(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> EventStats:
+    return stats.event_stats(session, user, event_id)
 
 
 # Sections

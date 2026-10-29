@@ -29,6 +29,43 @@
         "title": "AddressBookDelete",
         "type": "object"
       },
+      "AgeBand": {
+        "additionalProperties": false,
+        "description": "People who said yes or maybe, by their age on the day of the event.",
+        "properties": {
+          "max_age": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Age"
+          },
+          "maybe": {
+            "title": "Maybe",
+            "type": "integer"
+          },
+          "min_age": {
+            "title": "Min Age",
+            "type": "integer"
+          },
+          "yes": {
+            "title": "Yes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "min_age",
+          "max_age",
+          "yes",
+          "maybe"
+        ],
+        "title": "AgeBand",
+        "type": "object"
+      },
       "AnswerIn": {
         "additionalProperties": false,
         "properties": {
@@ -128,6 +165,42 @@
           }
         },
         "title": "AttendanceCounts",
+        "type": "object"
+      },
+      "AttendanceStep": {
+        "additionalProperties": false,
+        "description": "How many people answered what, from this moment until the next step.",
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "maybe": {
+            "title": "Maybe",
+            "type": "integer"
+          },
+          "no": {
+            "title": "No",
+            "type": "integer"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "integer"
+          },
+          "yes": {
+            "title": "Yes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "at",
+          "yes",
+          "maybe",
+          "no",
+          "pending"
+        ],
+        "title": "AttendanceStep",
         "type": "object"
       },
       "ContactImport": {
@@ -441,6 +514,36 @@
           "questions"
         ],
         "title": "EventOut",
+        "type": "object"
+      },
+      "EventStats": {
+        "additionalProperties": false,
+        "properties": {
+          "age_unknown": {
+            "title": "Age Unknown",
+            "type": "integer"
+          },
+          "ages": {
+            "items": {
+              "$ref": "#/components/schemas/AgeBand"
+            },
+            "title": "Ages",
+            "type": "array"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceStep"
+            },
+            "title": "Timeline",
+            "type": "array"
+          }
+        },
+        "required": [
+          "timeline",
+          "ages",
+          "age_unknown"
+        ],
+        "title": "EventStats",
         "type": "object"
       },
       "EventSummary": {
@@ -2870,6 +2973,54 @@
           }
         ],
         "summary": "Update Section",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/events/{event_id}/stats": {
+      "get": {
+        "operationId": "event_stats_api_admin_events__event_id__stats_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventStats"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Event Stats",
         "tags": [
           "admin"
         ]

@@ -285,6 +285,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/events/{event_id}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Event Stats */
+        get: operations["event_stats_api_admin_events__event_id__stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/groups": {
         parameters: {
             query?: never;
@@ -393,6 +410,20 @@ export interface components {
              */
             group_ids: string[];
         };
+        /**
+         * AgeBand
+         * @description People who said yes or maybe, by their age on the day of the event.
+         */
+        AgeBand: {
+            /** Max Age */
+            max_age: number | null;
+            /** Maybe */
+            maybe: number;
+            /** Min Age */
+            min_age: number;
+            /** Yes */
+            yes: number;
+        };
         /** AnswerIn */
         AnswerIn: {
             /**
@@ -444,6 +475,25 @@ export interface components {
              * Yes
              * @default 0
              */
+            yes: number;
+        };
+        /**
+         * AttendanceStep
+         * @description How many people answered what, from this moment until the next step.
+         */
+        AttendanceStep: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Maybe */
+            maybe: number;
+            /** No */
+            no: number;
+            /** Pending */
+            pending: number;
+            /** Yes */
             yes: number;
         };
         /** ContactImport */
@@ -553,6 +603,15 @@ export interface components {
             starts_at: string;
             /** Title */
             title: string;
+        };
+        /** EventStats */
+        EventStats: {
+            /** Age Unknown */
+            age_unknown: number;
+            /** Ages */
+            ages: components["schemas"]["AgeBand"][];
+            /** Timeline */
+            timeline: components["schemas"]["AttendanceStep"][];
         };
         /** EventSummary */
         EventSummary: {
@@ -1819,6 +1878,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    event_stats_api_admin_events__event_id__stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventStats"];
+                };
             };
             /** @description Validation Error */
             422: {
