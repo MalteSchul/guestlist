@@ -846,6 +846,11 @@ button.icon.ghost.danger:hover:not(:disabled) {
   color: var(--error);
 }
 
+button.icon.ghost[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
 button.icon.ghost.done {
   color: var(--accent);
 }
@@ -925,6 +930,12 @@ button.icon.ghost.done {
 }
 
 /* A ticked row: a card gets the accent's border, a row of a list its colour across the card. */
+/* In select mode a whole row can be tapped. */
+.pickable {
+  cursor: pointer;
+  user-select: none;
+}
+
 .card.selected {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 7%, var(--surface));

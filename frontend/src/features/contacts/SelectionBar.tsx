@@ -5,16 +5,16 @@ import { ExportMenu } from "./ExportMenu";
 
 type Export = Parameters<typeof ExportMenu>[0];
 
-/** What was ticked in the address book, at the bottom of the window so it stays in reach while
- * the lists scroll: how many, and what to do with them. `contacts` and `groups` are what the
- * export would write (see exportSelection). */
+/** The select mode's bar, at the bottom of the window so it stays in reach while the lists
+ * scroll: the way out, how many are ticked, and what to do with them. `contacts` and `groups`
+ * are what the export would write (see exportSelection). */
 export function SelectionBar({
   count,
   contacts,
   groups,
   busy,
   error,
-  onClear,
+  onDone,
   onDelete,
 }: {
   count: number;
@@ -22,15 +22,15 @@ export function SelectionBar({
   groups: Export["groups"];
   busy: boolean;
   error?: string;
-  onClear: () => void;
+  onDone: () => void;
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
   return (
     <div className="selection-bar" role="region" aria-label={t("contacts.selection.label")}>
-      <IconButton icon="close" label={t("contacts.selection.clear")} onClick={onClear} />
-      <span className="selection-count" aria-live="polite">
-        {t("contacts.selection.count", { count })}
+      <IconButton icon="close" label={t("contacts.selection.done")} onClick={onDone} />
+      <span className={count > 0 ? "selection-count" : "selection-count muted"} aria-live="polite">
+        {count > 0 ? t("contacts.selection.count", { count }) : t("contacts.selection.none")}
       </span>
       <ExportMenu
         contacts={contacts}
@@ -42,7 +42,7 @@ export function SelectionBar({
         icon="delete"
         label={t("contacts.selection.delete")}
         danger
-        disabled={busy}
+        disabled={busy || count === 0}
         onClick={onDelete}
       />
       {error && (

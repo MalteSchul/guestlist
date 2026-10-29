@@ -1,4 +1,4 @@
-import { Fragment, type FormEvent, useState } from "react";
+import { Fragment, type FormEvent, type MouseEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
@@ -63,6 +63,8 @@ function Book({
 }) {
   const { t } = useTranslation();
   const [importing, setImporting] = useState(false);
+  // Select mode: rows can be ticked, and nothing in the lists can be edited, deleted or added.
+  const [selecting, setSelecting] = useState(false);
   const [groupSearch, setGroupSearch] = useState("");
   const [contactSearch, setContactSearch] = useState("");
   // Contacts and groups are ticked in one go, so the selection is the page's, not a list's.
@@ -107,6 +109,14 @@ function Book({
     });
   }
 
+  /** Into select mode with nothing ticked, or out of it, dropping what was ticked. */
+  function toggleSelecting() {
+    bulk.clearError();
+    setSelected(new Set());
+    setImporting(false);
+    setSelecting(!selecting);
+  }
+
   function removeSelected() {
     const what = [
       pickedContacts.length > 0 &&
@@ -143,14 +153,21 @@ function Book({
       <div className="row">
         <h1>{t("contacts.title")}</h1>
         <span className="heading-actions">
-          <ExportMenu contacts={contacts} groups={groups} />
-          {!importing && (
+          {!selecting && <ExportMenu contacts={contacts} groups={groups} />}
+          {!selecting && !importing && (
             <IconButton
               icon="import"
               label={t("contacts.import.open")}
               onClick={() => setImporting(true)}
             />
           )}
+          <IconButton
+            icon="select"
+            label={t("contacts.selection.start")}
+            pressed={selecting}
+            disabled={contacts.length === 0 && groups.length === 0}
+            onClick={toggleSelecting}
+          />
         </span>
       </div>
       {importing && (
@@ -167,6 +184,7 @@ function Book({
         names={contactNames}
         search={groupSearch}
         onSearch={setGroupSearch}
+        selecting={selecting}
         selected={selected}
         onPick={pick}
         reload={reload}
@@ -178,21 +196,19 @@ function Book({
         names={groupNames}
         search={contactSearch}
         onSearch={setContactSearch}
+        selecting={selecting}
         selected={selected}
         onPick={pick}
         reload={reload}
       />
-      {count > 0 && (
+      {selecting && (
         <SelectionBar
           count={count}
           contacts={chosen.contacts}
           groups={chosen.groups}
           busy={bulk.status === "saving"}
           error={bulk.error}
-          onClear={() => {
-            bulk.clearError();
-            setSelected(new Set());
-          }}
+          onDone={toggleSelecting}
           onDelete={removeSelected}
         />
       )}
@@ -200,11 +216,26 @@ function Book({
   );
 }
 
-/** What the two lists share to tick rows (see Book). */
+/** What the two lists share for select mode (see Book). */
 type Picking = {
+  selecting: boolean;
   selected: Set<string>;
   onPick: (ids: string[], on: boolean) => void;
 };
+
+/** In select mode a tap on a row ticks it, like its box; a tap on the box is the box's. */
+function tickOnClick(picking: Picking, id: string) {
+  if (!picking.selecting) return undefined;
+  return (e: MouseEvent) => {
+    if (!(e.target as HTMLElement).closest(".select-box")) {
+      picking.onPick([id], !picking.selected.has(id));
+    }
+  };
+}
+
+function classes(...names: (string | false)[]): string {
+  return names.filter(Boolean).join(" ");
+}
 
 // Groups
 
@@ -215,6 +246,7 @@ function Groups({
   names,
   search,
   onSearch,
+  selecting,
   selected,
   onPick,
   reload,
@@ -235,6 +267,14 @@ function Groups({
   const [adding, setAdding] = useState(false);
   const ticked = shown.filter((group) => selected.has(group.id)).length;
 
+  // Select mode has no forms: an open one is dropped, not hidden and brought back.
+  useEffect(() => {
+    if (selecting) {
+      setEditing(undefined);
+      setAdding(false);
+    }
+  }, [selecting]);
+
   function remove(group: Group) {
     if (!window.confirm(t("contacts.groups.confirmDelete", { name: group.name }))) return;
     void action.run(async () => {
@@ -249,7 +289,7 @@ function Groups({
     <>
       <div className="row heading-search">
         <h2>{t("contacts.groups.title")}</h2>
-        {shown.length > 0 && (
+        {selecting && shown.length > 0 && (
           <SelectBox
             label={t("contacts.selection.allGroups")}
             checked={ticked === shown.length}
@@ -269,7 +309,7 @@ function Groups({
             onChange={onSearch}
           />
         )}
-        {!adding && (
+        {!adding && !selecting && (
           <IconButton
             icon="groupAdd"
             label={t("contacts.groups.new")}
@@ -285,7 +325,7 @@ function Groups({
       )}
       <ul className="cards">
         {shown.map((group) =>
-          editing === group.id ? (
+          editing === group.id && !selecting ? (
             <li key={group.id} className="card">
               <GroupForm
                 group={group}
@@ -304,7 +344,15 @@ function Groups({
               />
             </li>
           ) : (
-            <li key={group.id} className={selected.has(group.id) ? "card selected" : "card"}>
+            <li
+              key={group.id}
+              className={classes(
+                "card",
+                selecting && "pickable",
+                selecting && selected.has(group.id) && "selected",
+              )}
+              onClick={tickOnClick({ selecting, selected, onPick }, group.id)}
+            >
               <div className="row">
                 <span>
                   <strong>{group.name}</strong>
@@ -314,22 +362,27 @@ function Groups({
                   />
                 </span>
                 <span className="card-actions">
-                  <SelectBox
-                    label={t("contacts.selection.select", { name: group.name })}
-                    checked={selected.has(group.id)}
-                    onChange={(on) => onPick([group.id], on)}
-                  />
-                  <IconButton
-                    icon="edit"
-                    label={t("common.edit")}
-                    onClick={() => setEditing(group.id)}
-                  />
-                  <IconButton
-                    icon="delete"
-                    label={t("common.delete")}
-                    danger
-                    onClick={() => remove(group)}
-                  />
+                  {selecting ? (
+                    <SelectBox
+                      label={t("contacts.selection.select", { name: group.name })}
+                      checked={selected.has(group.id)}
+                      onChange={(on) => onPick([group.id], on)}
+                    />
+                  ) : (
+                    <>
+                      <IconButton
+                        icon="edit"
+                        label={t("common.edit")}
+                        onClick={() => setEditing(group.id)}
+                      />
+                      <IconButton
+                        icon="delete"
+                        label={t("common.delete")}
+                        danger
+                        onClick={() => remove(group)}
+                      />
+                    </>
+                  )}
                 </span>
               </div>
               <p className="muted">
@@ -354,7 +407,7 @@ function Groups({
           ),
         )}
       </ul>
-      {adding && (
+      {adding && !selecting && (
         <div className="card">
           <GroupForm
             contacts={contacts}
@@ -451,6 +504,7 @@ function Contacts({
   names: groupNames,
   search,
   onSearch,
+  selecting,
   selected,
   onPick,
   reload,
@@ -471,6 +525,13 @@ function Contacts({
   const [adding, setAdding] = useState(false);
   const ticked = shown.filter((contact) => selected.has(contact.id)).length;
 
+  useEffect(() => {
+    if (selecting) {
+      setEditing(undefined);
+      setAdding(false);
+    }
+  }, [selecting]);
+
   function remove(contact: Contact) {
     if (!window.confirm(t("contacts.confirmDelete", { name: contact.name }))) return;
     void action.run(async () => {
@@ -487,7 +548,7 @@ function Contacts({
     <>
       <div className="row heading-search">
         <h2>{t("contacts.list", { count: contacts.length })}</h2>
-        {shown.length > 0 && (
+        {selecting && shown.length > 0 && (
           <SelectBox
             label={t("contacts.selection.allContacts")}
             checked={ticked === shown.length}
@@ -503,7 +564,7 @@ function Contacts({
         {contacts.length > 0 && (
           <SearchField label={t("contacts.searchHint")} value={search} onChange={onSearch} />
         )}
-        {!adding && (
+        {!adding && !selecting && (
           <IconButton
             icon="personAdd"
             label={t("contacts.new")}
@@ -520,7 +581,7 @@ function Contacts({
       {shown.length > 0 && (
         <ul className="card rows">
           {shown.map((contact) =>
-            editing === contact.id ? (
+            editing === contact.id && !selecting ? (
               <li key={contact.id}>
                 <ContactForm
                   contact={contact}
@@ -542,7 +603,12 @@ function Contacts({
             ) : (
               <li
                 key={contact.id}
-                className={selected.has(contact.id) ? "item-row selected" : "item-row"}
+                className={classes(
+                  "item-row",
+                  selecting && "pickable",
+                  selecting && selected.has(contact.id) && "selected",
+                )}
+                onClick={tickOnClick({ selecting, selected, onPick }, contact.id)}
               >
                 <span>
                   <strong>{contact.name}</strong>
@@ -564,29 +630,34 @@ function Contacts({
                   ))}
                 </span>
                 <span className="card-actions">
-                  <SelectBox
-                    label={t("contacts.selection.select", { name: contact.name })}
-                    checked={selected.has(contact.id)}
-                    onChange={(on) => onPick([contact.id], on)}
-                  />
-                  <IconButton
-                    icon="edit"
-                    label={t("common.edit")}
-                    onClick={() => setEditing(contact.id)}
-                  />
-                  <IconButton
-                    icon="delete"
-                    label={t("common.delete")}
-                    danger
-                    onClick={() => remove(contact)}
-                  />
+                  {selecting ? (
+                    <SelectBox
+                      label={t("contacts.selection.select", { name: contact.name })}
+                      checked={selected.has(contact.id)}
+                      onChange={(on) => onPick([contact.id], on)}
+                    />
+                  ) : (
+                    <>
+                      <IconButton
+                        icon="edit"
+                        label={t("common.edit")}
+                        onClick={() => setEditing(contact.id)}
+                      />
+                      <IconButton
+                        icon="delete"
+                        label={t("common.delete")}
+                        danger
+                        onClick={() => remove(contact)}
+                      />
+                    </>
+                  )}
                 </span>
               </li>
             ),
           )}
         </ul>
       )}
-      {adding && (
+      {adding && !selecting && (
         <div className="card">
           <ContactForm
             contacts={contacts}

@@ -183,9 +183,11 @@
     },
     "selection": {
       "label": "Selection",
+      "start": "Select",
+      "done": "Stop selecting",
+      "none": "Nothing selected",
       "count_one": "{{count}} selected",
       "count_other": "{{count}} selected",
-      "clear": "Clear selection",
       "export": "Export selection",
       "delete": "Delete selection",
       "select": "Select {{name}}",

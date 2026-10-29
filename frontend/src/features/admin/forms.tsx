@@ -181,6 +181,7 @@ export function IconButton({
   danger = false,
   accent = false,
   expanded,
+  pressed,
 }: {
   icon: IconName;
   label: string;
@@ -190,6 +191,8 @@ export function IconButton({
   accent?: boolean;
   /** For a button that opens a menu: whether it is open. */
   expanded?: boolean;
+  /** For a button that switches something on and off: whether it is on. */
+  pressed?: boolean;
 }) {
   return (
     <button
@@ -199,6 +202,7 @@ export function IconButton({
       title={label}
       aria-haspopup={expanded === undefined ? undefined : "menu"}
       aria-expanded={expanded}
+      aria-pressed={pressed}
       disabled={disabled}
       onClick={onClick}
     >
