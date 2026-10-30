@@ -34,18 +34,16 @@ export function Settings({ admin = false }: { admin?: boolean }) {
   return (
     <Layout admin={admin} settings={false}>
       <div className="row title-row">
+        <a
+          className="icon back"
+          href="/"
+          onClick={back}
+          aria-label={t("settings.back")}
+          title={t("settings.back")}
+        >
+          <Icon name="back" />
+        </a>
         <h1>{t("settings.title")}</h1>
-        <span className="heading-actions">
-          <a
-            className="icon"
-            href="/"
-            onClick={back}
-            aria-label={t("settings.back")}
-            title={t("settings.back")}
-          >
-            <Icon name="back" />
-          </a>
-        </span>
       </div>
 
       <section className="card">

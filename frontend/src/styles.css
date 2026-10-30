@@ -926,12 +926,26 @@ button.icon.ghost.done {
 }
 
 .title-row > h1 {
+  flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.title-row > .heading-actions {
+.title-row > .heading-actions,
+.title-row > .back {
   margin-top: 0.35rem; /* h1's top margin less half the icons' extra height: centred on line 1 */
+}
+
+/* The way back leads the title, where one looks for it. It hangs out by the icon's padding so
+ * the arrow, not its hover frame, lines up with the page; what follows the title lines up with
+ * the title. */
+.title-row > .back {
+  flex: none;
+  margin-left: -0.5rem;
+}
+
+.title-row:has(> .back) + .meta {
+  padding-left: 2.5rem; /* the arrow's 2.25rem less its 0.5rem overhang, plus the row's gap */
 }
 
 /* A checkbox as big as the icon buttons around it, to tick a row or, in a heading, all rows. */

@@ -45,17 +45,15 @@ function Charts({ event, stats }: { event: Event; stats: Stats }) {
   return (
     <>
       <div className="row title-row">
+        <a
+          className="icon back"
+          href={`/admin/events/${event.id}`}
+          aria-label={t("admin.setup.back")}
+          title={t("admin.setup.back")}
+        >
+          <Icon name="back" />
+        </a>
         <h1>{event.title}</h1>
-        <span className="heading-actions">
-          <a
-            className="icon"
-            href={`/admin/events/${event.id}`}
-            aria-label={t("admin.setup.back")}
-            title={t("admin.setup.back")}
-          >
-            <Icon name="back" />
-          </a>
-        </span>
       </div>
       <p className="meta">{formatDateTime(event.starts_at, i18n.language)}</p>
 

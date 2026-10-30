@@ -61,16 +61,16 @@ function EventDetails({
   return (
     <>
       <div className="row title-row">
+        <a
+          className="icon back"
+          href="/"
+          aria-label={t("admin.event.back")}
+          title={t("admin.event.back")}
+        >
+          <Icon name="back" />
+        </a>
         <h1>{event.title}</h1>
         <span className="heading-actions">
-          <a
-            className="icon"
-            href="/"
-            aria-label={t("admin.event.back")}
-            title={t("admin.event.back")}
-          >
-            <Icon name="back" />
-          </a>
           <a
             className="icon"
             href={`/admin/events/${event.id}/stats`}
