@@ -158,6 +158,19 @@ function EventDetails({
       {onlyOpen && unfinished.length === 0 && invites.length > 0 && (
         <p className="muted">{t("admin.event.allFinished")}</p>
       )}
+      {adding && (
+        <NewInvite
+          kind={adding}
+          event={event}
+          invites={invites}
+          groups={groups.data ?? []}
+          // Newest first, as the host's list is; invites made together go by name.
+          onCreated={(created) =>
+            onChange([...[...created].sort((a, b) => a.name.localeCompare(b.name)), ...invites])
+          }
+          onClose={() => setAdding(undefined)}
+        />
+      )}
       <ul className="cards">
         {shown.map((invite) => (
           <InviteCard
@@ -168,16 +181,6 @@ function EventDetails({
           />
         ))}
       </ul>
-      {adding && (
-        <NewInvite
-          kind={adding}
-          event={event}
-          invites={invites}
-          groups={groups.data ?? []}
-          onCreated={(created) => onChange([...invites, ...created])}
-          onClose={() => setAdding(undefined)}
-        />
-      )}
     </>
   );
 }
