@@ -87,6 +87,7 @@ export function Settings({ admin = false }: { admin?: boolean }) {
                 checked={language === "system"}
                 onChange={() => chooseLanguage("system")}
               />
+              <Icon name="system" />
               {t("settings.languageSystem")}
             </label>
           </div>
