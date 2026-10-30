@@ -8,9 +8,9 @@ import { Icon, type IconName } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { formatDateTime } from "../../i18n/text";
 import { useProgressMark } from "../../progressMark";
 import { openRequired, type Progress, personProgress, summary } from "../answers";
+import { EventFacts } from "./EventFacts";
 import { IconButton, useSave } from "./forms";
 import { NewInvite, type NewInviteKind } from "./NewInvite";
 
@@ -49,8 +49,7 @@ function EventDetails({
   invites: Invite[];
   onChange: (invites: Invite[]) => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const lang = i18n.language;
+  const { t } = useTranslation();
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
@@ -90,7 +89,7 @@ function EventDetails({
           </a>
         </span>
       </div>
-      <p className="meta">{formatDateTime(event.starts_at, lang)}</p>
+      <EventFacts event={event} />
 
       <AttendanceCounts counts={countAttendance(persons)} />
 

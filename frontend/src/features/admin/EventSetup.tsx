@@ -6,6 +6,7 @@ import { Icon } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
+import { EventFacts } from "./EventFacts";
 import { EventForm } from "./EventForm";
 import {
   IconButton,
@@ -42,10 +43,12 @@ export function EventSetup({ eventId }: { eventId: string }) {
 function Setup({ event, reload }: { event: Event; reload: () => Promise<void> }) {
   const { t } = useTranslation();
   const params = { path: { event_id: event.id } };
+  const [editing, setEditing] = useState(false);
 
   async function update(body: Schemas["EventIn"]) {
     await unwrap(api.PUT("/api/admin/events/{event_id}", { params, body }));
     await reload();
+    setEditing(false);
   }
 
   return (
@@ -62,13 +65,27 @@ function Setup({ event, reload }: { event: Event; reload: () => Promise<void> })
         <h1>{t("admin.setup.title", { title: event.title })}</h1>
       </div>
 
-        <h2>{t("admin.setup.details")}</h2>
-        <div className="card">
-          <EventForm event={event} onSubmit={update} />
-        </div>
+      <h2>{t("admin.setup.details")}</h2>
+      {/* Like a section: read-only until the pencil opens the form in its place. */}
+      <div className="card">
+        {editing ? (
+          <EventForm event={event} onSubmit={update} onCancel={() => setEditing(false)} />
+        ) : (
+          <div className="row single">
+            <EventFacts event={event} />
+            <span className="card-actions">
+              <IconButton
+                icon="edit"
+                label={t("admin.setup.editDetails")}
+                onClick={() => setEditing(true)}
+              />
+            </span>
+          </div>
+        )}
+      </div>
 
-        <Sections event={event} reload={reload} />
-        <Questions event={event} reload={reload} />
+      <Sections event={event} reload={reload} />
+      <Questions event={event} reload={reload} />
       <DeleteEvent event={event} />
     </>
   );

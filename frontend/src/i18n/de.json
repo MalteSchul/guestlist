@@ -157,6 +157,14 @@
       "guestList": "Gästen zeigen, wer kommt",
       "guestListHint": "Auf der Liste steht nur, wer zustimmt – mit Name und Zusage, sonst nichts."
     },
+    "details": {
+      "answersUntil": "Antworten bis {{date}}",
+      "answersUntilStart": "Antworten bis zum Beginn",
+      "deleted": "Daten werden 90 Tage nach dem Event gelöscht",
+      "kept": "Daten bleiben nach dem Event erhalten",
+      "guestList": "Gäste sehen, wer kommt",
+      "noGuestList": "Gäste sehen nicht, wer kommt"
+    },
     "setup": {
       "title": "„{{title}}“ bearbeiten",
       "back": "Übersicht",
@@ -196,7 +204,8 @@
       "confirmDeleteOption": "Option „{{label}}“ löschen?",
       "deleteEvent": "Event löschen",
       "deleteEventHint": "Löscht das Event mit allen Einladungen und Antworten. Das dürfen nur Eigentümer.",
-      "confirmDeleteEvent": "„{{title}}“ mit allen Einladungen und Antworten löschen? Das lässt sich nicht rückgängig machen."
+      "confirmDeleteEvent": "„{{title}}“ mit allen Einladungen und Antworten löschen? Das lässt sich nicht rückgängig machen.",
+      "editDetails": "Details bearbeiten"
     },
     "attendance": {
       "yes": "Zugesagt",

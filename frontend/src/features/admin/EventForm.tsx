@@ -33,15 +33,18 @@ function OptionalDateTime({
   );
 }
 
-/** The event's own fields, for creating it and for editing it later. */
+/** The event's own fields, for creating it and for editing it later. With `onCancel`, Cancel
+ * closes the form; without, it puts back what is stored. */
 export function EventForm({
   event,
   label,
   onSubmit,
+  onCancel,
 }: {
   event?: EventIn;
   label?: string;
   onSubmit: (body: EventIn) => Promise<void>;
+  onCancel?: () => void;
 }) {
   const { t } = useTranslation();
   const save = useSave();
@@ -169,9 +172,9 @@ export function EventForm({
       <SaveBar
         save={save}
         label={label}
-        onCancel={revert}
+        onCancel={onCancel ?? revert}
         disabled={!changed}
-        cancelDisabled={!changed || save.status === "saving"}
+        cancelDisabled={(!onCancel && !changed) || save.status === "saving"}
       />
     </form>
   );

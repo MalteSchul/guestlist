@@ -140,6 +140,32 @@ const PATHS = {
       <path d="M8.5 12.5l2.5 2.5 4.5-5" />
     </>
   ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </>
+  ),
+  hourglass: (
+    <>
+      <path d="M6 3h12M6 21h12" />
+      <path d="M8 3v3a4 4 0 0 0 1.5 3.1L12 12l2.5-2.9A4 4 0 0 0 16 6V3" />
+      <path d="M8 21v-3a4 4 0 0 1 1.5-3.1L12 12l2.5 2.9A4 4 0 0 1 16 18v3" />
+    </>
+  ),
+  archive: (
+    <>
+      <rect x="3" y="4" width="18" height="4" rx="1" />
+      <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8" />
+      <path d="M10 12h4" />
+    </>
+  ),
   help: (
     <>
       <circle cx="12" cy="12" r="9" />
@@ -151,7 +177,8 @@ const PATHS = {
 
 export type IconName = keyof typeof PATHS;
 
-/** A line icon for an action. Decorative: the button or link it sits in carries the label. */
+/** A line icon for an action or a fact. Decorative: the button or link it sits in, or the text
+ * next to it, carries the label. */
 export function Icon({ name }: { name: IconName }) {
   return (
     <svg className="line-icon" viewBox="0 0 24 24" aria-hidden="true">

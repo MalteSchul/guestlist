@@ -157,6 +157,14 @@
       "guestList": "Show guests who's coming",
       "guestListHint": "Only people who agree are listed – with name and attendance, nothing else."
     },
+    "details": {
+      "answersUntil": "Answers until {{date}}",
+      "answersUntilStart": "Answers until the event starts",
+      "deleted": "Data deleted 90 days after the event",
+      "kept": "Data kept after the event",
+      "guestList": "Guests see who's coming",
+      "noGuestList": "Guests don't see who's coming"
+    },
     "setup": {
       "title": "Edit “{{title}}”",
       "back": "Overview",
@@ -196,7 +204,8 @@
       "confirmDeleteOption": "Delete the option “{{label}}”?",
       "deleteEvent": "Delete event",
       "deleteEventHint": "Deletes the event with all invites and answers. Only owners can do this.",
-      "confirmDeleteEvent": "Delete “{{title}}” with all invites and answers? This can't be undone."
+      "confirmDeleteEvent": "Delete “{{title}}” with all invites and answers? This can't be undone.",
+      "editDetails": "Edit details"
     },
     "attendance": {
       "yes": "Coming",
