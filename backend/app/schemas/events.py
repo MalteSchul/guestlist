@@ -73,11 +73,21 @@ class EventIn(Schema):
         return self
 
 
+class AttendanceCounts(Schema):
+    """How many invited people answered what, over all of an event's invites."""
+
+    yes: int = 0
+    maybe: int = 0
+    no: int = 0
+    pending: int = 0
+
+
 class EventSummary(Schema):
     id: uuid.UUID
     title: LongText
     starts_at: datetime
     ends_at: datetime | None
+    attendance: AttendanceCounts
 
 
 class EventOut(EventIn):

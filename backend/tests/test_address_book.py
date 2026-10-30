@@ -1,4 +1,7 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+
+from app.models import Contact, ContactGroup
 
 CONTACTS = "/api/admin/contacts"
 GROUPS = "/api/admin/groups"
@@ -112,7 +115,7 @@ def test_import_creates_contacts_and_groups_from_labels(client: TestClient):
     }
     response = client.post(f"{CONTACTS}/import", json=body)
     assert response.status_code == 200, response.text
-    assert response.json() == {"contacts": 3, "groups": 1}
+    assert response.json() == {"contacts": 3, "skipped": 0, "groups": 1}
 
     contacts = {c["name"]: c for c in client.get(CONTACTS).json()}
     groups = {g["name"]: g for g in client.get(GROUPS).json()}
@@ -202,3 +205,116 @@ def test_inviting_a_group_needs_the_admin_role(client: TestClient, log_in_as):
     friends = group(client, "Freunde", [anna])
     url = f"{EVENTS}/{event_id}/invites/group"
     assert client.post(url, json={"group_id": friends["id"]}).status_code == 403
+
+
+def test_contact_names_are_unique(client: TestClient):
+    anna = client.post(CONTACTS, json={"name": "Anna"}).json()
+    response = client.post(CONTACTS, json={"name": "anna"})
+    assert response.status_code == 409
+    ben = client.post(CONTACTS, json={"name": "Ben"}).json()
+    assert client.put(f"{CONTACTS}/{ben['id']}", json={"name": "ANNA"}).status_code == 409
+    # Saving a contact under its own name, or a new spelling of it, is fine.
+    assert client.put(f"{CONTACTS}/{anna['id']}", json={"name": "Anna"}).status_code == 200
+    assert client.put(f"{CONTACTS}/{anna['id']}", json={"name": "ANNA"}).status_code == 200
+
+
+def test_import_skips_names_already_there(client: TestClient):
+    client.post(CONTACTS, json={"name": "Anna"})
+    body = {"contacts": [{"name": "anna"}, {"name": "Ben"}, {"name": "Ben"}]}
+    result = client.post(f"{CONTACTS}/import", json=body).json()
+    assert (result["contacts"], result["skipped"]) == (1, 2)
+    assert sorted(c["name"] for c in client.get(CONTACTS).json()) == ["Anna", "Ben"]
+
+
+def test_import_restores_declared_groups(client: TestClient):
+    existing = group(client, "Tennis", [], invite_mode="together")
+    body = {
+        "contacts": [{"name": "Anna"}, {"name": "Ben"}, {"name": "Carla"}],
+        "groups": [
+            {"name": "Familie", "invite_mode": "together", "members": ["Carla", "Anna", "Nobody"]},
+            {"name": "Tennis", "invite_mode": "separately", "members": ["Ben"]},  # exists
+            {"name": "Leer", "invite_mode": "together"},  # nobody in it
+        ],
+    }
+    response = client.post(f"{CONTACTS}/import", json=body)
+    assert response.status_code == 200, response.text
+    assert response.json() == {"contacts": 3, "skipped": 0, "groups": 2}  # Familie, Leer
+
+    contacts = {c["name"]: c["id"] for c in client.get(CONTACTS).json()}
+    groups = {g["name"]: g for g in client.get(GROUPS).json()}
+    assert set(groups) == {"Familie", "Leer", "Tennis"}
+    assert groups["Familie"]["invite_mode"] == "together"  # as declared
+    assert groups["Familie"]["member_ids"] == [contacts["Carla"], contacts["Anna"]]  # in order
+    assert groups["Leer"]["invite_mode"] == "together"
+    assert groups["Leer"]["member_ids"] == []
+    assert groups["Tennis"]["id"] == existing["id"]
+    assert groups["Tennis"]["invite_mode"] == "together"  # the existing one keeps its setting
+    assert groups["Tennis"]["member_ids"] == [contacts["Ben"]]
+
+
+def test_import_declared_members_are_only_new_contacts(client: TestClient):
+    anna = contact(client, "Anna")
+    body = {
+        "contacts": [{"name": "anna"}, {"name": "Ben"}],
+        "groups": [{"name": "Familie", "members": ["Anna", "Ben"]}],
+    }
+    assert client.post(f"{CONTACTS}/import", json=body).json()["skipped"] == 1
+    [familie] = client.get(GROUPS).json()
+    assert anna["id"] not in familie["member_ids"]  # skipped: left as it was
+    assert len(familie["member_ids"]) == 1
+
+
+def test_import_checks_declared_groups(client: TestClient):
+    body = {"contacts": [{"name": "Anna"}], "groups": [{"name": "X", "invite_mode": "all"}]}
+    assert client.post(f"{CONTACTS}/import", json=body).status_code == 422
+
+
+# Deleting several at once
+
+DELETE_SELECTION = "/api/admin/address-book/delete"
+
+
+def test_delete_a_selection_of_contacts_and_groups(client: TestClient):
+    anna, ben, carla = (contact(client, name) for name in ("Anna", "Ben", "Carla"))
+    family = group(client, "Familie", [anna, ben])
+    group(client, "Freunde", [carla, ben])
+    event_id = event(client)
+    invite = {"name": "Anna", "persons": [{"name": "Anna", "contact_id": anna["id"]}]}
+    client.post(f"{EVENTS}/{event_id}/invites", json=invite)
+
+    # A group goes together with one of its own members, and another's member leaves it.
+    body = {"contact_ids": [anna["id"], carla["id"]], "group_ids": [family["id"]]}
+    response = client.post(DELETE_SELECTION, json=body)
+    assert response.status_code == 200, response.text
+    assert response.json() == {"contacts": 2, "groups": 1}
+
+    assert [c["name"] for c in client.get(CONTACTS).json()] == ["Ben"]  # the group's other member
+    [remaining] = client.get(GROUPS).json()
+    assert remaining["name"] == "Freunde"
+    assert remaining["member_ids"] == [ben["id"]]
+    [invited] = client.get(f"{EVENTS}/{event_id}/invites").json()
+    assert invited["persons"][0]["name"] == "Anna"  # stays in the event (D9)
+    assert invited["persons"][0]["contact_id"] is None
+
+
+def test_delete_a_selection_skips_what_is_not_there(client: TestClient, session, log_in_as):
+    anna = contact(client, "Anna")
+    family = group(client, "Familie", [anna])
+    unknown = "6f1f4b6e-0000-4000-8000-000000000000"
+
+    log_in_as("stranger@example.com")
+    mine = contact(client, "Mine")
+    body = {
+        "contact_ids": [anna["id"], mine["id"], mine["id"], unknown],
+        "group_ids": [family["id"]],
+    }
+    assert client.post(DELETE_SELECTION, json=body).json() == {"contacts": 1, "groups": 0}
+
+    # Anna and her group, someone else's, are untouched.
+    assert session.scalars(select(Contact.name)).all() == ["Anna"]
+    assert session.scalars(select(ContactGroup.name)).all() == ["Familie"]
+
+
+def test_delete_a_selection_checks_its_input(client: TestClient):
+    assert client.post(DELETE_SELECTION, json={}).json() == {"contacts": 0, "groups": 0}
+    assert client.post(DELETE_SELECTION, json={"contact_ids": ["nope"]}).status_code == 422

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
+import { AttendanceCounts } from "../../components/AttendanceCounts";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Icon } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
@@ -9,18 +10,15 @@ import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime } from "../../i18n/text";
 import { openRequired, type Progress, personProgress, summary } from "../answers";
-import { useSave } from "./forms";
-import { NewInvite } from "./NewInvite";
+import { IconButton, useSave } from "./forms";
+import { NewInvite, type NewInviteKind } from "./NewInvite";
 
 type Event = Schemas["EventOut"];
 type Invite = Schemas["InviteOut"];
 type Person = Schemas["PersonOut"];
 
-const ATTENDANCE = ["yes", "maybe", "no", "pending"] as const;
-
 /** The overview: who is coming, what they chose, and the invites. Setup is on EventSetup. */
 export function EventPage({ eventId }: { eventId: string }) {
-  const { t } = useTranslation();
   const params = { path: { event_id: eventId } };
   const event = useLoad(() => unwrap(api.GET("/api/admin/events/{event_id}", { params })), [eventId]);
   const invites = useLoad(
@@ -30,9 +28,6 @@ export function EventPage({ eventId }: { eventId: string }) {
 
   return (
     <Layout admin>
-      <p>
-        <a href="/">← {t("admin.event.back")}</a>
-      </p>
       <Loaded {...event}>
         {(event) => (
           <Loaded {...invites}>
@@ -56,6 +51,8 @@ function EventDetails({
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [adding, setAdding] = useState<NewInviteKind>();
+  const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const unfinished = invites.filter((invite) => inviteProgress(event, invite) !== "done");
   const shown = onlyOpen ? unfinished : invites;
   const persons = invites.flatMap((invite) => invite.persons);
@@ -63,24 +60,38 @@ function EventDetails({
 
   return (
     <>
-      <div className="row">
+      <div className="row title-row">
         <h1>{event.title}</h1>
-        <a href={`/admin/events/${event.id}/edit`}>{t("admin.event.edit")}</a>
+        <span className="heading-actions">
+          <a
+            className="icon"
+            href="/"
+            aria-label={t("admin.event.back")}
+            title={t("admin.event.back")}
+          >
+            <Icon name="back" />
+          </a>
+          <a
+            className="icon"
+            href={`/admin/events/${event.id}/stats`}
+            aria-label={t("admin.event.stats")}
+            title={t("admin.event.stats")}
+          >
+            <Icon name="chart" />
+          </a>
+          <a
+            className="icon"
+            href={`/admin/events/${event.id}/edit`}
+            aria-label={t("admin.event.edit")}
+            title={t("admin.event.edit")}
+          >
+            <Icon name="edit" />
+          </a>
+        </span>
       </div>
       <p className="meta">{formatDateTime(event.starts_at, lang)}</p>
 
-      <ul className="stats" aria-label={t("admin.event.personsTally")}>
-        {ATTENDANCE.map((attendance) => {
-          const count = persons.filter((person) => person.attendance === attendance).length;
-          const label = `${t(`admin.attendance.${attendance}`)}: ${count}`;
-          return (
-            <li key={attendance} title={label} aria-label={label}>
-              {count}
-              <AttendanceIcon attendance={attendance} />
-            </li>
-          );
-        })}
-      </ul>
+      <AttendanceCounts counts={countAttendance(persons)} />
 
       {event.questions.some((question) => question.kind === "choice") && (
         <>
@@ -110,18 +121,36 @@ function EventDetails({
 
       <div className="row">
         <h2>{t("admin.event.invites", { count: invites.length })}</h2>
-        {invites.length > 0 && (
-          <button
-            type="button"
-            className="icon ghost toggle"
-            aria-pressed={onlyOpen}
-            aria-label={t("admin.event.onlyUnfinished")}
-            title={t("admin.event.onlyUnfinished")}
-            onClick={() => setOnlyOpen(!onlyOpen)}
-          >
-            <Icon name="filter" />
-          </button>
-        )}
+        <span className="heading-actions">
+          {invites.length > 0 && (
+            <button
+              type="button"
+              className="icon ghost toggle"
+              aria-pressed={onlyOpen}
+              aria-label={t("admin.event.onlyUnfinished")}
+              title={t("admin.event.onlyUnfinished")}
+              onClick={() => setOnlyOpen(!onlyOpen)}
+            >
+              <Icon name="filter" />
+            </button>
+          )}
+          {!adding && (
+            <IconButton
+              icon="personAdd"
+              label={t("admin.event.newInvite")}
+              accent
+              onClick={() => setAdding("persons")}
+            />
+          )}
+          {!adding && (groups.data?.length ?? 0) > 0 && (
+            <IconButton
+              icon="groupAdd"
+              label={t("admin.event.inviteGroup")}
+              accent
+              onClick={() => setAdding("group")}
+            />
+          )}
+        </span>
       </div>
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
       {onlyOpen && unfinished.length === 0 && invites.length > 0 && (
@@ -137,11 +166,16 @@ function EventDetails({
           />
         ))}
       </ul>
-      <NewInvite
-        event={event}
-        invites={invites}
-        onCreated={(created) => onChange([...invites, ...created])}
-      />
+      {adding && (
+        <NewInvite
+          kind={adding}
+          event={event}
+          invites={invites}
+          groups={groups.data ?? []}
+          onCreated={(created) => onChange([...invites, ...created])}
+          onClose={() => setAdding(undefined)}
+        />
+      )}
     </>
   );
 }
@@ -245,11 +279,9 @@ function InviteCard({
             >
               <AttendanceIcon attendance={person.attendance} />
             </span>
+            {event.guest_list_enabled && <GuestListIcon person={person} />}
             <span>
               {single ? <strong>{person.name}</strong> : person.name}
-              {event.guest_list_enabled && person.attendance_public && (
-                <span className="badge">{t("admin.event.onGuestList")}</span>
-              )}
               {person.answers.length > 0 && (
                 <span className="muted">
                   {" "}
@@ -284,6 +316,27 @@ function InviteCard({
       )}
     </li>
   );
+}
+
+/** An eye when other guests see this person on the guest list: only with "yes" or "maybe", and
+ * only if they agreed (D33). Otherwise just the space, so names line up. */
+function GuestListIcon({ person }: { person: Person }) {
+  const { t } = useTranslation();
+  const listed =
+    person.attendance_public && (person.attendance === "yes" || person.attendance === "maybe");
+  if (!listed) return <span className="status" aria-hidden="true" />;
+  const label = t("admin.event.onGuestList");
+  return (
+    <span className="status" role="img" aria-label={label} title={label}>
+      <Icon name="show" />
+    </span>
+  );
+}
+
+function countAttendance(persons: Person[]): Schemas["AttendanceCounts"] {
+  const counts = { yes: 0, maybe: 0, no: 0, pending: 0 };
+  for (const person of persons) counts[person.attendance] += 1;
+  return counts;
 }
 
 const progressOf = (event: Event, person: Person) =>

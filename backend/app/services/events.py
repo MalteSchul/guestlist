@@ -4,7 +4,7 @@ import uuid
 from collections.abc import Sequence
 
 from pydantic import BaseModel
-from sqlalchemy import exists, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
 from app.models import (
@@ -13,6 +13,8 @@ from app.models import (
     EventQuestionOption,
     EventRole,
     EventSection,
+    Invite,
+    Person,
     PersonAnswerOption,
     User,
 )
@@ -38,6 +40,22 @@ def list_events(session: Session, user: User) -> Sequence[Event]:
     ).all()
 
 
+def attendance_counts(
+    session: Session, event_ids: Sequence[uuid.UUID]
+) -> dict[uuid.UUID, dict[str, int]]:
+    """Per event: how many people answered yes, maybe, no or nothing yet."""
+    rows = session.execute(
+        select(Invite.event_id, Person.attendance, func.count())
+        .join(Person, Person.invite_id == Invite.id)
+        .where(Invite.event_id.in_(event_ids))
+        .group_by(Invite.event_id, Person.attendance)
+    )
+    counts: dict[uuid.UUID, dict[str, int]] = {}
+    for event_id, attendance, count in rows:
+        counts.setdefault(event_id, {})[attendance] = count
+    return counts
+
+
 def create_event(session: Session, user: User, data: EventIn) -> Event:
     """The creator becomes the event's owner."""
     event = Event(**data.model_dump())
@@ -57,6 +75,37 @@ def update_event(session: Session, user: User, event_id: uuid.UUID, data: EventI
     _assign(event, data)
     session.commit()
     return event
+
+
+def duplicate_event(session: Session, user: User, event_id: uuid.UUID) -> Event:
+    """A new event with the same details, sections and questions, for the next party of the same
+    kind. Invites and answers stay behind, and so do options nobody can pick any more. The user
+    becomes the copy's owner."""
+    original = require_role(session, user, event_id, "viewer")
+    copy = Event(**EventIn.model_validate(original).model_dump())
+    copy.sections = [
+        EventSection(title=s.title, body=s.body, position=s.position) for s in original.sections
+    ]
+    copy.questions = [
+        EventQuestion(
+            label=q.label,
+            kind=q.kind,
+            multiple=q.multiple,
+            required=q.required,
+            position=q.position,
+            options=[
+                EventQuestionOption(label=o.label, position=o.position)
+                for o in q.options
+                if o.active
+            ],
+        )
+        for q in original.questions
+    ]
+    session.add(copy)
+    session.flush()
+    session.add(EventRole(event_id=copy.id, user_id=user.id, role="owner"))
+    session.commit()
+    return copy
 
 
 def delete_event(session: Session, user: User, event_id: uuid.UUID) -> None:

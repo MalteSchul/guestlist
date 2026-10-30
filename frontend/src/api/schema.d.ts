@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/admin/address-book/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Selection */
+        post: operations["delete_selection_api_admin_address_book_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/contacts": {
         parameters: {
             query?: never;
@@ -89,6 +106,23 @@ export interface paths {
         post?: never;
         /** Delete Event */
         delete: operations["delete_event_api_admin_events__event_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/events/{event_id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Duplicate Event */
+        post: operations["duplicate_event_api_admin_events__event_id__duplicate_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -251,6 +285,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/events/{event_id}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Event Stats */
+        get: operations["event_stats_api_admin_events__event_id__stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/groups": {
         parameters: {
             query?: never;
@@ -343,6 +394,36 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AddressBookDelete
+         * @description Contacts and groups chosen together, to be deleted in one go.
+         */
+        AddressBookDelete: {
+            /**
+             * Contact Ids
+             * @default []
+             */
+            contact_ids: string[];
+            /**
+             * Group Ids
+             * @default []
+             */
+            group_ids: string[];
+        };
+        /**
+         * AgeBand
+         * @description People who said yes or maybe, by their age on the day of the event.
+         */
+        AgeBand: {
+            /** Max Age */
+            max_age: number | null;
+            /** Maybe */
+            maybe: number;
+            /** Min Age */
+            min_age: number;
+            /** Yes */
+            yes: number;
+        };
         /** AnswerIn */
         AnswerIn: {
             /**
@@ -370,10 +451,60 @@ export interface components {
             /** Text Value */
             text_value: string | null;
         };
+        /**
+         * AttendanceCounts
+         * @description How many invited people answered what, over all of an event's invites.
+         */
+        AttendanceCounts: {
+            /**
+             * Maybe
+             * @default 0
+             */
+            maybe: number;
+            /**
+             * No
+             * @default 0
+             */
+            no: number;
+            /**
+             * Pending
+             * @default 0
+             */
+            pending: number;
+            /**
+             * Yes
+             * @default 0
+             */
+            yes: number;
+        };
+        /**
+         * AttendanceStep
+         * @description How many people answered what, from this moment until the next step.
+         */
+        AttendanceStep: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Maybe */
+            maybe: number;
+            /** No */
+            no: number;
+            /** Pending */
+            pending: number;
+            /** Yes */
+            yes: number;
+        };
         /** ContactImport */
         ContactImport: {
             /** Contacts */
             contacts: components["schemas"]["ImportedContact"][];
+            /**
+             * Groups
+             * @default []
+             */
+            groups: components["schemas"]["ImportedGroup"][];
         };
         /** ContactIn */
         ContactIn: {
@@ -400,6 +531,13 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** DeleteResult */
+        DeleteResult: {
+            /** Contacts */
+            contacts: number;
+            /** Groups */
+            groups: number;
         };
         /** EventIn */
         EventIn: {
@@ -466,8 +604,18 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** EventStats */
+        EventStats: {
+            /** Age Unknown */
+            age_unknown: number;
+            /** Ages */
+            ages: components["schemas"]["AgeBand"][];
+            /** Timeline */
+            timeline: components["schemas"]["AttendanceStep"][];
+        };
         /** EventSummary */
         EventSummary: {
+            attendance: components["schemas"]["AttendanceCounts"];
             /** Ends At */
             ends_at: string | null;
             /**
@@ -657,6 +805,8 @@ export interface components {
             contacts: number;
             /** Groups */
             groups: number;
+            /** Skipped */
+            skipped: number;
         };
         /**
          * ImportedContact
@@ -670,6 +820,25 @@ export interface components {
              * @default []
              */
             groups: string[];
+            /** Name */
+            name: string;
+        };
+        /**
+         * ImportedGroup
+         * @description A group as this app's own export wrote it down: the setting, and who is in it, in order.
+         */
+        ImportedGroup: {
+            /**
+             * Invite Mode
+             * @default separately
+             * @enum {string}
+             */
+            invite_mode: "together" | "separately";
+            /**
+             * Members
+             * @default []
+             */
+            members: string[];
             /** Name */
             name: string;
         };
@@ -922,6 +1091,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    delete_selection_api_admin_address_book_delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddressBookDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_contacts_api_admin_contacts_get: {
         parameters: {
             query?: never;
@@ -1208,6 +1410,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    duplicate_event_api_admin_events__event_id__duplicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -1645,6 +1878,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    event_stats_api_admin_events__event_id__stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventStats"];
+                };
             };
             /** @description Validation Error */
             422: {

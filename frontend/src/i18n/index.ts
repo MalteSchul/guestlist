@@ -9,7 +9,7 @@ export type Language = (typeof LANGUAGES)[number];
 
 const STORAGE_KEY = "language";
 
-/** The language picked with the DE/EN switch, if any (A21). Storage can be blocked or empty. */
+/** The language picked in the settings, if any (A21). Storage can be blocked or empty. */
 export function chosenLanguage(): Language | undefined {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -29,7 +29,7 @@ export function chooseLanguage(language: Language) {
   try {
     localStorage.setItem(STORAGE_KEY, language);
   } catch {
-    // Not remembered then; the switch still works for this visit.
+    // Not remembered then; the choice still holds for this visit.
   }
   void i18n.changeLanguage(language);
 }

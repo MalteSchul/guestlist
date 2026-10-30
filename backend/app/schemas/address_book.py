@@ -36,6 +36,19 @@ class GroupOut(Schema):
     member_ids: list[uuid.UUID]
 
 
+class AddressBookDelete(Schema):
+    """Contacts and groups chosen together, to be deleted in one go."""
+
+    contact_ids: Annotated[list[uuid.UUID], Field(max_length=2000)] = []
+    group_ids: Annotated[list[uuid.UUID], Field(max_length=200)] = []
+
+
+class DeleteResult(Schema):
+    contacts: int
+    groups: int
+    """What was deleted; an ID that isn't in the address book (any more) isn't counted."""
+
+
 class ImportedContact(Schema):
     """One contact from an address book export, read in the browser (D32)."""
 
@@ -45,11 +58,25 @@ class ImportedContact(Schema):
     """Labels from the export; each becomes a group, or joins one with the same name."""
 
 
+class ImportedGroup(Schema):
+    """A group as this app's own export wrote it down: the setting, and who is in it, in order."""
+
+    name: ShortText
+    invite_mode: InviteMode = "separately"
+    members: Annotated[list[ShortText], Field(max_length=2000)] = []
+    """Names of contacts in this import; they join in this order."""
+
+
 class ContactImport(Schema):
     contacts: Annotated[list[ImportedContact], Field(min_length=1, max_length=2000)]
+    groups: Annotated[list[ImportedGroup], Field(max_length=200)] = []
+    """Created first, with their setting, unless a group of that name exists. Without this,
+    contacts' labels become groups with the default setting."""
 
 
 class ImportResult(Schema):
     contacts: int
+    skipped: int
+    """Names the address book already had, or that came twice: names are unique."""
     groups: int
     """Groups that were created; labels matching an existing group join that one."""

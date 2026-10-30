@@ -128,3 +128,43 @@ def test_deleting_a_question_deletes_its_answers(client: TestClient, session: Se
     assert client.delete(url).status_code == 204
     check_deferred_constraints(session)
     assert session.scalar(select(func.count()).select_from(PersonAnswer)) == 0
+
+
+def test_list_counts_attendance(client: TestClient):
+    event = create_event(client)
+    invite = {"name": "Familie Müller", "persons": [{"name": "Anna"}, {"name": "Ben"}]}
+    client.post(f"{EVENTS}/{event['id']}/invites", json=invite)
+    empty = create_event(client)
+    counts = {e["id"]: e["attendance"] for e in client.get(EVENTS).json()}
+    assert counts[event["id"]] == {"yes": 0, "maybe": 0, "no": 0, "pending": 2}
+    assert counts[empty["id"]] == {"yes": 0, "maybe": 0, "no": 0, "pending": 0}
+
+
+def test_duplicate_copies_setup_but_not_invites(client: TestClient):
+    event = create_event(client, location="Gartenstraße 1", guest_list_enabled=True)
+    url = f"{EVENTS}/{event['id']}"
+    client.post(f"{url}/sections", json={"title": "Parken", "body": "Im Hof"})
+    question = add_question(client, event["id"])
+    hidden = question["options"][1]
+    options = f"{url}/questions/{question['id']}/options"
+    client.put(f"{options}/{hidden['id']}", json={"label": hidden["label"], "active": False})
+    client.post(f"{url}/invites", json={"name": "Anna", "persons": [{"name": "Anna"}]})
+
+    response = client.post(f"{url}/duplicate")
+    assert response.status_code == 201
+    copy = response.json()
+    assert copy["id"] != event["id"]
+    assert (copy["title"], copy["location"], copy["guest_list_enabled"]) == (
+        event["title"],
+        "Gartenstraße 1",
+        True,
+    )
+    assert [s["title"] for s in copy["sections"]] == ["Parken"]
+    assert [o["label"] for o in copy["questions"][0]["options"]] == ["Fleisch"]
+    assert client.get(f"{EVENTS}/{copy['id']}/invites").json() == []
+
+
+def test_duplicate_needs_access(client: TestClient, log_in_as):
+    event = create_event(client)
+    log_in_as("stranger@example.com")
+    assert client.post(f"{EVENTS}/{event['id']}/duplicate").status_code == 404

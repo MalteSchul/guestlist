@@ -1,6 +1,71 @@
 {
   "components": {
     "schemas": {
+      "AddressBookDelete": {
+        "additionalProperties": false,
+        "description": "Contacts and groups chosen together, to be deleted in one go.",
+        "properties": {
+          "contact_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 2000,
+            "title": "Contact Ids",
+            "type": "array"
+          },
+          "group_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Group Ids",
+            "type": "array"
+          }
+        },
+        "title": "AddressBookDelete",
+        "type": "object"
+      },
+      "AgeBand": {
+        "additionalProperties": false,
+        "description": "People who said yes or maybe, by their age on the day of the event.",
+        "properties": {
+          "max_age": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Age"
+          },
+          "maybe": {
+            "title": "Maybe",
+            "type": "integer"
+          },
+          "min_age": {
+            "title": "Min Age",
+            "type": "integer"
+          },
+          "yes": {
+            "title": "Yes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "min_age",
+          "max_age",
+          "yes",
+          "maybe"
+        ],
+        "title": "AgeBand",
+        "type": "object"
+      },
       "AnswerIn": {
         "additionalProperties": false,
         "properties": {
@@ -74,6 +139,70 @@
         "title": "AnswerOut",
         "type": "object"
       },
+      "AttendanceCounts": {
+        "additionalProperties": false,
+        "description": "How many invited people answered what, over all of an event's invites.",
+        "properties": {
+          "maybe": {
+            "default": 0,
+            "title": "Maybe",
+            "type": "integer"
+          },
+          "no": {
+            "default": 0,
+            "title": "No",
+            "type": "integer"
+          },
+          "pending": {
+            "default": 0,
+            "title": "Pending",
+            "type": "integer"
+          },
+          "yes": {
+            "default": 0,
+            "title": "Yes",
+            "type": "integer"
+          }
+        },
+        "title": "AttendanceCounts",
+        "type": "object"
+      },
+      "AttendanceStep": {
+        "additionalProperties": false,
+        "description": "How many people answered what, from this moment until the next step.",
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "maybe": {
+            "title": "Maybe",
+            "type": "integer"
+          },
+          "no": {
+            "title": "No",
+            "type": "integer"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "integer"
+          },
+          "yes": {
+            "title": "Yes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "at",
+          "yes",
+          "maybe",
+          "no",
+          "pending"
+        ],
+        "title": "AttendanceStep",
+        "type": "object"
+      },
       "ContactImport": {
         "additionalProperties": false,
         "properties": {
@@ -84,6 +213,15 @@
             "maxItems": 2000,
             "minItems": 1,
             "title": "Contacts",
+            "type": "array"
+          },
+          "groups": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ImportedGroup"
+            },
+            "maxItems": 200,
+            "title": "Groups",
             "type": "array"
           }
         },
@@ -171,6 +309,25 @@
           "group_ids"
         ],
         "title": "ContactOut",
+        "type": "object"
+      },
+      "DeleteResult": {
+        "additionalProperties": false,
+        "properties": {
+          "contacts": {
+            "title": "Contacts",
+            "type": "integer"
+          },
+          "groups": {
+            "title": "Groups",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "contacts",
+          "groups"
+        ],
+        "title": "DeleteResult",
         "type": "object"
       },
       "EventIn": {
@@ -359,9 +516,42 @@
         "title": "EventOut",
         "type": "object"
       },
+      "EventStats": {
+        "additionalProperties": false,
+        "properties": {
+          "age_unknown": {
+            "title": "Age Unknown",
+            "type": "integer"
+          },
+          "ages": {
+            "items": {
+              "$ref": "#/components/schemas/AgeBand"
+            },
+            "title": "Ages",
+            "type": "array"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceStep"
+            },
+            "title": "Timeline",
+            "type": "array"
+          }
+        },
+        "required": [
+          "timeline",
+          "ages",
+          "age_unknown"
+        ],
+        "title": "EventStats",
+        "type": "object"
+      },
       "EventSummary": {
         "additionalProperties": false,
         "properties": {
+          "attendance": {
+            "$ref": "#/components/schemas/AttendanceCounts"
+          },
           "ends_at": {
             "anyOf": [
               {
@@ -395,7 +585,8 @@
           "id",
           "title",
           "starts_at",
-          "ends_at"
+          "ends_at",
+          "attendance"
         ],
         "title": "EventSummary",
         "type": "object"
@@ -872,10 +1063,15 @@
           "groups": {
             "title": "Groups",
             "type": "integer"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
           }
         },
         "required": [
           "contacts",
+          "skipped",
           "groups"
         ],
         "title": "ImportResult",
@@ -920,6 +1116,43 @@
           "name"
         ],
         "title": "ImportedContact",
+        "type": "object"
+      },
+      "ImportedGroup": {
+        "additionalProperties": false,
+        "description": "A group as this app's own export wrote it down: the setting, and who is in it, in order.",
+        "properties": {
+          "invite_mode": {
+            "default": "separately",
+            "enum": [
+              "together",
+              "separately"
+            ],
+            "title": "Invite Mode",
+            "type": "string"
+          },
+          "members": {
+            "default": [],
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 2000,
+            "title": "Members",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ImportedGroup",
         "type": "object"
       },
       "InviteIn": {
@@ -1445,6 +1678,52 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/admin/address-book/delete": {
+      "post": {
+        "operationId": "delete_selection_api_admin_address_book_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressBookDelete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Selection",
+        "tags": [
+          "address book"
+        ]
+      }
+    },
     "/api/admin/contacts": {
       "get": {
         "operationId": "list_contacts_api_admin_contacts_get",
@@ -1874,6 +2153,54 @@
           }
         ],
         "summary": "Update Event",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/events/{event_id}/duplicate": {
+      "post": {
+        "operationId": "duplicate_event_api_admin_events__event_id__duplicate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Duplicate Event",
         "tags": [
           "admin"
         ]
@@ -2646,6 +2973,54 @@
           }
         ],
         "summary": "Update Section",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/events/{event_id}/stats": {
+      "get": {
+        "operationId": "event_stats_api_admin_events__event_id__stats_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventStats"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Event Stats",
         "tags": [
           "admin"
         ]

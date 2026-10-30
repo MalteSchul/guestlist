@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
 import {
+  IconButton,
   ItemControls,
   moved,
   nextPosition,
@@ -10,6 +11,7 @@ import {
   TextField,
   useSave,
 } from "./forms";
+import { useLoad } from "../../components/useLoad";
 import { useReveal } from "../../components/useReveal";
 
 type Event = Schemas["EventOut"];
@@ -57,7 +59,17 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
 
   return (
     <>
-      <h2>{t("admin.setup.questions")}</h2>
+      <div className="row">
+        <h2>{t("admin.setup.questions")}</h2>
+        {!adding && (
+          <IconButton
+            icon="plus"
+            label={t("admin.setup.addQuestion")}
+            accent
+            onClick={() => setAdding(true)}
+          />
+        )}
+      </div>
       <p className="muted">{t("admin.setup.questionsHint")}</p>
       {action.error && <p className="error">{action.error}</p>}
       <ul className="cards">
@@ -88,15 +100,7 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
           ),
         )}
       </ul>
-      {adding ? (
-        <NewQuestion event={event} reload={reload} onDone={() => setAdding(false)} />
-      ) : (
-        <p>
-          <button type="button" onClick={() => setAdding(true)}>
-            + {t("admin.setup.addQuestion")}
-          </button>
-        </p>
-      )}
+      {adding && <NewQuestion event={event} reload={reload} onDone={() => setAdding(false)} />}
     </>
   );
 }
@@ -150,6 +154,7 @@ function QuestionEditor({
   const reveal = useReveal<HTMLLIElement>();
   const [label, setLabel] = useState(question.label ?? "");
   const [required, setRequired] = useState(question.required);
+  const askedAgain = useAskedAgain(event, required && !question.required ? question.id : undefined);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -173,7 +178,7 @@ function QuestionEditor({
           onChange={setLabel}
           required
         />
-        <RequiredField value={required} onChange={setRequired} />
+        <RequiredField value={required} onChange={setRequired} askedAgain={askedAgain} />
         <p className="hint">
           {t(`admin.setup.kinds.${kindOf(question)}`)} · {t("admin.setup.kindFixed")}
         </p>
@@ -189,7 +194,16 @@ function QuestionEditor({
   );
 }
 
-function RequiredField({ value, onChange }: { value: boolean; onChange: (value: boolean) => void }) {
+function RequiredField({
+  value,
+  onChange,
+  askedAgain = 0,
+}: {
+  value: boolean;
+  onChange: (value: boolean) => void;
+  /** People who already said yes without answering it: they'll be asked again. */
+  askedAgain?: number;
+}) {
   const { t } = useTranslation();
   return (
     <div className="field">
@@ -198,8 +212,36 @@ function RequiredField({ value, onChange }: { value: boolean; onChange: (value: 
         {t("admin.setup.required")}
       </label>
       <span className="hint">{t("admin.setup.requiredHint")}</span>
+      {askedAgain > 0 && (
+        <span className="hint missing">{t("admin.setup.askedAgain", { count: askedAgain })}</span>
+      )}
     </div>
   );
+}
+
+/** How many people said yes but haven't answered this question, which a new required question
+ * or one made required would ask them again (D27). `"new"` for a question not saved yet;
+ * undefined when nothing becomes required. */
+function useAskedAgain(event: Event, question: string | undefined): number {
+  const invites = useLoad(
+    () =>
+      unwrap(
+        api.GET("/api/admin/events/{event_id}/invites", {
+          params: { path: { event_id: event.id } },
+        }),
+      ),
+    [event.id],
+  );
+  if (!question) return 0;
+  return (invites.data ?? [])
+    .flatMap((invite) => invite.persons)
+    .filter(
+      (person) =>
+        person.attendance === "yes" &&
+        !person.answers.some(
+          (a) => a.question_id === question && (a.option_ids.length > 0 || a.text_value),
+        ),
+    ).length;
 }
 
 function Options({
@@ -297,13 +339,12 @@ function Options({
                 onEdit={() => setEditing(option.id)}
                 onDelete={() => remove(option)}
               >
-                <button
-                  type="button"
+                <IconButton
+                  icon={option.active ? "hide" : "show"}
+                  label={option.active ? t("admin.setup.hide") : t("admin.setup.show")}
                   disabled={action.status === "saving"}
                   onClick={() => run(() => put({ ...option, active: !option.active }))}
-                >
-                  {option.active ? t("admin.setup.hide") : t("admin.setup.show")}
-                </button>
+                />
               </ItemControls>
             </li>
           ),
@@ -369,6 +410,7 @@ function NewQuestion({
   const [kind, setKind] = useState<Kind>("single");
   const [required, setRequired] = useState(false);
   const [options, setOptions] = useState<string[]>(["", ""]);
+  const askedAgain = useAskedAgain(event, required ? "new" : undefined);
   // Grows with the option rows of a choice question.
   const reveal = useReveal<HTMLFormElement>();
 
@@ -417,13 +459,13 @@ function NewQuestion({
         <span className="hint">{t("admin.setup.kindFixed")}</span>
       </fieldset>
 
-      <RequiredField value={required} onChange={setRequired} />
+      <RequiredField value={required} onChange={setRequired} askedAgain={askedAgain} />
 
       {kind !== "text" && (
         <fieldset className="field plain">
           <legend>{t("admin.setup.options")}</legend>
           {options.map((option, index) => (
-            <div key={index} className="nested">
+            <div key={index} className="nested option-row">
               <TextField
                 label={t("admin.setup.optionNumber", { number: index + 1 })}
                 value={option}
@@ -432,12 +474,12 @@ function NewQuestion({
                 }
               />
               {options.length > 1 && (
-                <button
-                  type="button"
+                <IconButton
+                  icon="delete"
+                  label={t("common.remove")}
+                  danger
                   onClick={() => setOptions((all) => all.filter((_, i) => i !== index))}
-                >
-                  {t("common.remove")}
-                </button>
+                />
               )}
             </div>
           ))}
