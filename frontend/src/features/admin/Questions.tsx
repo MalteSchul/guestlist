@@ -90,6 +90,7 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
               <div className="row">
                 <span className="question-name">
                   <KindIcon kind={kindOf(question)} />
+                  <RequiredIcon required={question.required} />
                   <strong>{question.label}</strong>
                 </span>
                 <ItemControls
@@ -115,11 +116,6 @@ function QuestionSummary({ question }: { question: Question }) {
   const { t } = useTranslation();
   return (
     <>
-      {question.required && (
-        <p className="tally">
-          <span className="badge">{t("admin.setup.required")}</span>
-        </p>
-      )}
       {question.kind === "choice" && (
         <p className="muted">
           {question.options
@@ -149,6 +145,25 @@ function KindIcon({ kind }: { kind: Kind }) {
   return (
     <span className="kind-icon" role="img" aria-label={label} title={label}>
       <Icon name={KIND_ICONS[kind]} />
+    </span>
+  );
+}
+
+/** An asterisk when the question has to be answered. The slot stays when it doesn't, so the
+ * names line up. */
+function RequiredIcon({ required }: { required: boolean }) {
+  const { t } = useTranslation();
+  if (!required) {
+    return (
+      <span className="kind-icon empty" aria-hidden="true">
+        <Icon name="required" />
+      </span>
+    );
+  }
+  const label = t("admin.setup.required");
+  return (
+    <span className="kind-icon" role="img" aria-label={label} title={label}>
+      <Icon name="required" />
     </span>
   );
 }

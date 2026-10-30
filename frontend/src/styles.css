@@ -1371,6 +1371,11 @@ button.icon.accent:hover {
   cursor: default;
 }
 
+/* A kind-icon slot with nothing in it keeps the names of all questions in line. */
+.kind-icon.empty .line-icon {
+  visibility: hidden;
+}
+
 .badge {
   display: inline-block;
   font-size: 0.8rem;

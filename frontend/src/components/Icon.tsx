@@ -105,6 +105,7 @@ const PATHS = {
     </>
   ),
   freeText: <path d="M5 7h14M5 12h14M5 17h9" />,
+  required: <path d="M12 5v14M5.5 8.5l13 7M18.5 8.5l-13 7" />,
   table: (
     <>
       <rect x="4" y="5" width="16" height="14" rx="2" />
