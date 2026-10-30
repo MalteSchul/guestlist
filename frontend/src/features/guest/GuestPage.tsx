@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 
 import { ApiError, api, type Schemas, unwrap } from "../../api/client";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
+import { EventWhenWhere } from "../../components/EventWhenWhere";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { formatDateRange, formatDateTime, sortedByName } from "../../i18n/text";
+import { formatDateTime, sortedByName } from "../../i18n/text";
 import { openRequired, personProgress, summary } from "../answers";
 
 type Invite = Schemas["GuestInviteOut"];
@@ -34,12 +35,16 @@ export function GuestPage({ token }: { token: string }) {
   );
 }
 
-function Invitation({
+/** The invitation and the form to answer it. In the host's `preview` everything can be tried
+ * out, but nothing is saved. */
+export function Invitation({
   invite,
   onSave,
+  preview = false,
 }: {
   invite: Invite;
   onSave: (body: Schemas["GuestResponseIn"]) => Promise<void>;
+  preview?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
@@ -80,6 +85,7 @@ function Invitation({
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (preview) return;
     setStatus("saving");
     setError(undefined);
     try {
@@ -125,14 +131,7 @@ function Invitation({
   return (
     <>
       <h1>{event.title}</h1>
-      <p className="meta">{formatDateRange(event.starts_at, event.ends_at, lang)}</p>
-      {event.location && (
-        <p className="meta">
-          <a href={mapsUrl(event.location)} target="_blank" rel="noreferrer">
-            {event.location}
-          </a>
-        </p>
-      )}
+      <EventWhenWhere event={event} />
       {event.description && <p className="prose">{event.description}</p>}
 
       {/* Part of the invitation, read with the description: headings and text, no cards. */}
@@ -219,25 +218,31 @@ function Invitation({
             />
           </label>
 
-          <div className="actions">
-            <button type="submit" className="primary" disabled={!changed}>
-              {status === "saving" ? t("common.saving") : t("common.save")}
-            </button>
-            <button
-              type="button"
-              onClick={revert}
-              disabled={!changed && reopened.length === 0}
-            >
-              {t("common.cancel")}
-            </button>
-            {status === "saved" && (
-              <span className="success">
-                {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang), count })}
-              </span>
-            )}
-            {changed && status === "idle" && <span className="unsaved">{t("guest.unsaved")}</span>}
-            {error && <span className="error">{error}</span>}
-          </div>
+          {preview ? (
+            <p className="muted">{t("admin.preview.notSaved")}</p>
+          ) : (
+            <div className="actions">
+              <button type="submit" className="primary" disabled={!changed}>
+                {status === "saving" ? t("common.saving") : t("common.save")}
+              </button>
+              <button
+                type="button"
+                onClick={revert}
+                disabled={!changed && reopened.length === 0}
+              >
+                {t("common.cancel")}
+              </button>
+              {status === "saved" && (
+                <span className="success">
+                  {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang), count })}
+                </span>
+              )}
+              {changed && status === "idle" && (
+                <span className="unsaved">{t("guest.unsaved")}</span>
+              )}
+              {error && <span className="error">{error}</span>}
+            </div>
+          )}
         </fieldset>
       </form>
     </>
@@ -499,8 +504,4 @@ function sameRequest(a: Schemas["GuestResponseIn"], b: Schemas["GuestResponseIn"
     })),
   });
   return JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
-}
-
-function mapsUrl(location: string): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
 }

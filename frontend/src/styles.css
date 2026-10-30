@@ -505,41 +505,21 @@ button.danger {
 }
 
 /* The date follows right under an event's title. */
-.title-row:has(+ .meta, + .event-facts) > h1 {
+.title-row:has(+ .meta) > h1 {
   margin-bottom: 0.5rem;
 }
 
-/* An event's details (the host's view): one line per fact, each led by its icon. */
-.event-facts {
-  flex: 1;
-  min-width: 0;
-}
-
-.event-facts > .meta,
-.event-facts > .meta > span {
+/* An event's settings in their card (edit page): one line each, led by its icon. The card's gap
+   spaces the lines. */
+.card > .setting {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.event-facts > .meta.settings {
-  flex-wrap: wrap;
-  /* The two settings on one line, apart like the counts below; wrapped, as close as the other
-     lines (the .meta margin). */
-  gap: 0.25rem 1.25rem;
-}
-
-.event-facts .line-icon {
+.setting > .line-icon {
   flex: none;
-}
-
-/* In a card, the card's padding is the space around them. */
-.card .event-facts > :first-child {
-  margin-top: 0;
-}
-
-.card .event-facts > :last-child {
-  margin-bottom: 0;
+  color: var(--muted);
 }
 
 /* A heading with a control next to it: the row takes the heading's spacing, so both centre. */
@@ -1032,7 +1012,8 @@ button.icon.ghost.done {
   margin-left: -0.5rem;
 }
 
-.title-row:has(> .back) + .meta {
+.title-row:has(> .back) + .meta,
+.title-row:has(> .back) + .meta + .meta {
   padding-left: 2.5rem; /* the arrow's 2.25rem less its 0.5rem overhang, plus the row's gap */
 }
 

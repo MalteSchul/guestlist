@@ -5,14 +5,14 @@ import { api, type Schemas, unwrap } from "../../api/client";
 import { AttendanceCounts } from "../../components/AttendanceCounts";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Icon, type IconName } from "../../components/Icon";
+import { EventWhenWhere } from "../../components/EventWhenWhere";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { SortMenu } from "../../components/SortMenu";
 import { useLoad } from "../../components/useLoad";
-import { nameCollator, sortedByName } from "../../i18n/text";
+import { formatDateTime, nameCollator, sortedByName } from "../../i18n/text";
 import { useProgressMark } from "../../progressMark";
 import { openRequired, type Progress, personProgress, summary } from "../answers";
-import { EventFacts } from "./EventFacts";
 import { IconButton, useSave } from "./forms";
 import { NewInvite, type NewInviteKind } from "./NewInvite";
 
@@ -58,6 +58,9 @@ function EventDetails({
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const unfinished = invites.filter((invite) => inviteProgress(event, invite) !== "done");
   const shown = sortInvites(onlyOpen ? unfinished : invites, order, event, i18n.language);
+  // As the backend decides for guests: the deadline, or the start without one (D12).
+  const answersCloseAt = event.rsvp_deadline ?? event.starts_at;
+  const answersOpen = Date.now() < new Date(answersCloseAt).getTime();
   const persons = invites.flatMap((invite) => invite.persons);
   const coming = persons.filter((person) => person.attendance === "yes");
 
@@ -76,6 +79,14 @@ function EventDetails({
         <span className="heading-actions">
           <a
             className="icon"
+            href={`/admin/events/${event.id}/preview`}
+            aria-label={t("admin.event.preview")}
+            title={t("admin.event.preview")}
+          >
+            <Icon name="show" />
+          </a>
+          <a
+            className="icon"
             href={`/admin/events/${event.id}/stats`}
             aria-label={t("admin.event.stats")}
             title={t("admin.event.stats")}
@@ -92,7 +103,7 @@ function EventDetails({
           </a>
         </span>
       </div>
-      <EventFacts event={event} />
+      <EventWhenWhere event={event} />
 
       <AttendanceCounts counts={countAttendance(persons)} />
 
@@ -169,6 +180,12 @@ function EventDetails({
           )}
         </span>
       </div>
+      {/* Where the deadline matters: who still has to answer, and until when. */}
+      <p className="muted">
+        {t(answersOpen ? "admin.event.answersUntil" : "admin.event.answersClosed", {
+          date: formatDateTime(answersCloseAt, i18n.language),
+        })}
+      </p>
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
       {onlyOpen && unfinished.length === 0 && invites.length > 0 && (
         <p className="muted">{t("admin.event.allFinished")}</p>

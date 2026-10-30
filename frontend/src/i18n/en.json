@@ -123,7 +123,10 @@
       "skipped_other": "{{count}} people are already invited and will be skipped.",
       "onGuestList": "On the guest list",
       "morePlaceholder": "Another person",
-      "stats": "Statistics"
+      "stats": "Statistics",
+      "preview": "View as guest",
+      "answersUntil": "Guests can answer until {{date}}.",
+      "answersClosed": "Answers closed on {{date}}."
     },
     "stats": {
       "timeline": "Answers over time",
@@ -176,10 +179,14 @@
       "guestList": "Guests see who's coming",
       "noGuestList": "Guests don't see who's coming"
     },
+    "preview": {
+      "title": "Preview: this is how guests see the invitation.",
+      "guest": "Guest",
+      "notSaved": "Nothing is saved in the preview."
+    },
     "setup": {
       "title": "Edit “{{title}}”",
       "back": "Overview",
-      "details": "Details",
       "up": "Move up",
       "down": "Move down",
       "sections": "Information for guests",
@@ -216,7 +223,10 @@
       "deleteEvent": "Delete event",
       "deleteEventHint": "Deletes the event with all invites and answers. Only owners can do this.",
       "confirmDeleteEvent": "Delete “{{title}}” with all invites and answers? This can't be undone.",
-      "editDetails": "Edit details"
+      "invitation": "Invitation",
+      "editInvitation": "Edit invitation",
+      "settings": "Settings",
+      "editSettings": "Edit settings"
     },
     "attendance": {
       "yes": "Coming",

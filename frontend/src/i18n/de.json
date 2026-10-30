@@ -123,7 +123,10 @@
       "skipped_other": "{{count}} Personen sind schon eingeladen und werden übersprungen.",
       "onGuestList": "Steht auf der Gästeliste",
       "morePlaceholder": "Weitere Person",
-      "stats": "Auswertung"
+      "stats": "Auswertung",
+      "preview": "Als Gast ansehen",
+      "answersUntil": "Gäste können bis {{date}} antworten.",
+      "answersClosed": "Antworten sind seit {{date}} geschlossen."
     },
     "stats": {
       "timeline": "Antworten im Verlauf",
@@ -176,10 +179,14 @@
       "guestList": "Gäste sehen, wer kommt",
       "noGuestList": "Gäste sehen nicht, wer kommt"
     },
+    "preview": {
+      "title": "Vorschau: so sehen Gäste die Einladung.",
+      "guest": "Gast",
+      "notSaved": "In der Vorschau wird nichts gespeichert."
+    },
     "setup": {
       "title": "„{{title}}“ bearbeiten",
       "back": "Übersicht",
-      "details": "Details",
       "up": "Nach oben",
       "down": "Nach unten",
       "sections": "Infos für Gäste",
@@ -216,7 +223,10 @@
       "deleteEvent": "Event löschen",
       "deleteEventHint": "Löscht das Event mit allen Einladungen und Antworten. Das dürfen nur Eigentümer.",
       "confirmDeleteEvent": "„{{title}}“ mit allen Einladungen und Antworten löschen? Das lässt sich nicht rückgängig machen.",
-      "editDetails": "Details bearbeiten"
+      "invitation": "Einladung",
+      "editInvitation": "Einladung bearbeiten",
+      "settings": "Einstellungen",
+      "editSettings": "Einstellungen bearbeiten"
     },
     "attendance": {
       "yes": "Zugesagt",

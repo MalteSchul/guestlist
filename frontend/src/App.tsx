@@ -1,6 +1,7 @@
 import { EventList } from "./features/admin/EventList";
 import { AddressBook } from "./features/contacts/AddressBook";
 import { EventPage } from "./features/admin/EventPage";
+import { EventPreview } from "./features/admin/EventPreview";
 import { EventStats } from "./features/admin/EventStats";
 import { EventSetup } from "./features/admin/EventSetup";
 import { NewEvent } from "./features/admin/NewEvent";
@@ -24,6 +25,9 @@ export function App() {
 
   const setup = path.match(/^\/admin\/events\/([^/]+)\/edit\/?$/);
   if (setup?.[1]) return <EventSetup eventId={setup[1]} />;
+
+  const preview = path.match(/^\/admin\/events\/([^/]+)\/preview\/?$/);
+  if (preview?.[1]) return <EventPreview eventId={preview[1]} />;
 
   const stats = path.match(/^\/admin\/events\/([^/]+)\/stats\/?$/);
   if (stats?.[1]) return <EventStats eventId={stats[1]} />;

@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
 import { Icon } from "../../components/Icon";
+import { EventWhenWhere } from "../../components/EventWhenWhere";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { EventFacts } from "./EventFacts";
 import { EventForm } from "./EventForm";
+import { EventSettings } from "./EventSettings";
 import {
   IconButton,
   ItemControls,
@@ -43,12 +44,13 @@ export function EventSetup({ eventId }: { eventId: string }) {
 function Setup({ event, reload }: { event: Event; reload: () => Promise<void> }) {
   const { t } = useTranslation();
   const params = { path: { event_id: event.id } };
-  const [editing, setEditing] = useState(false);
+  // Each part opens on its own; saving one never touches the other (EventForm's `fields`).
+  const [editingInvitation, setEditingInvitation] = useState(false);
+  const [editingSettings, setEditingSettings] = useState(false);
 
   async function update(body: Schemas["EventIn"]) {
     await unwrap(api.PUT("/api/admin/events/{event_id}", { params, body }));
     await reload();
-    setEditing(false);
   }
 
   return (
@@ -65,27 +67,67 @@ function Setup({ event, reload }: { event: Event; reload: () => Promise<void> })
         <h1>{t("admin.setup.title", { title: event.title })}</h1>
       </div>
 
-      <h2>{t("admin.setup.details")}</h2>
-      {/* Like a section: read-only until the pencil opens the form in its place. */}
-      <div className="card">
-        {editing ? (
-          <EventForm event={event} onSubmit={update} onCancel={() => setEditing(false)} />
-        ) : (
-          <div className="row single">
-            <EventFacts event={event} />
-            <span className="card-actions">
-              <IconButton
-                icon="edit"
-                label={t("admin.setup.editDetails")}
-                onClick={() => setEditing(true)}
-              />
-            </span>
-          </div>
+      {/* In the order guests read it: the invitation, its information, the questions. Each part
+          is read-only until its pencil opens the form in its place. */}
+      <div className="row">
+        <h2>{t("admin.setup.invitation")}</h2>
+        {!editingInvitation && (
+          <IconButton
+            icon="edit"
+            label={t("admin.setup.editInvitation")}
+            onClick={() => setEditingInvitation(true)}
+          />
         )}
       </div>
+      {editingInvitation ? (
+        <div className="card">
+          <EventForm
+            event={event}
+            fields="invitation"
+            onSubmit={async (body) => {
+              await update(body);
+              setEditingInvitation(false);
+            }}
+            onCancel={() => setEditingInvitation(false)}
+          />
+        </div>
+      ) : (
+        // As on the guest page; the title is this page's heading.
+        <>
+          <EventWhenWhere event={event} />
+          {event.description && <p className="prose">{event.description}</p>}
+        </>
+      )}
 
       <Sections event={event} reload={reload} />
       <Questions event={event} reload={reload} />
+
+      <div className="row">
+        <h2>{t("admin.setup.settings")}</h2>
+        {!editingSettings && (
+          <IconButton
+            icon="edit"
+            label={t("admin.setup.editSettings")}
+            onClick={() => setEditingSettings(true)}
+          />
+        )}
+      </div>
+      <div className="card">
+        {editingSettings ? (
+          <EventForm
+            event={event}
+            fields="settings"
+            onSubmit={async (body) => {
+              await update(body);
+              setEditingSettings(false);
+            }}
+            onCancel={() => setEditingSettings(false)}
+          />
+        ) : (
+          <EventSettings event={event} />
+        )}
+      </div>
+
       <DeleteEvent event={event} />
     </>
   );
