@@ -44,10 +44,8 @@ export function AgeChart({ bands }: { bands: Band[] }) {
   const [hover, setHover] = useState<{ index: number; keyboard: boolean }>();
 
   const totals = bands.map((band) => band.yes + band.maybe);
-  const most = Math.max(...totals);
-  const peak = totals.indexOf(most);
-  const yTicks = countTicks(most);
-  const margin = { top: 22, right: 12, bottom: 28, left: 30 };
+  const yTicks = countTicks(Math.max(...totals));
+  const margin = { top: 10, right: 12, bottom: 28, left: 30 };
   const plotW = Math.max(0, width - margin.left - margin.right);
   const plotH = HEIGHT - margin.top - margin.bottom;
   const y = linear([0, yTicks[yTicks.length - 1]!], [margin.top + plotH, margin.top]);
@@ -84,7 +82,7 @@ export function AgeChart({ bands }: { bands: Band[] }) {
       ref={ref}
       tabIndex={0}
       role="group"
-      aria-label={t("admin.stats.agesSummary", { count: coming, band: ageLabel(bands[peak]!) })}
+      aria-label={t("admin.stats.agesSummary", { count: coming })}
       onKeyDown={onKey}
       onBlur={() => setHover(undefined)}
     >
@@ -120,11 +118,6 @@ export function AgeChart({ bands }: { bands: Band[] }) {
                 <text className="x-label" x={centre(i)} y={base + 17} textAnchor="middle">
                   {ageLabel(b, bandW < 40)}
                 </text>
-                {i === peak && most > 0 && (
-                  <text className="direct" x={centre(i)} y={allTop - 7} textAnchor="middle">
-                    {most}
-                  </text>
-                )}
               </g>
             );
           })}
