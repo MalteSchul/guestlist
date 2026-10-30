@@ -65,6 +65,7 @@ function Charts({ event, stats }: { event: Event; stats: Stats }) {
         <>
           <ChartCard
             title={t("admin.stats.timeline")}
+            hint={t("admin.stats.timelineHint")}
             legend={<Legend items={SERIES} />}
             table={<TimelineTable steps={steps} />}
           >

@@ -1,6 +1,7 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { InfoTip } from "../../../components/InfoTip";
 import { IconButton } from "../forms";
 
 /** The answers, in the order they are stacked and listed. Each has its colour in styles.css. */
@@ -31,7 +32,12 @@ export function ChartCard({
       <figcaption className="chart-head">
         <span>
           <strong>{title}</strong>
-          {hint && <span className="muted"> · {hint}</span>}
+          {hint && (
+            <>
+              {" "}
+              <InfoTip text={hint} />
+            </>
+          )}
         </span>
         <IconButton
           icon="table"
