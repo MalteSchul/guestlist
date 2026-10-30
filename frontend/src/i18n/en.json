@@ -110,7 +110,6 @@
       "stats": "Statistics"
     },
     "stats": {
-      "title": "Statistics",
       "timeline": "Answers over time",
       "timelineSummary": "Answers over time, latest {{yes}} coming, {{maybe}} maybe, {{no}} not coming, {{pending}} no answer",
       "ages": "Age of the guests",

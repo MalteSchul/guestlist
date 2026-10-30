@@ -110,7 +110,6 @@
       "stats": "Auswertung"
     },
     "stats": {
-      "title": "Auswertung",
       "timeline": "Antworten im Verlauf",
       "timelineSummary": "Antworten im Verlauf, zuletzt {{yes}} zugesagt, {{maybe}} vielleicht, {{no}} abgesagt, {{pending}} offen",
       "ages": "Alter der Gäste",

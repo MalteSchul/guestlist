@@ -57,9 +57,7 @@ function Charts({ event, stats }: { event: Event; stats: Stats }) {
           </a>
         </span>
       </div>
-      <p className="meta">
-        {t("admin.stats.title")} · {formatDateTime(event.starts_at, i18n.language)}
-      </p>
+      <p className="meta">{formatDateTime(event.starts_at, i18n.language)}</p>
 
       {steps.length === 0 ? (
         <p className="muted">{t("admin.stats.noInvites")}</p>
