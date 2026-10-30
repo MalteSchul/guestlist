@@ -190,28 +190,20 @@ function QuestionEditor({
         </p>
       </form>
       {question.kind === "choice" && <Options event={event} question={question} reload={reload} />}
-      {/* One bar under the options (they save by themselves): Done while the question itself is
-          as stored, Save and Cancel once it isn't. Both close the editor. */}
+      {/* One bar under the options, which save by themselves: Save (closes the editor) once the
+          label or "Required" differs from what is stored, Cancel closes it without saving. */}
       <div className="actions">
-        {changed ? (
-          <>
-            <button
-              type="submit"
-              form={formId}
-              className="primary"
-              disabled={save.status === "saving"}
-            >
-              {save.status === "saving" ? t("common.saving") : t("common.save")}
-            </button>
-            <button type="button" onClick={onDone} disabled={save.status === "saving"}>
-              {t("common.cancel")}
-            </button>
-          </>
-        ) : (
-          <button type="button" onClick={onDone}>
-            {t("admin.setup.done")}
-          </button>
-        )}
+        <button
+          type="submit"
+          form={formId}
+          className="primary"
+          disabled={!changed || save.status === "saving"}
+        >
+          {save.status === "saving" ? t("common.saving") : t("common.save")}
+        </button>
+        <button type="button" onClick={onDone} disabled={save.status === "saving"}>
+          {t("common.cancel")}
+        </button>
         {save.error && <span className="error">{save.error}</span>}
       </div>
     </li>
