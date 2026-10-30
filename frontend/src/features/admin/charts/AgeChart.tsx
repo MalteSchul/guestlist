@@ -52,6 +52,11 @@ export function AgeChart({ bands }: { bands: Band[] }) {
   const bandW = plotW / bands.length;
   const thickness = Math.min(MAX_THICKNESS, bandW * 0.6);
   const centre = (i: number) => margin.left + bandW * (i + 0.5);
+  // Many narrow columns: label every few, and always the open one at the end.
+  const shortLabels = bandW < 40;
+  const labelWidth = Math.max(...bands.map((b) => ageLabel(b, shortLabels).length)) * 6.5 + 4;
+  const every = Math.max(1, Math.ceil(labelWidth / bandW));
+  const labelled = (i: number) => i === bands.length - 1 || (i % every === 0 && bands.length - 1 - i >= every);
 
   // Touch has no pointer leaving: a tap elsewhere puts the readout away.
   useEffect(() => {
@@ -115,9 +120,11 @@ export function AgeChart({ bands }: { bands: Band[] }) {
                     d={column(left, allTop, yesTop - gap, thickness, true)}
                   />
                 )}
-                <text className="x-label" x={centre(i)} y={base + 17} textAnchor="middle">
-                  {ageLabel(b, bandW < 40)}
-                </text>
+                {labelled(i) && (
+                  <text className="x-label" x={centre(i)} y={base + 17} textAnchor="middle">
+                    {ageLabel(b, shortLabels)}
+                  </text>
+                )}
               </g>
             );
           })}

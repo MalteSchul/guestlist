@@ -82,6 +82,13 @@ const PATHS = {
   ),
   close: <path d="M6 6l12 12M18 6 6 18" />,
   chart: <path d="M5 20v-7M12 20V5M19 20V10" />,
+  sliders: (
+    <>
+      <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+      <circle cx="15" cy="7" r="2" />
+      <circle cx="9" cy="17" r="2" />
+    </>
+  ),
   table: (
     <>
       <rect x="4" y="5" width="16" height="14" rx="2" />

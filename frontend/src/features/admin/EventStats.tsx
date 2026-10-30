@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
@@ -6,6 +7,7 @@ import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime } from "../../i18n/text";
 import { AgeChart, ageLabel } from "./charts/AgeChart";
+import { AgeOptions, type Grouping, DEFAULT_GROUPING } from "./charts/AgeOptions";
 import { AttendanceTimeline } from "./charts/AttendanceTimeline";
 import { ChartCard, Legend, SERIES } from "./charts/ChartCard";
 
@@ -15,24 +17,45 @@ type Stats = Schemas["EventStats"];
 /** What the answers add up to: how they came in over time, and how old the people coming are. */
 export function EventStats({ eventId }: { eventId: string }) {
   const params = { path: { event_id: eventId } };
+  const [grouping, setGrouping] = useState<Grouping>(DEFAULT_GROUPING);
   const event = useLoad(() => unwrap(api.GET("/api/admin/events/{event_id}", { params })), [eventId]);
+  // The old numbers stay on screen until the new ones are there.
   const stats = useLoad(
-    () => unwrap(api.GET("/api/admin/events/{event_id}/stats", { params })),
-    [eventId],
+    () =>
+      unwrap(
+        api.GET("/api/admin/events/{event_id}/stats", {
+          params: { ...params, query: { age_step: grouping.step, age_from: grouping.from } },
+        }),
+      ),
+    [eventId, grouping.step, grouping.from],
   );
 
   return (
     <Layout admin>
       <Loaded {...event}>
         {(event) => (
-          <Loaded {...stats}>{(stats) => <Charts event={event} stats={stats} />}</Loaded>
+          <Loaded {...stats}>
+            {(stats) => (
+              <Charts event={event} stats={stats} grouping={grouping} onGrouping={setGrouping} />
+            )}
+          </Loaded>
         )}
       </Loaded>
     </Layout>
   );
 }
 
-function Charts({ event, stats }: { event: Event; stats: Stats }) {
+function Charts({
+  event,
+  stats,
+  grouping,
+  onGrouping,
+}: {
+  event: Event;
+  stats: Stats;
+  grouping: Grouping;
+  onGrouping: (grouping: Grouping) => void;
+}) {
   const { t, i18n } = useTranslation();
   const steps = stats.timeline;
   // Answers stop when the event or the RSVP deadline comes, so a past event ends there; one
@@ -72,6 +95,10 @@ function Charts({ event, stats }: { event: Event; stats: Stats }) {
           <ChartCard
             title={t("admin.stats.ages")}
             hint={t("admin.stats.agesHint")}
+            options={{
+              label: t("admin.stats.groups"),
+              controls: <AgeOptions grouping={grouping} onChange={onGrouping} />,
+            }}
             legend={<Legend items={["yes", "maybe"]} />}
             table={<AgeTable stats={stats} />}
             note={

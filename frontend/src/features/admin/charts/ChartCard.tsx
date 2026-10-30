@@ -13,6 +13,7 @@ export type Series = (typeof SERIES)[number];
 export function ChartCard({
   title,
   hint,
+  options,
   legend,
   table,
   note,
@@ -20,6 +21,8 @@ export function ChartCard({
 }: {
   title: string;
   hint?: string;
+  /** Controls that change what the chart shows; a button next to the table's opens them. */
+  options?: { label: string; controls: ReactNode };
   legend: ReactNode;
   table: ReactNode;
   note?: string;
@@ -27,6 +30,7 @@ export function ChartCard({
 }) {
   const { t } = useTranslation();
   const [asTable, setAsTable] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
   return (
     <figure className="card chart">
       <figcaption className="chart-head">
@@ -39,13 +43,24 @@ export function ChartCard({
             </>
           )}
         </span>
-        <IconButton
-          icon="table"
-          label={t("admin.stats.table")}
-          pressed={asTable}
-          onClick={() => setAsTable(!asTable)}
-        />
+        <span className="heading-actions">
+          {options && (
+            <IconButton
+              icon="sliders"
+              label={options.label}
+              pressed={adjusting}
+              onClick={() => setAdjusting(!adjusting)}
+            />
+          )}
+          <IconButton
+            icon="table"
+            label={t("admin.stats.table")}
+            pressed={asTable}
+            onClick={() => setAsTable(!asTable)}
+          />
+        </span>
       </figcaption>
+      {options && adjusting && <div className="chart-options">{options.controls}</div>}
       {legend}
       {asTable ? table : children}
       {note && !asTable && <p className="chart-note muted">{note}</p>}
