@@ -15,6 +15,10 @@
   --viz-no: #7a8189;
   --viz-pending: #c7cbd0;
   --radius: 10px;
+  /* The page's vertical rhythm: blocks next to each other, and a section's heading above its
+     block. New things on a page take their gaps from these, not from new numbers. */
+  --space-block: 0.75rem;
+  --space-section: 2rem;
   /* Set from the header's measured height (Layout); this is one line of it. */
   --topbar-height: 3.25rem;
   color-scheme: light;
@@ -89,7 +93,7 @@ h1 {
 
 h2 {
   font-size: 1.15rem;
-  margin: 2rem 0 0.75rem;
+  margin: var(--space-section) 0 var(--space-block);
 }
 
 a {
@@ -216,7 +220,7 @@ a.brand {
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-block);
 }
 
 /* Spacing inside a card comes from this gap alone. */
@@ -246,12 +250,15 @@ a.brand {
   margin-top: 0;
 }
 
-/* Cards in a .cards list are spaced by its gap; anywhere else, by this margin. */
+/* Cards in a .cards list are spaced by its gap; anywhere else, by this margin. A card on a page
+   keeps its distance from whatever precedes it (a date, a hint, a heading), not only from
+   another card; so does a list of cards. */
 .card + .card,
 .cards + .card,
-.meta + .card,
+main > * + .card,
+main > * + .cards,
 section.card {
-  margin-top: 0.75rem;
+  margin-top: var(--space-block);
 }
 
 .cards > .card {
@@ -486,7 +493,7 @@ button.danger {
 
 /* A heading with a control next to it: the row takes the heading's spacing, so both centre. */
 .row:has(> h2) {
-  margin: 2rem 0 0.75rem;
+  margin: var(--space-section) 0 var(--space-block);
 }
 
 .row > h2 {
@@ -1310,7 +1317,7 @@ button.icon.ghost.toggle[aria-pressed="true"] {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 1.25rem;
-  margin: 0.75rem 0;
+  margin: var(--space-block) 0;
   padding: 0;
   font-size: 1.15rem;
   font-weight: 600;
