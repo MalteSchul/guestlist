@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
@@ -157,9 +157,12 @@ function QuestionEditor({
   const [label, setLabel] = useState(question.label ?? "");
   const [required, setRequired] = useState(question.required);
   const askedAgain = useAskedAgain(event, required && !question.required ? question.id : undefined);
+  const changed = label.trim() !== question.label || required !== question.required;
+  const formId = useId();
 
   function submit(e: FormEvent) {
     e.preventDefault();
+    if (!changed) return;
     void save.run(async () => {
       await unwrap(
         api.PUT("/api/admin/events/{event_id}/questions/{question_id}", {
@@ -168,12 +171,13 @@ function QuestionEditor({
         }),
       );
       await reload();
+      onDone();
     });
   }
 
   return (
     <li className="card" ref={reveal}>
-      <form onSubmit={submit} onChange={save.reset}>
+      <form id={formId} onSubmit={submit} onChange={save.reset}>
         <TextField
           label={t("admin.setup.question")}
           value={label}
@@ -184,13 +188,31 @@ function QuestionEditor({
         <p className="hint">
           {t(`admin.setup.kinds.${kindOf(question)}`)} · {t("admin.setup.kindFixed")}
         </p>
-        <SaveBar save={save} />
       </form>
       {question.kind === "choice" && <Options event={event} question={question} reload={reload} />}
+      {/* One bar under the options (they save by themselves): Done while the question itself is
+          as stored, Save and Cancel once it isn't. Both close the editor. */}
       <div className="actions">
-        <button type="button" onClick={onDone}>
-          {t("admin.setup.done")}
-        </button>
+        {changed ? (
+          <>
+            <button
+              type="submit"
+              form={formId}
+              className="primary"
+              disabled={save.status === "saving"}
+            >
+              {save.status === "saving" ? t("common.saving") : t("common.save")}
+            </button>
+            <button type="button" onClick={onDone} disabled={save.status === "saving"}>
+              {t("common.cancel")}
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={onDone}>
+            {t("admin.setup.done")}
+          </button>
+        )}
+        {save.error && <span className="error">{save.error}</span>}
       </div>
     </li>
   );
