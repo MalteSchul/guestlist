@@ -1468,6 +1468,15 @@ button.icon.ghost.toggle[aria-pressed="true"] {
   white-space: nowrap;
 }
 
+/* An answer's icon alone in an icon button: centred, and as big and thin as the line icons. */
+button.icon .attendance-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  vertical-align: baseline;
+  stroke-width: 1.8;
+}
+
 .stats .attendance-icon {
   margin: 0 0 0 0.2em;
   color: var(--muted);
