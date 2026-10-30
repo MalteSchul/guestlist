@@ -8,6 +8,28 @@ import { IconButton } from "../forms";
 export const SERIES = ["yes", "maybe", "no", "pending"] as const;
 export type Series = (typeof SERIES)[number];
 
+/** Which answers the reader has switched off in a chart's legend. One always stays on. */
+export function useSeriesToggle() {
+  const [hidden, setHidden] = useState<ReadonlySet<Series>>(new Set());
+  function toggle(key: Series) {
+    setHidden((before) => {
+      const next = new Set(before);
+      if (next.has(key)) next.delete(key);
+      else if (SERIES.length - next.size > 1) next.add(key);
+      return next;
+    });
+  }
+  return [hidden, toggle] as const;
+}
+
+/** The row with the switched-off answers counted as nobody: the chart then stacks, scales and
+ * labels only what is left. */
+export function without<T extends Record<Series, number>>(row: T, hidden: ReadonlySet<Series>): T {
+  return hidden.size === 0
+    ? row
+    : { ...row, ...Object.fromEntries([...hidden].map((key) => [key, 0])) };
+}
+
 /** A chart in a card: its name, the legend, and the same numbers as a table (the button next
  * to the name switches), for whoever can't read them off the drawing. */
 export function ChartCard({
@@ -68,15 +90,32 @@ export function ChartCard({
   );
 }
 
-/** What each colour means; the swatch is the mark, the words stay in the text colour. */
-export function Legend({ items }: { items: readonly Series[] }) {
+/** What each colour means; the swatch is the mark, the words stay in the text colour. Each
+ * entry is a switch: pressed it shows that answer in the chart, released it leaves it out. */
+export function Legend({
+  items,
+  hidden,
+  onToggle,
+}: {
+  items: readonly Series[];
+  hidden: ReadonlySet<Series>;
+  onToggle: (key: Series) => void;
+}) {
   const { t } = useTranslation();
+  const last = items.length - hidden.size === 1; // the one left can't be switched off
   return (
     <ul className="legend">
       {items.map((key) => (
         <li key={key} className={`s-${key}`}>
-          <span className="swatch" aria-hidden="true" />
-          {t(`admin.attendance.${key}`)}
+          <button
+            type="button"
+            aria-pressed={!hidden.has(key)}
+            aria-disabled={last && !hidden.has(key) ? true : undefined}
+            onClick={() => onToggle(key)}
+          >
+            <span className="swatch" aria-hidden="true" />
+            {t(`admin.attendance.${key}`)}
+          </button>
         </li>
       ))}
     </ul>

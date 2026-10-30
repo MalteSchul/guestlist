@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../../../api/client";
-import { hatchStyle, Patterns, SERIES, Tooltip } from "./ChartCard";
+import { hatchStyle, Patterns, type Series, SERIES, Tooltip, without } from "./ChartCard";
 import { countTicks, DAY, HOUR, linear, timeTicks } from "./scale";
 import { useElementWidth } from "./useElementWidth";
 
@@ -20,13 +20,22 @@ const LABEL_GAP = 14; // least space between two direct labels
 
 /** How the answers came in: people by answer, stacked, from the first invitation until `end`.
  * A step chart, because the numbers only change when someone is invited or answers. */
-export function AttendanceTimeline({ steps, end }: { steps: Step[]; end: number }) {
+export function AttendanceTimeline({
+  steps: all,
+  end,
+  hidden,
+}: {
+  steps: Step[];
+  end: number;
+  hidden: ReadonlySet<Series>;
+}) {
   const { t, i18n } = useTranslation();
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const id = useId().replace(/:/g, "");
   // Where the reader points (or, with the keyboard, which step), and what that step is.
   const [cursor, setCursor] = useState<{ x: number; index: number; keyboard: boolean }>();
 
+  const steps = all.map((step) => without(step, hidden));
   const times = steps.map((step) => new Date(step.at).getTime());
   const from = times[0]!;
   const to = Math.max(end, from + HOUR);
@@ -133,10 +142,10 @@ export function AttendanceTimeline({ steps, end }: { steps: Step[]; end: number 
       tabIndex={0}
       role="group"
       aria-label={t("admin.stats.timelineSummary", {
-        yes: now.yes,
-        maybe: now.maybe,
-        no: now.no,
-        pending: now.pending,
+        yes: all[last]!.yes,
+        maybe: all[last]!.maybe,
+        no: all[last]!.no,
+        pending: all[last]!.pending,
       })}
       onKeyDown={onKey}
       onBlur={() => setCursor(undefined)}
@@ -220,7 +229,10 @@ export function AttendanceTimeline({ steps, end }: { steps: Step[]; end: number 
           bounds={width}
           title={full.format(shownTime)}
           live={shown.keyboard}
-          rows={SERIES.map((key) => ({ key, value: steps[shown.index]![key] }))}
+          rows={SERIES.filter((key) => !hidden.has(key)).map((key) => ({
+            key,
+            value: steps[shown.index]![key],
+          }))}
         />
       )}
     </div>

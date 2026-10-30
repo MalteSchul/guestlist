@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../../../api/client";
-import { hatchStyle, Patterns, SERIES, Tooltip } from "./ChartCard";
+import { hatchStyle, Patterns, type Series, SERIES, Tooltip, without } from "./ChartCard";
 import { countTicks, linear } from "./scale";
 import { useElementWidth } from "./useElementWidth";
 
@@ -39,12 +39,19 @@ function column(x: number, top: number, bottom: number, width: number, round: bo
 }
 
 /** The people invited by age on the day of the event, stacked by answer. */
-export function AgeChart({ bands }: { bands: Band[] }) {
+export function AgeChart({
+  bands: all,
+  hidden,
+}: {
+  bands: Band[];
+  hidden: ReadonlySet<Series>;
+}) {
   const { t } = useTranslation();
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const id = useId().replace(/:/g, "");
   const [hover, setHover] = useState<{ index: number; keyboard: boolean }>();
 
+  const bands = all.map((band) => without(band, hidden));
   const totals = bands.map((band) => SERIES.reduce((sum, key) => sum + band[key], 0));
   const yTicks = countTicks(Math.max(...totals));
   const margin = { top: 10, right: 12, bottom: 28, left: 30 };
@@ -82,7 +89,7 @@ export function AgeChart({ bands }: { bands: Band[] }) {
     setHover({ index: Math.min(Math.max(target, 0), last), keyboard: true });
   }
 
-  const known = totals.reduce((sum, n) => sum + n, 0);
+  const known = all.reduce((sum, b) => sum + SERIES.reduce((n, key) => n + b[key], 0), 0);
   const band = hover && bands[hover.index];
 
   return (
@@ -162,7 +169,7 @@ export function AgeChart({ bands }: { bands: Band[] }) {
               : `${ageLabel(band)} ${t("admin.stats.years")}`
           }
           live={hover.keyboard}
-          rows={SERIES.map((key) => ({ key, value: band[key] }))}
+          rows={SERIES.filter((key) => !hidden.has(key)).map((key) => ({ key, value: band[key] }))}
         />
       )}
     </div>

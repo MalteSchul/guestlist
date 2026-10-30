@@ -9,7 +9,7 @@ import { formatDateTime } from "../../i18n/text";
 import { AgeChart, ageLabel } from "./charts/AgeChart";
 import { AgeOptions, type Grouping, DEFAULT_GROUPING } from "./charts/AgeOptions";
 import { AttendanceTimeline } from "./charts/AttendanceTimeline";
-import { ChartCard, Legend, SERIES } from "./charts/ChartCard";
+import { ChartCard, Legend, SERIES, useSeriesToggle } from "./charts/ChartCard";
 
 type Event = Schemas["EventOut"];
 type Stats = Schemas["EventStats"];
@@ -58,6 +58,8 @@ function Charts({
 }) {
   const { t, i18n } = useTranslation();
   const steps = stats.timeline;
+  const [timelineHidden, toggleTimeline] = useSeriesToggle();
+  const [agesHidden, toggleAges] = useSeriesToggle();
   // Answers stop when the event or the RSVP deadline comes, so a past event ends there; one
   // that is still to come ends now.
   const closes = new Date(event.rsvp_deadline ?? event.starts_at).getTime();
@@ -90,10 +92,10 @@ function Charts({
           <ChartCard
             title={t("admin.stats.timeline")}
             hint={t("admin.stats.timelineHint")}
-            legend={<Legend items={SERIES} />}
+            legend={<Legend items={SERIES} hidden={timelineHidden} onToggle={toggleTimeline} />}
             table={<TimelineTable steps={steps} />}
           >
-            <AttendanceTimeline steps={steps} end={end} />
+            <AttendanceTimeline steps={steps} end={end} hidden={timelineHidden} />
           </ChartCard>
           <ChartCard
             title={t("admin.stats.ages")}
@@ -102,7 +104,7 @@ function Charts({
               label: t("admin.stats.groups"),
               controls: <AgeOptions grouping={grouping} onChange={onGrouping} />,
             }}
-            legend={<Legend items={SERIES} />}
+            legend={<Legend items={SERIES} hidden={agesHidden} onToggle={toggleAges} />}
             table={<AgeTable stats={stats} />}
             note={
               stats.age_unknown > 0
@@ -111,7 +113,7 @@ function Charts({
             }
           >
             {invited > 0 ? (
-              <AgeChart bands={stats.ages} />
+              <AgeChart bands={stats.ages} hidden={agesHidden} />
             ) : (
               <div className="chart-empty">
                 <p className="muted">{t("admin.stats.noAges")}</p>
