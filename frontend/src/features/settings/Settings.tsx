@@ -32,7 +32,7 @@ export function Settings({ admin = false }: { admin?: boolean }) {
   }
 
   return (
-    <Layout admin={admin} settings={false}>
+    <Layout admin={admin}>
       <div className="row title-row">
         <a
           className="icon back"

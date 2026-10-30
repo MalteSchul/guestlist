@@ -5,21 +5,20 @@ import { ApiError } from "../api/client";
 import { Icon } from "./Icon";
 
 /** `admin` is the host's header: the name leads back to the events, with the tabs next to it.
- * Theme and language are on the settings page, behind the gear; the settings page itself leaves
- * the gear out. */
+ * Theme and language are on the settings page, behind the gear, which stays there on the
+ * settings page and shows it is the current one. */
 export function Layout({
   children,
   admin = false,
-  settings = true,
 }: {
   children: ReactNode;
   admin?: boolean;
-  settings?: boolean;
 }) {
   const { t } = useTranslation();
   const path = window.location.pathname;
   const inContacts = path.startsWith("/admin/contacts");
   const inEvents = path === "/" || path.startsWith("/admin/events");
+  const inSettings = path === "/settings" || path === "/admin/settings";
   const header = useRef<HTMLElement>(null);
 
   // The header stays at the top and can wrap on a phone: its height, for what has to stay
@@ -55,16 +54,15 @@ export function Layout({
             </a>
           </nav>
         )}
-        {settings && (
-          <a
-            className="icon topbar-settings"
-            href={admin ? "/admin/settings" : "/settings"}
-            aria-label={t("app.settings")}
-            title={t("app.settings")}
-          >
-            <Icon name="settings" />
-          </a>
-        )}
+        <a
+          className="icon topbar-settings"
+          href={admin ? "/admin/settings" : "/settings"}
+          aria-label={t("app.settings")}
+          title={t("app.settings")}
+          aria-current={inSettings ? "page" : undefined}
+        >
+          <Icon name="settings" />
+        </a>
       </header>
       <main>{children}</main>
     </>

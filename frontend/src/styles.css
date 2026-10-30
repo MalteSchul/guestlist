@@ -161,9 +161,15 @@ a.brand {
   font-weight: 600;
 }
 
-/* The way to the settings, at the far right; it doesn't make the header taller. */
+/* The way to the settings, at the far right; it doesn't make the header taller. On the settings
+   page it is marked like the current tab. */
 .topbar-settings {
   margin: -0.3rem -0.5rem -0.3rem auto;
+}
+
+a.icon.topbar-settings[aria-current="page"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 /* Settings: what's running, label and value side by side. */
