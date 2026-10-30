@@ -161,13 +161,19 @@ def test_ages_can_be_grouped_differently(client: TestClient, session: Session):
     assert data["ages"][-1]["max_age"] is None
 
 
+def test_every_year_can_be_its_own_group(client: TestClient):
+    data = stats(client, event(client), age_step=1, age_from=120)
+    assert [b["min_age"] for b in data["ages"]] == list(range(121))
+    assert data["ages"][-1]["max_age"] is None
+    assert data["ages"][-2]["max_age"] == 119
+
+
 def test_age_groupings_that_make_no_sense_are_refused(client: TestClient):
     event_id = event(client)
     for grouping in (
         {"age_step": 0},
         {"age_from": 0},
         {"age_step": 121},
-        {"age_step": 1, "age_from": 100},  # 101 groups
     ):
         response = client.get(f"{EVENTS}/{event_id}/stats", params=grouping)
         assert response.status_code == 422, grouping

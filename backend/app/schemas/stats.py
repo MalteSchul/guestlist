@@ -1,9 +1,8 @@
-from pydantic import AwareDatetime, Field, model_validator
+from pydantic import AwareDatetime, Field
 
 from app.schemas.common import Schema
 
 MAX_AGE = 120  # anything above is a typo in a birth year
-MAX_AGE_BANDS = 30  # more would not fit a chart
 
 
 class AttendanceStep(Schema):
@@ -23,12 +22,6 @@ class AgeGrouping(Schema):
 
     age_step: int = Field(10, ge=1, le=MAX_AGE)
     age_from: int = Field(80, ge=1, le=MAX_AGE)
-
-    @model_validator(mode="after")
-    def _few_enough_bands(self) -> "AgeGrouping":
-        if len(self.starts()) > MAX_AGE_BANDS:
-            raise ValueError(f"at most {MAX_AGE_BANDS} age groups")
-        return self
 
     def starts(self) -> list[int]:
         """The age each band starts at; the last one is the open-ended band."""
