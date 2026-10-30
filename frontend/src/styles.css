@@ -1147,6 +1147,15 @@ main:has(.selection-bar) {
   padding: 0.5rem 0.65rem;
 }
 
+.menu .menu-check {
+  display: inline-flex;
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  align-self: center;
+  color: var(--accent);
+}
+
 .menu button:hover,
 .menu button:focus-visible {
   background: color-mix(in srgb, var(--text) 8%, transparent);

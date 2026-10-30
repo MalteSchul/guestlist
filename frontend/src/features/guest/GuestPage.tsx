@@ -5,7 +5,7 @@ import { ApiError, api, type Schemas, unwrap } from "../../api/client";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { formatDateTime } from "../../i18n/text";
+import { formatDateTime, sortedByName } from "../../i18n/text";
 import { openRequired, personProgress, summary } from "../answers";
 
 type Invite = Schemas["GuestInviteOut"];
@@ -97,8 +97,9 @@ function Invitation({
   // Done: "no", or "yes" with every required question answered. "Maybe" isn't done.
   const isDone = (person: Person) =>
     personProgress(event.questions, person.attendance, person.answers) === "done";
-  const toAnswer = invite.persons.filter((person) => !isDone(person));
-  const done = invite.persons.filter(isDone);
+  const people = sortedByName(invite.persons, lang);
+  const toAnswer = people.filter((person) => !isDone(person));
+  const done = people.filter(isDone);
   // Required questions added after someone said yes: why their saved answer is open again.
   const added = event.questions.filter((question) =>
     invite.persons.some(

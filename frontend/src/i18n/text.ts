@@ -1,3 +1,14 @@
+/** Compares names the way the language sorts them: Ä with A, no matter the case, 2 before 10. */
+export function nameCollator(language: string): Intl.Collator {
+  return new Intl.Collator(language, { sensitivity: "base", numeric: true });
+}
+
+/** The people of an invite (or anything with a name) A to Z. */
+export function sortedByName<T extends { name: string }>(items: readonly T[], language: string): T[] {
+  const collator = nameCollator(language);
+  return [...items].sort((a, b) => collator.compare(a.name, b.name));
+}
+
 export function formatDateTime(iso: string, language: string): string {
   return new Intl.DateTimeFormat(language, { dateStyle: "full", timeStyle: "short" }).format(
     new Date(iso),

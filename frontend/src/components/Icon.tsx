@@ -89,6 +89,7 @@ const PATHS = {
       <circle cx="9" cy="17" r="2" />
     </>
   ),
+  sort: <path d="M8 5v14M4 15l4 4 4-4M16 19V5M12 9l4-4 4 4" />,
   table: (
     <>
       <rect x="4" y="5" width="16" height="14" rx="2" />

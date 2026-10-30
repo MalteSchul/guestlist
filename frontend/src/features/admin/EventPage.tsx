@@ -7,7 +7,9 @@ import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Icon, type IconName } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
+import { SortMenu } from "../../components/SortMenu";
 import { useLoad } from "../../components/useLoad";
+import { nameCollator, sortedByName } from "../../i18n/text";
 import { useProgressMark } from "../../progressMark";
 import { openRequired, type Progress, personProgress, summary } from "../answers";
 import { EventFacts } from "./EventFacts";
@@ -49,12 +51,13 @@ function EventDetails({
   invites: Invite[];
   onChange: (invites: Invite[]) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [order, setOrder] = useState<InviteOrder>("newest");
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const unfinished = invites.filter((invite) => inviteProgress(event, invite) !== "done");
-  const shown = onlyOpen ? unfinished : invites;
+  const shown = sortInvites(onlyOpen ? unfinished : invites, order, event, i18n.language);
   const persons = invites.flatMap((invite) => invite.persons);
   const coming = persons.filter((person) => person.attendance === "yes");
 
@@ -124,6 +127,17 @@ function EventDetails({
           {t("admin.event.invites")} <InfoTip text={t("admin.event.invitesHint")} />
         </h2>
         <span className="heading-actions">
+          {invites.length > 1 && (
+            <SortMenu
+              label={t("admin.event.sort")}
+              value={order}
+              onChange={setOrder}
+              options={INVITE_ORDERS.map((value) => ({
+                value,
+                label: t(`admin.event.order.${value}`),
+              }))}
+            />
+          )}
           {invites.length > 0 && (
             <button
               type="button"
@@ -194,7 +208,7 @@ function InviteCard({
   invite: Invite;
   onDeleted: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
   const action = useSave();
   const link = `${window.location.origin}/i/${invite.token}`;
@@ -274,7 +288,7 @@ function InviteCard({
   );
   const persons = (
     <ul className="persons">
-      {invite.persons.map((person) => {
+      {sortedByName(invite.persons, i18n.language).map((person) => {
         // Saving "yes" needs every required answer, so this only happens when a question
         // became required after the guest answered.
         const open =
@@ -364,6 +378,27 @@ const PROGRESS_ICONS = {
   partial: "progressPartial",
   done: "progressDone",
 } as const satisfies Record<Progress, IconName>;
+
+/** How the invites are listed. The list from the server, and the page's own, is newest first. */
+const INVITE_ORDERS = ["newest", "oldest", "name", "status"] as const;
+type InviteOrder = (typeof INVITE_ORDERS)[number];
+
+/** By name; by how far the answers are, open ones first; or by age. Equal ones keep the order they
+ * come in, newest first. */
+function sortInvites(invites: Invite[], order: InviteOrder, event: Event, language: string): Invite[] {
+  if (order === "oldest") return [...invites].reverse();
+  if (order === "name") {
+    const collator = nameCollator(language);
+    return [...invites].sort((a, b) => collator.compare(a.name, b.name));
+  }
+  if (order === "status") {
+    const rank = { open: 0, partial: 1, done: 2 } satisfies Record<Progress, number>;
+    return [...invites].sort(
+      (a, b) => rank[inviteProgress(event, a)] - rank[inviteProgress(event, b)],
+    );
+  }
+  return invites;
+}
 
 /** Red while nobody answered, green once everyone is done, yellow in between. */
 function inviteProgress(event: Event, invite: Invite): Progress {

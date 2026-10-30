@@ -83,6 +83,13 @@
       },
       "noInvites": "No invites yet.",
       "onlyUnfinished": "Only unfinished invites",
+      "sort": "Sort",
+      "order": {
+        "newest": "Newest first",
+        "oldest": "Oldest first",
+        "name": "Name A–Z",
+        "status": "Open first"
+      },
       "allFinished": "Every invite is finished.",
       "openLink": "Open",
       "comment": "“{{comment}}”",

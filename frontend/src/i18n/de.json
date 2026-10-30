@@ -83,6 +83,13 @@
       },
       "noInvites": "Noch keine Einladungen.",
       "onlyUnfinished": "Nur offene Einladungen",
+      "sort": "Sortieren",
+      "order": {
+        "newest": "Neueste zuerst",
+        "oldest": "Älteste zuerst",
+        "name": "Name A–Z",
+        "status": "Offene zuerst"
+      },
       "allFinished": "Alle Einladungen sind fertig.",
       "openLink": "Öffnen",
       "comment": "„{{comment}}“",
