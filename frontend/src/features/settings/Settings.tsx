@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { Icon } from "../../components/Icon";
 import { Layout } from "../../components/Layout";
-import { chooseLanguage, type Language, LANGUAGES } from "../../i18n";
+import { chooseLanguage, type Language, LANGUAGES, useLanguageChoice } from "../../i18n";
 import { chooseTheme, type ThemeChoice, useThemeChoice } from "../../theme";
 
 const THEME_CHOICES: ThemeChoice[] = ["light", "dark", "system"];
@@ -16,6 +16,7 @@ const LANGUAGE_NAMES: Record<Language, string> = { de: "Deutsch", en: "English" 
 export function Settings({ admin = false }: { admin?: boolean }) {
   const { t, i18n } = useTranslation();
   const theme = useThemeChoice();
+  const language = useLanguageChoice();
   const built = new Intl.DateTimeFormat(i18n.language, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -68,17 +69,26 @@ export function Settings({ admin = false }: { admin?: boolean }) {
         <fieldset className="field plain">
           <legend>{t("settings.language")}</legend>
           <div className="choices">
-            {LANGUAGES.map((language) => (
-              <label key={language} className="choice" lang={language}>
+            {LANGUAGES.map((choice) => (
+              <label key={choice} className="choice" lang={choice}>
                 <input
                   type="radio"
                   name="language"
-                  checked={i18n.language === language}
-                  onChange={() => chooseLanguage(language)}
+                  checked={language === choice}
+                  onChange={() => chooseLanguage(choice)}
                 />
-                {LANGUAGE_NAMES[language]}
+                {LANGUAGE_NAMES[choice]}
               </label>
             ))}
+            <label className="choice">
+              <input
+                type="radio"
+                name="language"
+                checked={language === "system"}
+                onChange={() => chooseLanguage("system")}
+              />
+              {t("settings.languageSystem")}
+            </label>
           </div>
         </fieldset>
       </section>

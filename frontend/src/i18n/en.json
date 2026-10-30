@@ -293,6 +293,7 @@
       "system": "Like the device"
     },
     "language": "Language",
+    "languageSystem": "Like the device",
     "version": "Version",
     "unknown": "unknown",
     "dev": "development",
