@@ -249,6 +249,7 @@ a.brand {
 /* Cards in a .cards list are spaced by its gap; anywhere else, by this margin. */
 .card + .card,
 .cards + .card,
+.meta + .card,
 section.card {
   margin-top: 0.75rem;
 }
