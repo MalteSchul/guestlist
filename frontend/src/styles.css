@@ -960,19 +960,27 @@ button.icon.ghost.done {
   user-select: none;
 }
 
+/* The tint is its own layer behind the row, reaching the card's edges, so the row's box, and
+   the dashed line on its top border, stay where they are in every row. */
 .rows > li.selected {
-  margin: 0 -1rem;
-  padding-right: 1rem;
-  padding-left: 1rem;
+  position: relative;
+  isolation: isolate;
+}
+
+.rows > li.selected::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 -1rem;
   background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
-.rows > li.selected:first-child {
+.rows > li.selected:first-child::before {
   border-top-left-radius: calc(var(--radius) - 1px);
   border-top-right-radius: calc(var(--radius) - 1px);
 }
 
-.rows > li.selected:last-child {
+.rows > li.selected:last-child::before {
   border-bottom-right-radius: calc(var(--radius) - 1px);
   border-bottom-left-radius: calc(var(--radius) - 1px);
 }
