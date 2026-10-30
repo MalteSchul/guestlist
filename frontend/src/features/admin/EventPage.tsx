@@ -53,7 +53,7 @@ function EventDetails({
 }) {
   const { t, i18n } = useTranslation();
   const [onlyOpen, setOnlyOpen] = useState(false);
-  const [order, setOrder] = useState<InviteOrder>("added-desc");
+  const [order, setOrder] = useState<InviteOrder>("name-asc");
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const unfinished = invites.filter((invite) => inviteProgress(event, invite) !== "done");
