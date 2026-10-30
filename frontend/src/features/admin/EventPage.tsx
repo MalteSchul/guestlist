@@ -232,18 +232,13 @@ function InviteCard({
   const mark = useProgressMark();
   const progress = inviteProgress(event, invite);
   const progressLabel = t(`admin.event.progress.${progress}`);
+  const progressIcon = mark !== "bar" && (
+    <span className="progress-icon" role="img" aria-label={progressLabel} title={progressLabel}>
+      <Icon name={PROGRESS_ICONS[progress]} />
+    </span>
+  );
   const actions = (
     <span className="card-actions">
-      {mark !== "bar" && (
-        <span
-          className="progress-icon"
-          role="img"
-          aria-label={progressLabel}
-          title={progressLabel}
-        >
-          <Icon name={PROGRESS_ICONS[progress]} />
-        </span>
-      )}
       <a
         className="icon ghost"
         href={link}
@@ -315,12 +310,16 @@ function InviteCard({
     <li className={`card progress ${progress}${mark === "icon" ? "" : " bar"}`}>
       {single ? (
         <div className="row single">
+          {progressIcon}
           {persons}
           {actions}
         </div>
       ) : (
         <div className="row">
-          <strong>{invite.name}</strong>
+          <span className="invite-title">
+            {progressIcon}
+            <strong>{invite.name}</strong>
+          </span>
           {actions}
         </div>
       )}
