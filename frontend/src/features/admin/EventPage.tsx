@@ -120,7 +120,7 @@ function EventDetails({
       )}
 
       <div className="row">
-        <h2>{t("admin.event.invites", { count: invites.length })}</h2>
+        <h2>{t("admin.event.invites")}</h2>
         <span className="heading-actions">
           {invites.length > 0 && (
             <button
