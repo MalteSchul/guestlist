@@ -19,6 +19,7 @@ const HEIGHT = 236;
 const GAP = 2; // surface between the two segments of a column
 const MAX_THICKNESS = 24;
 const RADIUS = 4;
+const LABEL_EVERY = [1, 2, 5, 10, 20, 50]; // round, so the labels land on round ages
 
 /** "30–39", "80+". */
 export function ageLabel(band: Band, short = false): string {
@@ -50,13 +51,15 @@ export function AgeChart({ bands }: { bands: Band[] }) {
   const plotH = HEIGHT - margin.top - margin.bottom;
   const y = linear([0, yTicks[yTicks.length - 1]!], [margin.top + plotH, margin.top]);
   const bandW = plotW / bands.length;
-  const thickness = Math.min(MAX_THICKNESS, bandW * 0.6);
+  const thickness = Math.min(MAX_THICKNESS, bandW * (bandW < 12 ? 0.8 : 0.6)); // fatter when crowded
   const centre = (i: number) => margin.left + bandW * (i + 0.5);
-  // Many narrow columns: label every few, and always the open one at the end.
+  // Narrow columns don't each get a label: every 2nd, 5th, 10th ... as many as fit, and always
+  // the open one at the end.
   const shortLabels = bandW < 40;
   const labelWidth = Math.max(...bands.map((b) => ageLabel(b, shortLabels).length)) * 6.5 + 4;
-  const every = Math.max(1, Math.ceil(labelWidth / bandW));
-  const labelled = (i: number) => i === bands.length - 1 || (i % every === 0 && bands.length - 1 - i >= every);
+  const every = LABEL_EVERY.find((n) => n * bandW >= labelWidth) ?? LABEL_EVERY[LABEL_EVERY.length - 1]!;
+  const labelled = (i: number) =>
+    i === bands.length - 1 || (i % every === 0 && bands.length - 1 - i >= every);
 
   // Touch has no pointer leaving: a tap elsewhere puts the readout away.
   useEffect(() => {

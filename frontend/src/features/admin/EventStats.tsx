@@ -156,7 +156,7 @@ function TimelineTable({ steps }: { steps: Stats["timeline"] }) {
 function AgeTable({ stats }: { stats: Stats }) {
   const { t } = useTranslation();
   return (
-    <div className="chart-table-wrap">
+    <div className="chart-table-wrap scroll">
       <table className="chart-table">
         <thead>
           <tr>
