@@ -1,8 +1,8 @@
 """initial schema
 
-Revision ID: 73b7a1108d4e
+Revision ID: 6375ab642939
 Revises:
-Create Date: 2026-10-25 18:41:41.319014
+Create Date: 2026-10-28 22:47:19.137381
 
 """
 
@@ -10,10 +10,9 @@ from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "73b7a1108d4e"
+revision: str = "6375ab642939"
 down_revision: str | Sequence[str] | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -25,13 +24,12 @@ def upgrade() -> None:
     op.create_table(
         "events",
         sa.Column("id", sa.Uuid(), nullable=False),
-        sa.Column("title", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column("description", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column("title", sa.Text(), nullable=False),
+        sa.Column("description", sa.Text(), nullable=True),
         sa.Column("location", sa.Text(), nullable=True),
         sa.Column("starts_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("ends_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("rsvp_deadline", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("default_language", sa.Text(), nullable=False),
         sa.Column("keep_data", sa.Boolean(), server_default=sa.text("false"), nullable=False),
         sa.Column(
             "guest_list_enabled", sa.Boolean(), server_default=sa.text("false"), nullable=False
@@ -47,9 +45,6 @@ def upgrade() -> None:
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
             nullable=False,
-        ),
-        sa.CheckConstraint(
-            "default_language IN ('de', 'en')", name=op.f("ck_events_default_language")
         ),
         sa.CheckConstraint(
             "ends_at IS NULL OR ends_at >= starts_at", name=op.f("ck_events_ends_after_start")
@@ -83,6 +78,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("owner_user_id", sa.Uuid(), nullable=False),
         sa.Column("name", sa.Text(), nullable=False),
+        sa.Column("invite_mode", sa.Text(), server_default=sa.text("'together'"), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -94,6 +90,9 @@ def upgrade() -> None:
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
             nullable=False,
+        ),
+        sa.CheckConstraint(
+            "invite_mode IN ('together', 'separately')", name=op.f("ck_contact_groups_invite_mode")
         ),
         sa.ForeignKeyConstraint(
             ["owner_user_id"],
@@ -137,7 +136,7 @@ def upgrade() -> None:
         "event_questions",
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("event_id", sa.Uuid(), nullable=False),
-        sa.Column("label", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column("label", sa.Text(), nullable=False),
         sa.Column("kind", sa.Text(), nullable=False),
         sa.Column("multiple", sa.Boolean(), server_default=sa.text("false"), nullable=False),
         sa.Column("required", sa.Boolean(), server_default=sa.text("false"), nullable=False),
@@ -206,8 +205,8 @@ def upgrade() -> None:
         "event_sections",
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("event_id", sa.Uuid(), nullable=False),
-        sa.Column("title", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column("body", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column("title", sa.Text(), nullable=False),
+        sa.Column("body", sa.Text(), nullable=False),
         sa.Column("position", sa.Integer(), nullable=False),
         sa.Column(
             "created_at",
@@ -324,7 +323,7 @@ def upgrade() -> None:
         "event_question_options",
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("question_id", sa.Uuid(), nullable=False),
-        sa.Column("label", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column("label", sa.Text(), nullable=False),
         sa.Column("active", sa.Boolean(), server_default=sa.text("true"), nullable=False),
         sa.Column("position", sa.Integer(), nullable=False),
         sa.Column(

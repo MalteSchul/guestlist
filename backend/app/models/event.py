@@ -7,9 +7,8 @@ from typing import Literal, get_args
 from sqlalchemy import CheckConstraint, ForeignKey, false, true
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base, Timestamps, Translated, UuidPk, check_in, owned_children
+from app.models.base import Base, Timestamps, UuidPk, check_in, owned_children
 
-Language = Literal["de", "en"]
 QuestionKind = Literal["choice", "text"]
 
 
@@ -17,13 +16,13 @@ class Event(Timestamps, Base):
     __tablename__ = "events"
 
     id: Mapped[UuidPk]
-    title: Mapped[Translated]
-    description: Mapped[Translated | None]
+    # Host-written text is plain text in whatever language the host writes (D16).
+    title: Mapped[str]
+    description: Mapped[str | None]
     location: Mapped[str | None]
     starts_at: Mapped[datetime]
     ends_at: Mapped[datetime | None]
     rsvp_deadline: Mapped[datetime | None]
-    default_language: Mapped[str]
     keep_data: Mapped[bool] = mapped_column(server_default=false())
     guest_list_enabled: Mapped[bool] = mapped_column(server_default=false())
 
@@ -35,7 +34,6 @@ class Event(Timestamps, Base):
     )
 
     __table_args__ = (
-        check_in("default_language", get_args(Language)),
         CheckConstraint("ends_at IS NULL OR ends_at >= starts_at", name="ends_after_start"),
     )
 
@@ -58,8 +56,8 @@ class EventSection(Timestamps, Base):
     event_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("events.id", ondelete="CASCADE"), index=True
     )
-    title: Mapped[Translated]
-    body: Mapped[Translated]
+    title: Mapped[str]
+    body: Mapped[str]
     position: Mapped[int]
 
 
@@ -70,7 +68,7 @@ class EventQuestion(Timestamps, Base):
     event_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("events.id", ondelete="CASCADE"), index=True
     )
-    label: Mapped[Translated]
+    label: Mapped[str]
     kind: Mapped[str]
     multiple: Mapped[bool] = mapped_column(server_default=false())
     required: Mapped[bool] = mapped_column(server_default=false())
@@ -93,6 +91,6 @@ class EventQuestionOption(Timestamps, Base):
     question_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("event_questions.id", ondelete="CASCADE"), index=True
     )
-    label: Mapped[Translated]
+    label: Mapped[str]
     active: Mapped[bool] = mapped_column(server_default=true())
     position: Mapped[int]

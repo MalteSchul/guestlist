@@ -1,12 +1,10 @@
-import i18next from "i18next";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ApiError, api, type Schemas, unwrap } from "../../api/client";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { preferredLanguage } from "../../i18n";
-import { formatDateTime, pick } from "../../i18n/text";
+import { formatDateTime } from "../../i18n/text";
 import { openRequired, personProgress, summary } from "../answers";
 
 type Invite = Schemas["GuestInviteOut"];
@@ -24,20 +22,12 @@ export function GuestPage({ token }: { token: string }) {
   const params = { header: { "X-Invite-Token": token } };
   const invite = useLoad(() => unwrap(api.GET("/api/guest/invite", { params })), [token]);
 
-  // Written in one language only: show that one, without the switch. In both: the choice or the
-  // browser's, as on every page (A21). The forced language isn't stored as a choice.
-  const languages = invite.data?.event.languages;
-  const only = languages?.length === 1 ? languages[0] : undefined;
-  useEffect(() => {
-    void i18next.changeLanguage(only ?? preferredLanguage());
-  }, [only]);
-
   async function save(body: Schemas["GuestResponseIn"]) {
     invite.setData(await unwrap(api.PUT("/api/guest/invite", { params, body })));
   }
 
   return (
-    <Layout switcher={!only}>
+    <Layout>
       <Loaded {...invite}>{(data) => <Invitation invite={data} onSave={save} />}</Loaded>
     </Layout>
   );
@@ -110,7 +100,7 @@ function Invitation({
 
   return (
     <>
-      <h1>{pick(event.title, lang)}</h1>
+      <h1>{event.title}</h1>
       <p className="meta">
         {formatDateTime(event.starts_at, lang)}
         {event.ends_at && ` – ${formatDateTime(event.ends_at, lang)}`}
@@ -122,12 +112,12 @@ function Invitation({
           </a>
         </p>
       )}
-      {event.description && <p className="prose">{pick(event.description, lang)}</p>}
+      {event.description && <p className="prose">{event.description}</p>}
 
       {event.sections.map((section) => (
         <section key={section.id} className="card">
-          <h2>{pick(section.title, lang)}</h2>
-          <p className="prose">{pick(section.body, lang)}</p>
+          <h2>{section.title}</h2>
+          <p className="prose">{section.body}</p>
         </section>
       ))}
 
@@ -170,7 +160,7 @@ function Invitation({
                         {person.answers.length > 0 && (
                           <span className="muted">
                             {" "}
-                            · {summary(event.questions, person.answers, lang)}
+                            · {summary(event.questions, person.answers)}
                           </span>
                         )}
                       </span>
@@ -316,10 +306,10 @@ function QuestionField({
   answer: Answer;
   onChange: (answer: Answer) => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const label = (
     <>
-      {pick(question.label, i18n.language) + (required ? " *" : "")}
+      {question.label + (required ? " *" : "")}
       {isNew && <span className="badge">{t("guest.new")}</span>}
     </>
   );
@@ -368,7 +358,7 @@ function QuestionField({
                 onChange={() => onChange({ ...answer, option_ids: [option.id] })}
               />
             )}
-            {pick(option.label, i18n.language)}
+            {option.label}
           </label>
         ))}
       </div>

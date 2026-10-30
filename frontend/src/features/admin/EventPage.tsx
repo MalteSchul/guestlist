@@ -7,7 +7,7 @@ import { Icon } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { formatDateTime, pick } from "../../i18n/text";
+import { formatDateTime } from "../../i18n/text";
 import { openRequired, type Progress, personProgress, summary } from "../answers";
 import { useSave } from "./forms";
 import { NewInvite } from "./NewInvite";
@@ -64,7 +64,7 @@ function EventDetails({
   return (
     <>
       <div className="row">
-        <h1>{pick(event.title, lang)}</h1>
+        <h1>{event.title}</h1>
         <a href={`/admin/events/${event.id}/edit`}>{t("admin.event.edit")}</a>
       </div>
       <p className="meta">{formatDateTime(event.starts_at, lang)}</p>
@@ -91,12 +91,12 @@ function EventDetails({
             .filter((question) => question.kind === "choice")
             .map((question) => (
               <div key={question.id} className="card">
-                <strong>{pick(question.label, lang)}</strong>
+                <strong>{question.label}</strong>
                 <ul className="totals">
                   {question.options.map((option) => (
                     <li key={option.id}>
                       <span className={option.active ? undefined : "muted"}>
-                        {pick(option.label, lang)}
+                        {option.label}
                         {!option.active && ` (${t("admin.setup.hidden")})`}
                       </span>
                       <span>{coming.filter((p) => picked(p, question.id, option.id)).length}</span>
@@ -155,7 +155,7 @@ function InviteCard({
   invite: Invite;
   onDeleted: () => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
   const action = useSave();
   const link = `${window.location.origin}/i/${invite.token}`;
@@ -253,7 +253,7 @@ function InviteCard({
               {person.answers.length > 0 && (
                 <span className="muted">
                   {" "}
-                  · {summary(event.questions, person.answers, i18n.language)}
+                  · {summary(event.questions, person.answers)}
                 </span>
               )}
             </span>

@@ -9,19 +9,19 @@ EVENTS = "/api/admin/events"
 GUEST = "/api/guest/invite"
 
 FOOD = {
-    "label": {"de": "Essen"},
+    "label": "Essen",
     "kind": "choice",
     "required": True,
-    "options": [{"label": {"de": "Fleisch"}}, {"label": {"de": "Vegetarisch"}, "position": 1}],
+    "options": [{"label": "Fleisch"}, {"label": "Vegetarisch", "position": 1}],
 }
 DRINKS = {
-    "label": {"de": "Getränke"},
+    "label": "Getränke",
     "kind": "choice",
     "multiple": True,
     "position": 1,
-    "options": [{"label": {"de": "Wein"}}, {"label": {"de": "Wasser"}, "position": 1}],
+    "options": [{"label": "Wein"}, {"label": "Wasser", "position": 1}],
 }
-ALLERGIES = {"label": {"de": "Allergien"}, "kind": "text", "position": 2}
+ALLERGIES = {"label": "Allergien", "kind": "text", "position": 2}
 
 
 def in_days(days: int) -> str:
@@ -31,7 +31,7 @@ def in_days(days: int) -> str:
 @pytest.fixture
 def party(client: TestClient) -> dict:
     """An event with three questions and one invite for Anna and Ben."""
-    event = client.post(EVENTS, json={"title": {"de": "Sommerfest"}, "starts_at": in_days(30)})
+    event = client.post(EVENTS, json={"title": "Sommerfest", "starts_at": in_days(30)})
     event = event.json()
     questions = [
         client.post(f"{EVENTS}/{event['id']}/questions", json=q).json()
@@ -101,33 +101,7 @@ def test_guest_sees_the_event_and_their_invite(client: TestClient, party: dict):
     assert [p["name"] for p in data["persons"]] == ["Anna", "Ben"]
     assert "token" not in data
     food = data["event"]["questions"][0]
-    assert [o["label"]["de"] for o in food["options"]] == ["Vegetarisch"]
-
-
-def test_guest_gets_the_languages_every_text_is_written_in(client: TestClient):
-    """The guest page shows one of these, so text isn't mixed (A21). Hidden options don't count."""
-    title = {"de": "Sommerfest", "en": "Summer party"}
-    event = client.post(EVENTS, json={"title": title, "starts_at": in_days(30)}).json()
-    url = f"{EVENTS}/{event['id']}"
-    invite = client.post(
-        f"{url}/invites", json={"name": "Anna", "persons": [{"name": "Anna"}]}
-    ).json()
-
-    def languages() -> list[str]:
-        response = client.get(GUEST, headers={"X-Invite-Token": invite["token"]})
-        return response.json()["event"]["languages"]
-
-    assert languages() == ["de", "en"]
-
-    food = {"label": {"de": "Essen", "en": "Food"}, "kind": "choice"}
-    food = client.post(f"{url}/questions", json=food | {"options": [{"label": {"de": "Fleisch"}}]})
-    food = food.json()
-    assert languages() == ["de"]
-
-    meat = food["options"][0]
-    options = f"{url}/questions/{food['id']}/options"
-    client.put(f"{options}/{meat['id']}", json={"label": meat["label"], "active": False})
-    assert languages() == ["de", "en"]
+    assert [o["label"] for o in food["options"]] == ["Vegetarisch"]
 
 
 def test_unknown_or_missing_token(client: TestClient):
@@ -194,7 +168,7 @@ def test_single_choice_takes_one_option(client: TestClient, party: dict):
 
 
 def test_questions_and_options_of_other_events_are_rejected(client: TestClient, party: dict):
-    other = client.post(EVENTS, json={"title": {"de": "Anderes"}, "starts_at": in_days(9)}).json()
+    other = client.post(EVENTS, json={"title": "Anderes", "starts_at": in_days(9)}).json()
     foreign = client.post(f"{EVENTS}/{other['id']}/questions", json=FOOD).json()
 
     person = {"id": party["anna"], "attendance": "maybe", "answers": [answer(foreign, 0)]}

@@ -19,7 +19,7 @@ def group(client: TestClient, name: str, members: list[dict], **fields) -> dict:
 
 
 def event(client: TestClient) -> str:
-    body = {"title": {"de": "Sommerfest"}, "starts_at": "2030-07-01T18:00:00+02:00"}
+    body = {"title": "Sommerfest", "starts_at": "2030-07-01T18:00:00+02:00"}
     return client.post(EVENTS, json=body).json()["id"]
 
 

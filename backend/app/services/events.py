@@ -16,17 +16,9 @@ from app.models import (
     PersonAnswerOption,
     User,
 )
-from app.schemas.common import Translated
 from app.schemas.events import EventIn, OptionIn, QuestionIn, QuestionUpdate, SectionIn
 from app.services.access import find, require_role
 from app.services.errors import Conflict, Invalid
-
-
-def _require_language(language: str, *texts: Translated | None) -> None:
-    """Host-written text always has the event's default language (data-model.md)."""
-    for text in texts:
-        if text is not None and getattr(text, language) is None:
-            raise Invalid(f"text in the event's default language ({language}) is required")
 
 
 def _assign(row: object, data: BaseModel) -> None:
@@ -48,7 +40,6 @@ def list_events(session: Session, user: User) -> Sequence[Event]:
 
 def create_event(session: Session, user: User, data: EventIn) -> Event:
     """The creator becomes the event's owner."""
-    _require_language(data.default_language, data.title, data.description)
     event = Event(**data.model_dump())
     session.add(event)
     session.flush()
@@ -63,7 +54,6 @@ def get_event(session: Session, user: User, event_id: uuid.UUID) -> Event:
 
 def update_event(session: Session, user: User, event_id: uuid.UUID, data: EventIn) -> Event:
     event = require_role(session, user, event_id, "admin")
-    _require_language(data.default_language, data.title, data.description)
     _assign(event, data)
     session.commit()
     return event
@@ -79,7 +69,6 @@ def delete_event(session: Session, user: User, event_id: uuid.UUID) -> None:
 
 def add_section(session: Session, user: User, event_id: uuid.UUID, data: SectionIn) -> EventSection:
     event = require_role(session, user, event_id, "admin")
-    _require_language(event.default_language, data.title, data.body)
     section = EventSection(**data.model_dump())
     event.sections.append(section)
     session.commit()
@@ -91,7 +80,6 @@ def update_section(
 ) -> EventSection:
     event = require_role(session, user, event_id, "admin")
     section = find(event.sections, section_id, "section")
-    _require_language(event.default_language, data.title, data.body)
     _assign(section, data)
     session.commit()
     return section
@@ -112,7 +100,6 @@ def add_question(
     session: Session, user: User, event_id: uuid.UUID, data: QuestionIn
 ) -> EventQuestion:
     event = require_role(session, user, event_id, "admin")
-    _require_language(event.default_language, data.label, *(o.label for o in data.options))
     question = EventQuestion(
         **data.model_dump(exclude={"options"}),
         options=[EventQuestionOption(**option.model_dump()) for option in data.options],
@@ -131,7 +118,6 @@ def update_question(
 ) -> EventQuestion:
     event = require_role(session, user, event_id, "admin")
     question = find(event.questions, question_id, "question")
-    _require_language(event.default_language, data.label)
     _assign(question, data)
     session.commit()
     return question
@@ -161,7 +147,6 @@ def add_option(
 ) -> EventQuestionOption:
     event = require_role(session, user, event_id, "admin")
     question = _choice_question(event, question_id)
-    _require_language(event.default_language, data.label)
     option = EventQuestionOption(**data.model_dump())
     question.options.append(option)
     session.commit()
@@ -178,7 +163,6 @@ def update_option(
 ) -> EventQuestionOption:
     event = require_role(session, user, event_id, "admin")
     option = find(_choice_question(event, question_id).options, option_id, "option")
-    _require_language(event.default_language, data.label)
     _assign(option, data)
     session.commit()
     return option

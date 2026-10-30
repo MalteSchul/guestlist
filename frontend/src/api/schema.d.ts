@@ -403,13 +403,8 @@ export interface components {
         };
         /** EventIn */
         EventIn: {
-            /**
-             * Default Language
-             * @default de
-             * @enum {string}
-             */
-            default_language: "de" | "en";
-            description?: components["schemas"]["Translated"] | null;
+            /** Description */
+            description?: string | null;
             /** Ends At */
             ends_at?: string | null;
             /**
@@ -431,17 +426,13 @@ export interface components {
              * Format: date-time
              */
             starts_at: string;
-            title: components["schemas"]["Translated"];
+            /** Title */
+            title: string;
         };
         /** EventOut */
         EventOut: {
-            /**
-             * Default Language
-             * @default de
-             * @enum {string}
-             */
-            default_language: "de" | "en";
-            description?: components["schemas"]["Translated"] | null;
+            /** Description */
+            description?: string | null;
             /** Ends At */
             ends_at?: string | null;
             /**
@@ -472,7 +463,8 @@ export interface components {
              * Format: date-time
              */
             starts_at: string;
-            title: components["schemas"]["Translated"];
+            /** Title */
+            title: string;
         };
         /** EventSummary */
         EventSummary: {
@@ -488,7 +480,8 @@ export interface components {
              * Format: date-time
              */
             starts_at: string;
-            title: components["schemas"]["Translated"];
+            /** Title */
+            title: string;
         };
         /** GroupIn */
         GroupIn: {
@@ -549,17 +542,12 @@ export interface components {
             answers_close_at: string;
             /** Answers Open */
             answers_open: boolean;
-            description: components["schemas"]["Translated"] | null;
+            /** Description */
+            description: string | null;
             /** Ends At */
             ends_at: string | null;
             /** Guest List Enabled */
             guest_list_enabled: boolean;
-            /**
-             * Languages
-             * @description The languages every text the guest sees is written in, so the page can show one of
-             *     them without mixing (A21).
-             */
-            readonly languages: ("de" | "en")[];
             /** Location */
             location: string | null;
             /** Questions */
@@ -571,7 +559,8 @@ export interface components {
              * Format: date-time
              */
             starts_at: string;
-            title: components["schemas"]["Translated"];
+            /** Title */
+            title: string;
         };
         /** GuestInviteOut */
         GuestInviteOut: {
@@ -610,7 +599,8 @@ export interface components {
              * @enum {string}
              */
             kind: "choice" | "text";
-            label: components["schemas"]["Translated"];
+            /** Label */
+            label: string;
             /** Multiple */
             multiple: boolean;
             /** Options */
@@ -713,7 +703,8 @@ export interface components {
              * @default true
              */
             active: boolean;
-            label: components["schemas"]["Translated"];
+            /** Label */
+            label: string;
             /**
              * Position
              * @default 0
@@ -732,7 +723,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
-            label: components["schemas"]["Translated"];
+            /** Label */
+            label: string;
             /**
              * Position
              * @default 0
@@ -800,7 +792,8 @@ export interface components {
              * @enum {string}
              */
             kind: "choice" | "text";
-            label: components["schemas"]["Translated"];
+            /** Label */
+            label: string;
             /**
              * Multiple
              * @default false
@@ -834,7 +827,8 @@ export interface components {
              * @enum {string}
              */
             kind: "choice" | "text";
-            label: components["schemas"]["Translated"];
+            /** Label */
+            label: string;
             /** Multiple */
             multiple: boolean;
             /** Options */
@@ -852,7 +846,8 @@ export interface components {
         };
         /** QuestionUpdate */
         QuestionUpdate: {
-            label: components["schemas"]["Translated"];
+            /** Label */
+            label: string;
             /**
              * Position
              * @default 0
@@ -866,17 +861,20 @@ export interface components {
         };
         /** SectionIn */
         SectionIn: {
-            body: components["schemas"]["Translated"];
+            /** Body */
+            body: string;
             /**
              * Position
              * @default 0
              */
             position: number;
-            title: components["schemas"]["Translated"];
+            /** Title */
+            title: string;
         };
         /** SectionOut */
         SectionOut: {
-            body: components["schemas"]["Translated"];
+            /** Body */
+            body: string;
             /**
              * Id
              * Format: uuid
@@ -887,18 +885,8 @@ export interface components {
              * @default 0
              */
             position: number;
-            title: components["schemas"]["Translated"];
-        };
-        /**
-         * Translated
-         * @description Host-written text guests see, in German and/or English (D16). Missing languages are left
-         *     out of the stored JSON instead of being stored as null.
-         */
-        Translated: {
-            /** De */
-            de?: string | null;
-            /** En */
-            en?: string | null;
+            /** Title */
+            title: string;
         };
         /** UserOut */
         UserOut: {

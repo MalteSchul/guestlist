@@ -2,15 +2,11 @@ import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../../api/client";
-import { type Language, LANGUAGES } from "../../i18n";
 import {
   isoOf,
   localInput,
-  requiredText,
   SaveBar,
-  textDraft,
-  translated,
-  TranslatedField,
+  TextField,
   useSave,
 } from "./forms";
 
@@ -26,17 +22,14 @@ export function EventForm({
   label?: string;
   onSubmit: (body: EventIn) => Promise<void>;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const save = useSave();
-  const [title, setTitle] = useState(textDraft(event?.title));
-  const [description, setDescription] = useState(textDraft(event?.description));
+  const [title, setTitle] = useState(event?.title ?? "");
+  const [description, setDescription] = useState(event?.description ?? "");
   const [location, setLocation] = useState(event?.location ?? "");
   const [startsAt, setStartsAt] = useState(localInput(event?.starts_at));
   const [endsAt, setEndsAt] = useState(localInput(event?.ends_at));
   const [deadline, setDeadline] = useState(localInput(event?.rsvp_deadline));
-  const [language, setLanguage] = useState<Language>(
-    event?.default_language ?? (i18n.language === "en" ? "en" : "de"),
-  );
   const [keepData, setKeepData] = useState(event?.keep_data ?? false);
   const [guestList, setGuestList] = useState(event?.guest_list_enabled ?? false);
 
@@ -44,13 +37,12 @@ export function EventForm({
     e.preventDefault();
     void save.run(() =>
       onSubmit({
-        title: requiredText(title),
-        description: translated(description),
+        title: title,
+        description: description.trim() || null,
         location: location.trim() || null,
         starts_at: isoOf(startsAt)!,
         ends_at: isoOf(endsAt),
         rsvp_deadline: isoOf(deadline),
-        default_language: language,
         keep_data: keepData,
         guest_list_enabled: guestList,
       }),
@@ -59,36 +51,16 @@ export function EventForm({
 
   return (
     <form onSubmit={submit} onChange={save.reset}>
-      <fieldset className="field plain">
-        <legend>{t("admin.form.defaultLanguage")}</legend>
-        <div className="choices">
-          {LANGUAGES.map((lang) => (
-            <label key={lang} className="choice">
-              <input
-                type="radio"
-                name="default_language"
-                checked={language === lang}
-                onChange={() => setLanguage(lang)}
-              />
-              {t(`admin.form.languages.${lang}`)}
-            </label>
-          ))}
-        </div>
-        <span className="hint">{t("admin.form.defaultLanguageHint")}</span>
-      </fieldset>
-
-      <TranslatedField
+      <TextField
         label={t("admin.form.title")}
         value={title}
         onChange={setTitle}
-        language={language}
         required
       />
-      <TranslatedField
+      <TextField
         label={t("admin.form.description")}
         value={description}
         onChange={setDescription}
-        language={language}
         multiline
       />
 

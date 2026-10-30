@@ -46,10 +46,11 @@ new one that replaces it, not by silently editing the old one.
 | A18 | Lightweight frontend for now: routing by hand, `useState`/`useEffect` instead of a data library, one plain CSS file, `tsc` as the only check (no ESLint yet), no login screen (dev bypass) | Few pages so far. Each can be added when it starts to hurt |
 | A19 | TypeScript stays on 5.x | `openapi-typescript` 7 supports TypeScript 5 only |
 | A20 | The guest API takes the token in an `X-Invite-Token` header (`/api/guest/invite`), never in the URL | Only the page URL `/i/<token>` contains it, and nginx masks that. A custom header also blocks cross-site form posts |
-| A21 | UI language: a choice made with the DE/EN switch is kept in `localStorage`; without one, the browser language (`de*` → DE, else EN). Exception: if every text a guest sees (title, description, sections, questions, active options) is only complete in one language, the guest page shows that one and hides the switch. The guest API sends these complete `languages` | An explicit choice should survive a reload. Guests never see app text in one language next to host text in the other. Only the switch saves a choice, so a forced language doesn't stick for other pages |
+| A21 | UI language: a choice made with the DE/EN switch is kept in `localStorage`; without one, the browser language (`de*` → DE, else EN). The switch is on every page and only changes the app's own texts; host-written text stays as written (D16) | An explicit choice should survive a reload |
 | A22 | Invite tokens are 44 random base58 characters (256 bits), replacing `token_urlsafe` from A12. Existing tokens stay valid | No look-alikes like `0`/`O` or `I`/`l`, and no `-` that stops a double-click selection |
 | A23 | Guest texts address one person with "du" and several with "ihr": i18next plurals counted by the invite's persons (`_one`/`_other`). A one-person invite shows no name heading on its card | "Eure Antwort" reads wrong for someone invited alone. English needs no difference but keeps both keys |
 | A24 | Light/dark: follows the system (live) until the switch in the header is used; that choice is kept in `localStorage` and wins from then on. An inline script in `index.html` applies it before the first paint. No "back to system" button | Same pattern as A21. Applying it before React loads avoids a flash in the wrong theme. Going back to the system's theme is rare enough not to be worth a third button |
+| A25 | Until the first deploy, one migration holds the whole schema: a schema change regenerates it and the local database is rebuilt. Alembic, the `migrate` step and the CI check stay as they will be in production | Nothing is deployed, so no database needs upgrading step by step. Hand-written upgrades for beta data were wasted work |
 
 ## Data model
 
@@ -70,7 +71,7 @@ new one that replaces it, not by silently editing the old one.
 | D13 | Optional `ends_at` | Multi-day events; retention counts from the end |
 | D14 | Several owners per event allowed; the app never removes the last owner | Simpler than a single-owner rule |
 | D15 | Emails unique regardless of case (`lower(email)` index) | Cheap invariant, so it belongs in the database |
-| D16 | JSONB `{"de","en"}` only for text guests see; `location` stays plain text | Addresses don't get translated; maps link and calendar invite |
+| D16 | Host-written text (title, description, sections, questions, options) is plain text in whatever language the host writes: no translations, no event language. Replaces `{"de", "en"}` JSONB with a main language | Events are almost never in two languages, and every text needing two fields made the forms long |
 | D17 | Extra info as `event_sections` | Structured and orderable, without columns for every possible topic |
 | D18 | No adult/child concept for now; `contacts.birth_year` kept as a plain field | Too specific to start with |
 | D19 | No `invites.responded_at` | Guests answer step by step. "Answered" comes from `persons.attendance`, "when" from `updated_at` |
