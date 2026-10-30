@@ -111,7 +111,7 @@ export function SaveBar({
   );
 }
 
-/** Sections, questions and options are ordered by `position`. */
+/** Questions and options are ordered by `position`. */
 type Positioned = { id: string; position: number };
 
 /** New items go last. */

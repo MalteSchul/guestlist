@@ -2,7 +2,7 @@
 
 from app.models.address_book import Contact, ContactGroup, ContactGroupMember
 from app.models.base import Base
-from app.models.event import Event, EventQuestion, EventQuestionOption, EventSection
+from app.models.event import Event, EventQuestion, EventQuestionOption
 from app.models.guests import Invite, Person, PersonAnswer, PersonAnswerOption
 from app.models.management import EventRole, Identity, User
 
@@ -15,7 +15,6 @@ __all__ = [
     "EventQuestion",
     "EventQuestionOption",
     "EventRole",
-    "EventSection",
     "Identity",
     "Invite",
     "Person",

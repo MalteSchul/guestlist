@@ -29,7 +29,8 @@ def add_question(client: TestClient, event_id: str, question: dict = FOOD) -> di
 def test_create_list_and_get(client: TestClient):
     event = create_event(client, location="Gartenstraße 1")
     assert event["title"] == "Sommerfest"
-    assert event["sections"] == event["questions"] == []
+    assert event["questions"] == []
+    assert "sections" not in event  # extra info is part of the description (D35)
 
     assert [e["id"] for e in client.get(EVENTS).json()] == [event["id"]]
     assert client.get(f"{EVENTS}/{event['id']}").json() == event
@@ -96,13 +97,13 @@ def test_questions_and_options(client: TestClient):
 
 def test_children_are_only_found_under_their_own_event(client: TestClient):
     first, second = create_event(client), create_event(client)
-    section = {"title": "Parken", "body": "Im Hof"}
-    created = client.post(f"{EVENTS}/{first['id']}/sections", json=section).json()
+    question = add_question(client, first["id"])
+    change = {"label": "Essen?"}
 
-    wrong = f"{EVENTS}/{second['id']}/sections/{created['id']}"
-    assert client.put(wrong, json=section).status_code == 404
-    right = f"{EVENTS}/{first['id']}/sections/{created['id']}"
-    assert client.put(right, json=section).status_code == 200
+    wrong = f"{EVENTS}/{second['id']}/questions/{question['id']}"
+    assert client.put(wrong, json=change).status_code == 404
+    right = f"{EVENTS}/{first['id']}/questions/{question['id']}"
+    assert client.put(right, json=change).status_code == 200
 
 
 def test_picked_option_can_only_be_deactivated(client: TestClient, session: Session):
@@ -141,9 +142,10 @@ def test_list_counts_attendance(client: TestClient):
 
 
 def test_duplicate_copies_setup_but_not_invites(client: TestClient):
-    event = create_event(client, location="Gartenstraße 1", guest_list_enabled=True)
+    event = create_event(
+        client, description="Parken\nIm Hof", location="Gartenstraße 1", guest_list_enabled=True
+    )
     url = f"{EVENTS}/{event['id']}"
-    client.post(f"{url}/sections", json={"title": "Parken", "body": "Im Hof"})
     question = add_question(client, event["id"])
     hidden = question["options"][1]
     options = f"{url}/questions/{question['id']}/options"
@@ -154,12 +156,12 @@ def test_duplicate_copies_setup_but_not_invites(client: TestClient):
     assert response.status_code == 201
     copy = response.json()
     assert copy["id"] != event["id"]
-    assert (copy["title"], copy["location"], copy["guest_list_enabled"]) == (
-        event["title"],
-        "Gartenstraße 1",
-        True,
-    )
-    assert [s["title"] for s in copy["sections"]] == ["Parken"]
+    assert (
+        copy["title"],
+        copy["description"],
+        copy["location"],
+        copy["guest_list_enabled"],
+    ) == (event["title"], "Parken\nIm Hof", "Gartenstraße 1", True)
     assert [o["label"] for o in copy["questions"][0]["options"]] == ["Fleisch"]
     assert client.get(f"{EVENTS}/{copy['id']}/invites").json() == []
 

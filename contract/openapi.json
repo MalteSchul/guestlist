@@ -497,13 +497,6 @@
             ],
             "title": "Rsvp Deadline"
           },
-          "sections": {
-            "items": {
-              "$ref": "#/components/schemas/SectionOut"
-            },
-            "title": "Sections",
-            "type": "array"
-          },
           "starts_at": {
             "format": "date-time",
             "title": "Starts At",
@@ -520,7 +513,6 @@
           "title",
           "starts_at",
           "id",
-          "sections",
           "questions"
         ],
         "title": "EventOut",
@@ -786,13 +778,6 @@
             "title": "Questions",
             "type": "array"
           },
-          "sections": {
-            "items": {
-              "$ref": "#/components/schemas/SectionOut"
-            },
-            "title": "Sections",
-            "type": "array"
-          },
           "starts_at": {
             "format": "date-time",
             "title": "Starts At",
@@ -812,7 +797,6 @@
           "answers_close_at",
           "answers_open",
           "guest_list_enabled",
-          "sections",
           "questions"
         ],
         "title": "GuestEvent",
@@ -1573,68 +1557,6 @@
           "label"
         ],
         "title": "QuestionUpdate",
-        "type": "object"
-      },
-      "SectionIn": {
-        "additionalProperties": false,
-        "properties": {
-          "body": {
-            "maxLength": 5000,
-            "minLength": 1,
-            "title": "Body",
-            "type": "string"
-          },
-          "position": {
-            "default": 0,
-            "title": "Position",
-            "type": "integer"
-          },
-          "title": {
-            "maxLength": 5000,
-            "minLength": 1,
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "title",
-          "body"
-        ],
-        "title": "SectionIn",
-        "type": "object"
-      },
-      "SectionOut": {
-        "additionalProperties": false,
-        "properties": {
-          "body": {
-            "maxLength": 5000,
-            "minLength": 1,
-            "title": "Body",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "position": {
-            "default": 0,
-            "title": "Position",
-            "type": "integer"
-          },
-          "title": {
-            "maxLength": 5000,
-            "minLength": 1,
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "title",
-          "body",
-          "id"
-        ],
-        "title": "SectionOut",
         "type": "object"
       },
       "UserOut": {
@@ -2885,181 +2807,6 @@
           }
         ],
         "summary": "Update Option",
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/api/admin/events/{event_id}/sections": {
-      "post": {
-        "operationId": "add_section_api_admin_events__event_id__sections_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "event_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Event Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SectionIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SectionOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Add Section",
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/api/admin/events/{event_id}/sections/{section_id}": {
-      "delete": {
-        "operationId": "delete_section_api_admin_events__event_id__sections__section_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "event_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Event Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "section_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Section Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Delete Section",
-        "tags": [
-          "admin"
-        ]
-      },
-      "put": {
-        "operationId": "update_section_api_admin_events__event_id__sections__section_id__put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "event_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Event Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "section_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Section Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SectionIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SectionOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Update Section",
         "tags": [
           "admin"
         ]

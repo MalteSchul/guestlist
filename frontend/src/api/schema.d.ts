@@ -270,41 +270,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/admin/events/{event_id}/sections": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add Section */
-        post: operations["add_section_api_admin_events__event_id__sections_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/events/{event_id}/sections/{section_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Update Section */
-        put: operations["update_section_api_admin_events__event_id__sections__section_id__put"];
-        post?: never;
-        /** Delete Section */
-        delete: operations["delete_section_api_admin_events__event_id__sections__section_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/admin/events/{event_id}/stats": {
         parameters: {
             query?: never;
@@ -619,8 +584,6 @@ export interface components {
             questions: components["schemas"]["QuestionOut"][];
             /** Rsvp Deadline */
             rsvp_deadline?: string | null;
-            /** Sections */
-            sections: components["schemas"]["SectionOut"][];
             /**
              * Starts At
              * Format: date-time
@@ -725,8 +688,6 @@ export interface components {
             location: string | null;
             /** Questions */
             questions: components["schemas"]["GuestQuestion"][];
-            /** Sections */
-            sections: components["schemas"]["SectionOut"][];
             /**
              * Starts At
              * Format: date-time
@@ -1061,35 +1022,6 @@ export interface components {
              * @default false
              */
             required: boolean;
-        };
-        /** SectionIn */
-        SectionIn: {
-            /** Body */
-            body: string;
-            /**
-             * Position
-             * @default 0
-             */
-            position: number;
-            /** Title */
-            title: string;
-        };
-        /** SectionOut */
-        SectionOut: {
-            /** Body */
-            body: string;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Position
-             * @default 0
-             */
-            position: number;
-            /** Title */
-            title: string;
         };
         /** UserOut */
         UserOut: {
@@ -1831,107 +1763,6 @@ export interface operations {
                 event_id: string;
                 question_id: string;
                 option_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    add_section_api_admin_events__event_id__sections_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                event_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SectionIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SectionOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_section_api_admin_events__event_id__sections__section_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                event_id: string;
-                section_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SectionIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SectionOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_section_api_admin_events__event_id__sections__section_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                event_id: string;
-                section_id: string;
             };
             cookie?: never;
         };

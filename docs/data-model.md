@@ -1,6 +1,6 @@
 # Data model
 
-14 tables in 4 areas. Source of truth: `backend/app/models/`. This page explains them.
+13 tables in 4 areas. Source of truth: `backend/app/models/`. This page explains them.
 
 **Every table has `created_at` and `updated_at`** (filled in automatically), so they're left out
 below. 🔑 = primary key, → = foreign key, *italic* = optional. All IDs are UUIDs.
@@ -8,9 +8,9 @@ below. 🔑 = primary key, → = foreign key, *italic* = optional. All IDs are U
 ```
  1 WHO MANAGES          2 ADDRESS BOOK                3 THE EVENT                    4 THE GUESTS
  users                  contacts                      events                         invites
- identities             contact_groups                event_sections                 persons
- event_roles            contact_group_members         event_questions                person_answers
-                                                      event_question_options         person_answer_options
+ identities             contact_groups                event_questions                persons
+ event_roles            contact_group_members         event_question_options         person_answers
+                                                                                     person_answer_options
 
  logins + rights        per user, kept forever        what the host sets up          what guests answer
                                                                                      (deleted 1 year after the event)
@@ -25,7 +25,6 @@ erDiagram
     users ||--o{ contact_groups : owns
     contacts ||--o{ contact_group_members : "is in"
     contact_groups ||--o{ contact_group_members : contains
-    events ||--o{ event_sections : shows
     events ||--o{ event_questions : asks
     event_questions ||--o{ event_question_options : offers
     events ||--o{ invites : sends
@@ -99,22 +98,13 @@ erDiagram
 |---|---|---|
 | 🔑 id | UUID | |
 | title | text | |
-| *description* | text | |
+| *description* | text | the invitation text, extra info included (D35); plain text, never rendered as HTML |
 | *location* | text | address, used for the maps link and calendar invite |
 | starts_at | timestamp | |
 | *ends_at* | timestamp | multi-day events |
 | *rsvp_deadline* | timestamp | answers close here, otherwise at `starts_at` |
 | keep_data | yes/no | default no: deleted 1 year after the event |
 | guest_list_enabled | yes/no | default no: show the attendance list to guests |
-
-**`event_sections`**: info cards such as "Dress code" or "Parking"
-| column | type | note |
-|---|---|---|
-| 🔑 id | UUID | |
-| event_id | → events | |
-| title | text | |
-| body | text | plain text, never rendered as HTML |
-| position | number | display order |
 
 **`event_questions`**: e.g. "Food", "Drinks", "Allergies"
 | column | type | note |
@@ -180,7 +170,7 @@ Answers are always private; only attendance can be made public.*
 
 | You delete… | What happens |
 |---|---|
-| an **event** | its sections, questions, options, invites, persons and answers are deleted with it |
+| an **event** | its questions, options, invites, persons and answers are deleted with it |
 | an **invite** | its persons and their answers are deleted |
 | a **question** | its options and all answers to it are deleted |
 | an **option** someone picked | **blocked** at commit (deferred `NO ACTION`); set it inactive instead |
@@ -216,7 +206,7 @@ first and gives a friendly message (D24).
 Built (`backend/app/services/`):
 - roles: viewer reads, admin edits, owner also deletes the event; the creator becomes owner;
   events you have no role on look like they don't exist (404)
-- children (sections, questions, options) are only looked up under their own event or question,
+- children (questions, options) are only looked up under their own event or question,
   so an ID from another event is "not found"
 - an option someone picked can't be deleted, only set inactive (D24)
 - answers are only accepted until `rsvp_deadline`, otherwise until `starts_at`

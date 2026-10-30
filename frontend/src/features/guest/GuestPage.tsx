@@ -134,14 +134,6 @@ export function Invitation({
       <EventWhenWhere event={event} />
       {event.description && <p className="prose">{event.description}</p>}
 
-      {/* Part of the invitation, read with the description: headings and text, no cards. */}
-      {event.sections.map((section) => (
-        <section key={section.id} className="info">
-          <h3>{section.title}</h3>
-          <p className="prose">{section.body}</p>
-        </section>
-      ))}
-
       {invite.guest_list && <GuestList entries={invite.guest_list} />}
 
       <h2>{t("guest.yourAnswer", { name: invite.name, count })}</h2>
@@ -409,8 +401,8 @@ function QuestionField({
   );
 }
 
-/** Who's coming, for guests: only people who agreed, nothing but names (D33). A part of the
- * app, not a card the host wrote, so it looks like the answer form below, not like the sections. */
+/** Who's coming, for guests: only people who agreed, nothing but names (D33). A list of people,
+ * so a card, unlike the host's text above it. */
 function GuestList({ entries }: { entries: Schemas["GuestListEntry"][] }) {
   const { t } = useTranslation();
   const names = (attendance: Attendance) =>

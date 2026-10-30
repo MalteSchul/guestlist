@@ -608,29 +608,6 @@ h3 {
   margin: 1.75rem 0 0.6rem;
 }
 
-/* Guest page: the host's information for guests, part of the invitation like the description.
-   A heading sits right on its text (the line height is the gap), the entries and the
-   description apart by a block's space. */
-.info {
-  margin: var(--space-block) 0;
-}
-
-.info > h3 {
-  font-size: 1rem;
-  letter-spacing: normal;
-  text-transform: none;
-  color: var(--text);
-  margin: 0;
-}
-
-.info > p {
-  margin: 0;
-}
-
-p.prose:has(+ .info) {
-  margin-bottom: 0;
-}
-
 /* A list alone in its card, e.g. who's coming: the card's padding is the space around it. */
 .card > .persons:first-child {
   margin-top: 0;

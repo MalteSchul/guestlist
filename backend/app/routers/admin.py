@@ -17,8 +17,6 @@ from app.schemas.events import (
     QuestionIn,
     QuestionOut,
     QuestionUpdate,
-    SectionIn,
-    SectionOut,
 )
 from app.schemas.invites import (
     GroupInviteIn,
@@ -107,35 +105,6 @@ def preview_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -
         event=GuestEvent.model_validate(event),
         guest_list=guests.guest_list_entries(session, event),
     )
-
-
-# Sections
-
-
-@router.post("/events/{event_id}/sections", **CREATED)
-def add_section(
-    session: SessionDep, user: CurrentUser, event_id: uuid.UUID, data: SectionIn
-) -> SectionOut:
-    return SectionOut.model_validate(events.add_section(session, user, event_id, data))
-
-
-@router.put("/events/{event_id}/sections/{section_id}")
-def update_section(
-    session: SessionDep,
-    user: CurrentUser,
-    event_id: uuid.UUID,
-    section_id: uuid.UUID,
-    data: SectionIn,
-) -> SectionOut:
-    section = events.update_section(session, user, event_id, section_id, data)
-    return SectionOut.model_validate(section)
-
-
-@router.delete("/events/{event_id}/sections/{section_id}", **NO_CONTENT)
-def delete_section(
-    session: SessionDep, user: CurrentUser, event_id: uuid.UUID, section_id: uuid.UUID
-) -> None:
-    events.delete_section(session, user, event_id, section_id)
 
 
 # Questions and their options

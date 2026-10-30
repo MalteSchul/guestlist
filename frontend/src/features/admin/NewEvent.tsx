@@ -8,7 +8,7 @@ import { EventForm } from "./EventForm";
 export function NewEvent() {
   const { t } = useTranslation();
 
-  // Straight on to sections and questions; the creator is the event's owner.
+  // Straight on to the questions; the creator is the event's owner.
   async function create(body: Schemas["EventIn"]) {
     const event = await unwrap(api.POST("/api/admin/events", { body }));
     window.location.href = `/admin/events/${event.id}/edit`;
