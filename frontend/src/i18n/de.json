@@ -75,7 +75,7 @@
       "requiredOpen_one": "{{count}} Pflichtfrage offen",
       "requiredOpen_other": "{{count}} Pflichtfragen offen",
       "invites": "Einladungen",
-      "invitesHint": "Das Symbol und der farbige Balken zeigen, wie weit eine Einladung ist. Leerer Kreis, rot: noch niemand hat geantwortet. Haken, grün: alle sind fertig, also abgesagt oder zugesagt mit allen Pflichtfragen beantwortet. Halber Kreis, gelb: alles dazwischen, z. B. „vielleicht“ oder offene Pflichtfragen.",
+      "invitesHint": "Wie weit eine Einladung ist, als farbiger Balken oder als Symbol (in den Einstellungen wählbar). Rot, leerer Kreis: noch niemand hat geantwortet. Grün, Haken: alle sind fertig, also abgesagt oder zugesagt mit allen Pflichtfragen beantwortet. Gelb, halber Kreis: alles dazwischen, z. B. „vielleicht“ oder offene Pflichtfragen.",
       "progress": {
         "open": "Noch niemand hat geantwortet",
         "partial": "Nicht abgeschlossen",
@@ -306,6 +306,12 @@
     },
     "language": "Sprache",
     "languageSystem": "Wie das Gerät",
+    "progress": "Status der Einladungen",
+    "progressMarks": {
+      "bar": "Farbiger Balken",
+      "icon": "Symbol",
+      "both": "Beides"
+    },
     "version": "Version",
     "unknown": "unbekannt",
     "dev": "Entwicklung",

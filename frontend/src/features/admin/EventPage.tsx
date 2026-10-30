@@ -9,6 +9,7 @@ import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime } from "../../i18n/text";
+import { useProgressMark } from "../../progressMark";
 import { openRequired, type Progress, personProgress, summary } from "../answers";
 import { IconButton, useSave } from "./forms";
 import { NewInvite, type NewInviteKind } from "./NewInvite";
@@ -228,18 +229,21 @@ function InviteCard({
   const single =
     invite.persons.length === 1 &&
     invite.persons[0]!.name.trim().toLocaleLowerCase() === invite.name.trim().toLocaleLowerCase();
+  const mark = useProgressMark();
   const progress = inviteProgress(event, invite);
   const progressLabel = t(`admin.event.progress.${progress}`);
   const actions = (
     <span className="card-actions">
-      <span
-        className="progress-icon"
-        role="img"
-        aria-label={progressLabel}
-        title={progressLabel}
-      >
-        <Icon name={PROGRESS_ICONS[progress]} />
-      </span>
+      {mark !== "bar" && (
+        <span
+          className="progress-icon"
+          role="img"
+          aria-label={progressLabel}
+          title={progressLabel}
+        >
+          <Icon name={PROGRESS_ICONS[progress]} />
+        </span>
+      )}
       <a
         className="icon ghost"
         href={link}
@@ -308,7 +312,7 @@ function InviteCard({
   );
 
   return (
-    <li className={`card progress ${progress}`}>
+    <li className={`card progress ${progress}${mark === "icon" ? "" : " bar"}`}>
       {single ? (
         <div className="row single">
           {persons}

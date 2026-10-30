@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Icon } from "../../components/Icon";
 import { Layout } from "../../components/Layout";
 import { chooseLanguage, type Language, LANGUAGES, useLanguageChoice } from "../../i18n";
+import { chooseProgressMark, PROGRESS_MARKS, useProgressMark } from "../../progressMark";
 import { chooseTheme, type ThemeChoice, useThemeChoice } from "../../theme";
 
 const THEME_CHOICES: ThemeChoice[] = ["light", "dark", "system"];
@@ -11,12 +12,14 @@ const THEME_CHOICES: ThemeChoice[] = ["light", "dark", "system"];
 /** Each language in its own words, so it can be found whatever the page is in. */
 const LANGUAGE_NAMES: Record<Language, string> = { de: "Deutsch", en: "English" };
 
-/** For hosts and guests alike, so it asks for no login: theme, language and which build runs.
+/** For hosts and guests alike, so it asks for no login: theme, language, how an invite's progress
+ * shows and which build runs.
  * Behind the host's gear (`admin`) it has the host's header, with the way back to the events. */
 export function Settings({ admin = false }: { admin?: boolean }) {
   const { t, i18n } = useTranslation();
   const theme = useThemeChoice();
   const language = useLanguageChoice();
+  const progressMark = useProgressMark();
   const built = new Intl.DateTimeFormat(i18n.language, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -88,6 +91,22 @@ export function Settings({ admin = false }: { admin?: boolean }) {
               <Icon name="system" />
               {t("settings.languageSystem")}
             </label>
+          </div>
+        </fieldset>
+        <fieldset className="field plain">
+          <legend>{t("settings.progress")}</legend>
+          <div className="choices">
+            {PROGRESS_MARKS.map((choice) => (
+              <label key={choice} className="choice">
+                <input
+                  type="radio"
+                  name="progress-mark"
+                  checked={progressMark === choice}
+                  onChange={() => chooseProgressMark(choice)}
+                />
+                {t(`settings.progressMarks.${choice}`)}
+              </label>
+            ))}
           </div>
         </fieldset>
       </section>

@@ -1306,12 +1306,12 @@ button.icon.accent:hover {
   color: var(--progress);
 }
 
-.card.progress {
+.card.progress.bar {
   border-left: 4px solid var(--progress);
 }
 
-/* The same state as an icon, for those who can't tell the colours apart. Sized like the icon
-   buttons next to it. */
+/* The same state as an icon, for those who can't tell the colours apart (the settings choose
+   between it and the bar). Sized like the icon buttons next to it. */
 .progress-icon {
   display: inline-flex;
   align-items: center;
