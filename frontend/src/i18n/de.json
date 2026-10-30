@@ -69,8 +69,8 @@
     "event": {
       "back": "Alle Events",
       "edit": "Event bearbeiten",
-      "totals": "Auswahl",
-      "totalsHint": "Gezählt werden nur die, die kommen.",
+      "totals": "Antworten",
+      "totalsHint": "Nach Frage: bei Auswahlfragen die Zahlen, bei Freitext jede Antwort mit Namen. Gezählt werden die, die kommen; mit dem Schalter auch „Vielleicht“.",
       "personsTally": "Personen",
       "requiredOpen_one": "{{count}} Pflichtfrage offen",
       "requiredOpen_other": "{{count}} Pflichtfragen offen",
@@ -82,6 +82,14 @@
         "done": "Abgeschlossen"
       },
       "noInvites": "Noch keine Einladungen.",
+      "withMaybe": "Auch „Vielleicht“ zeigen",
+      "showInInvites": "In den Einladungen zeigen",
+      "noTextAnswers": "Noch keine Antworten.",
+      "byQuestion": "Nach Frage",
+      "allQuestions": "Alle Fragen",
+      "onlyAnswered": "Nur Gäste mit Antwort",
+      "withoutAnswer_one": "{{count}} ohne Antwort",
+      "withoutAnswer_other": "{{count}} ohne Antwort",
       "onlyUnfinished": "Nur offene Einladungen",
       "sort": "Sortieren",
       "order": {

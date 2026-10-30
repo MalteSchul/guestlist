@@ -12,11 +12,13 @@ import { SortMenu } from "../../components/SortMenu";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime, nameCollator, sortedByName } from "../../i18n/text";
 import { useProgressMark } from "../../progressMark";
-import { openRequired, type Progress, personProgress, summary } from "../answers";
+import { hasAnswer, openRequired, type Progress, personProgress, summary } from "../answers";
 import { IconButton, useSave } from "./forms";
 import { NewInvite, type NewInviteKind } from "./NewInvite";
+import { QuestionAnswers } from "./QuestionAnswers";
 
 type Event = Schemas["EventOut"];
+const ALL_QUESTIONS = "all"; // the question filter's "no question"
 type Invite = Schemas["InviteOut"];
 type Person = Schemas["PersonOut"];
 
@@ -54,15 +56,26 @@ function EventDetails({
   const { t, i18n } = useTranslation();
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [order, setOrder] = useState<InviteOrder>("name-asc");
+  // Narrowing the invites to one question: its answers only, and optionally only those who gave one.
+  const [questionId, setQuestionId] = useState(ALL_QUESTIONS);
+  const [onlyAnswered, setOnlyAnswered] = useState(false);
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const unfinished = invites.filter((invite) => inviteProgress(event, invite) !== "done");
-  const shown = sortInvites(onlyOpen ? unfinished : invites, order, event, i18n.language);
+  const question = event.questions.find((q) => q.id === questionId);
+  const asked = question && onlyAnswered;
+  const shown = sortInvites(onlyOpen ? unfinished : invites, order, event, i18n.language).filter(
+    (invite) => !asked || invite.persons.some((person) => hasAnswer(person, question.id)),
+  );
   // As the backend decides for guests: the deadline, or the start without one (D12).
   const answersCloseAt = event.rsvp_deadline ?? event.starts_at;
   const answersOpen = Date.now() < new Date(answersCloseAt).getTime();
   const persons = invites.flatMap((invite) => invite.persons);
-  const coming = persons.filter((person) => person.attendance === "yes");
+
+  function showInInvites(id: string) {
+    setQuestionId(id);
+    document.getElementById("invites")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <>
@@ -108,33 +121,13 @@ function EventDetails({
 
       <AttendanceCounts counts={countAttendance(persons)} />
 
-      {event.questions.some((question) => question.kind === "choice") && (
-        <>
-          <h2>
-            {t("admin.event.totals")} <InfoTip text={t("admin.event.totalsHint")} />
-          </h2>
-          {event.questions
-            .filter((question) => question.kind === "choice")
-            .map((question) => (
-              <div key={question.id} className="card">
-                <strong>{question.label}</strong>
-                <ul className="totals">
-                  {question.options.map((option) => (
-                    <li key={option.id}>
-                      <span className={option.active ? undefined : "muted"}>
-                        {option.label}
-                        {!option.active && ` (${t("admin.setup.hidden")})`}
-                      </span>
-                      <span>{coming.filter((p) => picked(p, question.id, option.id)).length}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-        </>
-      )}
+      <QuestionAnswers event={event} persons={persons} onShow={showInInvites} />
 
-      <div className="row">
+      <div
+        className="row"
+        id="invites"
+        style={{ scrollMarginTop: "calc(var(--topbar-height) + 1rem)" }}
+      >
         <h2>
           {t("admin.event.invites")} <InfoTip text={t("admin.event.invitesHint")} />
         </h2>
@@ -150,6 +143,31 @@ function EventDetails({
                 group: value.split("-")[0]!,
               }))}
             />
+          )}
+          {invites.length > 0 && event.questions.length > 0 && (
+            <SortMenu
+              label={t("admin.event.byQuestion")}
+              icon="ask"
+              active={question !== undefined}
+              value={questionId}
+              onChange={setQuestionId}
+              options={[
+                { value: ALL_QUESTIONS, label: t("admin.event.allQuestions"), group: "all" },
+                ...event.questions.map((q) => ({ value: q.id, label: q.label, group: "questions" })),
+              ]}
+            />
+          )}
+          {question && (
+            <button
+              type="button"
+              className="icon ghost toggle"
+              aria-pressed={onlyAnswered}
+              aria-label={t("admin.event.onlyAnswered")}
+              title={t("admin.event.onlyAnswered")}
+              onClick={() => setOnlyAnswered(!onlyAnswered)}
+            >
+              <Icon name="check" />
+            </button>
           )}
           {invites.length > 0 && (
             <button
@@ -210,6 +228,8 @@ function EventDetails({
             key={invite.id}
             event={event}
             invite={invite}
+            question={question}
+            onlyAnswered={onlyAnswered}
             onDeleted={() => onChange(invites.filter((i) => i.id !== invite.id))}
           />
         ))}
@@ -221,10 +241,16 @@ function EventDetails({
 function InviteCard({
   event,
   invite,
+  question,
+  onlyAnswered,
   onDeleted,
 }: {
   event: Event;
   invite: Invite;
+  /** Show only this question's answers; all of them without. */
+  question?: Event["questions"][number];
+  /** With a question: leave out the people who gave no answer to it. */
+  onlyAnswered: boolean;
   onDeleted: () => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -305,9 +331,13 @@ function InviteCard({
       </button>
     </span>
   );
+  const answersLine = (person: Person) =>
+    summary(question ? [question] : event.questions, person.answers, !question);
   const persons = (
     <ul className="persons">
-      {sortedByName(invite.persons, i18n.language).map((person) => {
+      {sortedByName(invite.persons, i18n.language)
+        .filter((person) => !question || !onlyAnswered || hasAnswer(person, question.id))
+        .map((person) => {
         // Saving "yes" needs every required answer, so this only happens when a question
         // became required after the guest answered.
         const open =
@@ -328,12 +358,7 @@ function InviteCard({
             {event.guest_list_enabled && <GuestListIcon person={person} />}
             <span>
               {single ? <strong>{person.name}</strong> : person.name}
-              {person.answers.length > 0 && (
-                <span className="muted">
-                  {" "}
-                  · {summary(event.questions, person.answers)}
-                </span>
-              )}
+              {answersLine(person) && <span className="muted"> · {answersLine(person)}</span>}
             </span>
           </li>
         );
@@ -437,8 +462,4 @@ function inviteProgress(event: Event, invite: Invite): Progress {
   if (all.every((progress) => progress === "open")) return "open";
   if (all.every((progress) => progress === "done")) return "done";
   return "partial";
-}
-
-function picked(person: Person, questionId: string, optionId: string): boolean {
-  return person.answers.some((a) => a.question_id === questionId && a.option_ids.includes(optionId));
 }

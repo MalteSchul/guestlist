@@ -41,10 +41,18 @@ export function openRequired<Q extends Question>(questions: Q[], answers: Answer
   );
 }
 
-/** "Essen: Vegetarisch; Allergien: Nüsse" */
+/** Whether the person answered the question (a choice made, or some text written). */
+export function hasAnswer(person: { answers: Answer[] }, questionId: string): boolean {
+  return person.answers.some(
+    (a) => a.question_id === questionId && (a.option_ids.length > 0 || !!a.text_value?.trim()),
+  );
+}
+
+/** "Essen: Vegetarisch; Allergien: Nüsse"; without the question's name when `labels` is off. */
 export function summary(
   questions: Pick<Schemas["QuestionOut"], "id" | "label" | "options">[],
   answers: Answer[],
+  labels = true,
 ): string {
   return questions
     .flatMap((question) => {
@@ -56,7 +64,7 @@ export function summary(
           .filter((option) => answer.option_ids.includes(option.id))
           .map((option) => option.label)
           .join(", ");
-      return [`${question.label}: ${value}`];
+      return [labels ? `${question.label}: ${value}` : value];
     })
     .join("; ");
 }

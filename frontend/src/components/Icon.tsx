@@ -106,6 +106,12 @@ const PATHS = {
   ),
   freeText: <path d="M5 7h14M5 12h14M5 17h9" />,
   required: <path d="M12 5v14M5.5 8.5l13 7M18.5 8.5l-13 7" />,
+  ask: (
+    <>
+      <path d="M5 4.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.5 3.5V16.5H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" />
+      <path d="M10.3 9.6a1.8 1.8 0 1 1 2.5 1.65c-.45.2-.8.55-.8 1v.1M12 14.3h.01" />
+    </>
+  ),
   table: (
     <>
       <rect x="4" y="5" width="16" height="14" rx="2" />

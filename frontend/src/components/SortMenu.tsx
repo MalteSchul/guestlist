@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { IconButton } from "../features/admin/forms";
-import { Icon } from "./Icon";
+import { Icon, type IconName } from "./Icon";
 
 export type SortOption<T extends string> = {
   value: T;
@@ -17,11 +17,17 @@ export function SortMenu<T extends string>({
   options,
   value,
   onChange,
+  icon = "sort",
+  active = false,
 }: {
   label: string;
   options: readonly SortOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  /** The icon that opens the list; the sort icon unless this chooses something else. */
+  icon?: IconName;
+  /** Shown like a filter that is on, for a choice other than the usual one. */
+  active?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
@@ -47,9 +53,9 @@ export function SortMenu<T extends string>({
   }, [open]);
 
   return (
-    <span className="menu-wrap wide" ref={ref}>
+    <span className={active ? "menu-wrap wide active" : "menu-wrap wide"} ref={ref}>
       <IconButton
-        icon="sort"
+        icon={icon}
         label={`${label}: ${current.label}`}
         expanded={open}
         onClick={() => setOpen(!open)}

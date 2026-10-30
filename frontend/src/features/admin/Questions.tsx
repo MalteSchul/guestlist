@@ -153,7 +153,7 @@ const KIND_ICONS = {
 
 /** What kind of answer a question takes, as an icon before its name; the kind in words is its
  * tooltip. */
-function KindIcon({ kind }: { kind: Kind }) {
+export function KindIcon({ kind }: { kind: Kind }) {
   const { t } = useTranslation();
   const label = t(`admin.setup.kinds.${kind}`);
   return (
@@ -182,7 +182,7 @@ function RequiredIcon({ required }: { required: boolean }) {
   );
 }
 
-function kindOf(question: Pick<Question, "kind" | "multiple">): Kind {
+export function kindOf(question: Pick<Question, "kind" | "multiple">): Kind {
   if (question.kind === "text") return "text";
   return question.multiple ? "multiple" : "single";
 }

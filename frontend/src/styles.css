@@ -1190,6 +1190,7 @@ main:has(.selection-bar) {
 
 /* Icons next to a heading, e.g. filter and new invite next to the invites. */
 .heading-actions {
+  margin-left: auto; /* on the right also when the row wraps */
   position: relative; /* a wide menu inside lines up with the group's right edge */
   display: flex;
   align-items: center;
@@ -1455,6 +1456,13 @@ button.icon.accent:hover {
 
 /* A filter that is on or off, e.g. only the unfinished invites. */
 button.icon.ghost.toggle[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* A menu button whose choice is not the usual one looks like a filter that is on. */
+.menu-wrap.active > button.icon.ghost {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-color: var(--accent);
   color: var(--accent);
