@@ -63,7 +63,10 @@ function Charts({
   const closes = new Date(event.rsvp_deadline ?? event.starts_at).getTime();
   const lastStep = steps.length > 0 ? new Date(steps[steps.length - 1]!.at).getTime() : 0;
   const end = Math.max(lastStep, Math.min(Date.now(), closes));
-  const coming = stats.ages.reduce((sum, band) => sum + band.yes + band.maybe, 0);
+  const invited = stats.ages.reduce(
+    (sum, band) => sum + band.yes + band.maybe + band.no + band.pending,
+    0,
+  );
 
   return (
     <>
@@ -99,7 +102,7 @@ function Charts({
               label: t("admin.stats.groups"),
               controls: <AgeOptions grouping={grouping} onChange={onGrouping} />,
             }}
-            legend={<Legend items={["yes", "maybe"]} />}
+            legend={<Legend items={SERIES} />}
             table={<AgeTable stats={stats} />}
             note={
               stats.age_unknown > 0
@@ -107,7 +110,7 @@ function Charts({
                 : undefined
             }
           >
-            {coming > 0 ? (
+            {invited > 0 ? (
               <AgeChart bands={stats.ages} />
             ) : (
               <div className="chart-empty">
@@ -161,8 +164,9 @@ function AgeTable({ stats }: { stats: Stats }) {
         <thead>
           <tr>
             <th>{t("admin.stats.age")}</th>
-            <th>{t("admin.attendance.yes")}</th>
-            <th>{t("admin.attendance.maybe")}</th>
+            {SERIES.map((key) => (
+              <th key={key}>{t(`admin.attendance.${key}`)}</th>
+            ))}
             <th>{t("admin.stats.total")}</th>
           </tr>
         </thead>
@@ -170,14 +174,15 @@ function AgeTable({ stats }: { stats: Stats }) {
           {stats.ages.map((band) => (
             <tr key={band.min_age}>
               <th scope="row">{ageLabel(band)}</th>
-              <td>{band.yes}</td>
-              <td>{band.maybe}</td>
-              <td>{band.yes + band.maybe}</td>
+              {SERIES.map((key) => (
+                <td key={key}>{band[key]}</td>
+              ))}
+              <td>{SERIES.reduce((sum, key) => sum + band[key], 0)}</td>
             </tr>
           ))}
           <tr>
             <th scope="row">{t("admin.stats.unknown")}</th>
-            <td colSpan={3}>{stats.age_unknown}</td>
+            <td colSpan={SERIES.length + 1}>{stats.age_unknown}</td>
           </tr>
         </tbody>
       </table>

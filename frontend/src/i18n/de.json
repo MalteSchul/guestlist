@@ -130,7 +130,7 @@
       "unknown": "Alter unbekannt",
       "ageUnknown_one": "{{count}} ohne bekanntes Alter",
       "ageUnknown_other": "{{count}} ohne bekanntes Alter",
-      "noAges": "Noch keine Zusagen mit bekanntem Alter.",
+      "noAges": "Noch keine Gäste mit bekanntem Alter.",
       "noAgesHint": "Das Alter kommt vom Geburtsjahr im Adressbuch.",
       "noInvites": "Noch niemand eingeladen."
     },

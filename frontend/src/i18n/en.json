@@ -130,7 +130,7 @@
       "unknown": "Age unknown",
       "ageUnknown_one": "{{count}} with no known age",
       "ageUnknown_other": "{{count}} with no known age",
-      "noAges": "No one coming with a known age yet.",
+      "noAges": "No guests with a known age yet.",
       "noAgesHint": "The age comes from the birth year in the address book.",
       "noInvites": "Nobody invited yet."
     },
