@@ -135,9 +135,10 @@ function Invitation({
       )}
       {event.description && <p className="prose">{event.description}</p>}
 
+      {/* Part of the invitation, read with the description: headings and text, no cards. */}
       {event.sections.map((section) => (
-        <section key={section.id} className="card">
-          <h2>{section.title}</h2>
+        <section key={section.id} className="info">
+          <h3>{section.title}</h3>
           <p className="prose">{section.body}</p>
         </section>
       ))}
@@ -417,25 +418,28 @@ function GuestList({ entries }: { entries: Schemas["GuestListEntry"][] }) {
     <section>
       {/* No explanation here: the guest list checkbox in each person's form says who is shown. */}
       <h2>{t("guest.guestList")}</h2>
-      {rows.length === 0 ? (
-        <p className="muted">{t("guest.guestListEmpty")}</p>
-      ) : (
-        <ul className="persons">
-          {rows.map((row) => (
-            <li key={row.attendance}>
-              <span
-                className="status"
-                role="img"
-                aria-label={t(row.label, { count: row.names.length })}
-                title={t(row.label, { count: row.names.length })}
-              >
-                <AttendanceIcon attendance={row.attendance} />
-              </span>
-              <span>{row.names.join(", ")}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* A list of people, so a card, unlike the host's text above it. */}
+      <div className="card">
+        {rows.length === 0 ? (
+          <p className="muted">{t("guest.guestListEmpty")}</p>
+        ) : (
+          <ul className="persons">
+            {rows.map((row) => (
+              <li key={row.attendance}>
+                <span
+                  className="status"
+                  role="img"
+                  aria-label={t(row.label, { count: row.names.length })}
+                  title={t(row.label, { count: row.names.length })}
+                >
+                  <AttendanceIcon attendance={row.attendance} />
+                </span>
+                <span>{row.names.join(", ")}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }
