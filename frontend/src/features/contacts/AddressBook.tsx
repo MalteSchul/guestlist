@@ -549,7 +549,7 @@ function Contacts({
   return (
     <>
       <div className="row heading-search">
-        <h2>{t("contacts.list", { count: contacts.length })}</h2>
+        <h2>{t("contacts.heading")}</h2>
         {selecting && shown.length > 0 && (
           <SelectBox
             label={t("contacts.selection.allContacts")}

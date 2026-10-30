@@ -228,8 +228,7 @@
       "contactsNote": "Personen, die schon eingeladen sind, bleiben in ihren Events.",
       "groupsNote": "Kontakte, die du nicht ausgewählt hast, bleiben im Adressbuch."
     },
-    "list_one": "{{count}} Kontakt",
-    "list_other": "{{count}} Kontakte",
+    "heading": "Kontakte",
     "empty": "Noch keine Kontakte. Lege welche an oder importiere sie aus Google Kontakte.",
     "name": "Name",
     "nameTaken": "Diesen Namen gibt es im Adressbuch schon.",

@@ -228,8 +228,7 @@
       "contactsNote": "People who are already invited stay in their events.",
       "groupsNote": "Contacts you didn't select stay in your address book."
     },
-    "list_one": "{{count}} contact",
-    "list_other": "{{count}} contacts",
+    "heading": "Contacts",
     "empty": "No contacts yet. Add some or import them from Google Contacts.",
     "name": "Name",
     "nameTaken": "Your address book already has this name.",
