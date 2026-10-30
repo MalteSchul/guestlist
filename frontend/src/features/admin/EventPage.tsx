@@ -7,7 +7,7 @@ import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Icon, type IconName } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
-import { type SortOption, SortMenu, type Sorting } from "../../components/SortMenu";
+import { SortMenu } from "../../components/SortMenu";
 import { useLoad } from "../../components/useLoad";
 import { nameCollator, sortedByName } from "../../i18n/text";
 import { useProgressMark } from "../../progressMark";
@@ -53,7 +53,7 @@ function EventDetails({
 }) {
   const { t, i18n } = useTranslation();
   const [onlyOpen, setOnlyOpen] = useState(false);
-  const [order, setOrder] = useState<Sorting<InviteSort>>({ key: "added", direction: "desc" });
+  const [order, setOrder] = useState<InviteOrder>("added-desc");
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const unfinished = invites.filter((invite) => inviteProgress(event, invite) !== "done");
@@ -132,17 +132,11 @@ function EventDetails({
               label={t("admin.event.sort")}
               value={order}
               onChange={setOrder}
-              options={INVITE_SORTS.map(
-                (key): SortOption<InviteSort> => ({
-                  key,
-                  label: t(`admin.event.sortBy.${key}`),
-                  directions: {
-                    asc: t(`admin.event.sortDirection.${key}.asc`),
-                    desc: t(`admin.event.sortDirection.${key}.desc`),
-                  },
-                  first: key === "added" ? "desc" : "asc",
-                }),
-              )}
+              options={INVITE_ORDERS.map((value) => ({
+                value,
+                label: t(`admin.event.order.${value}`),
+                group: value.split("-")[0]!,
+              }))}
             />
           )}
           {invites.length > 0 && (
@@ -386,27 +380,36 @@ const PROGRESS_ICONS = {
   done: "progressDone",
 } as const satisfies Record<Progress, IconName>;
 
-/** What the invites can be sorted by, each either way: by name (A–Z first), by when they were
- * added (the list from the server, and the page's own, is newest first), and by how far the
- * answers are (open ones first). */
-const INVITE_SORTS = ["name", "added", "status"] as const;
-type InviteSort = (typeof INVITE_SORTS)[number];
+/** The orders the invites can be listed in: each kind of sorting either way. The list from the
+ * server, and the page's own, is newest first. */
+const INVITE_ORDERS = [
+  "name-asc",
+  "name-desc",
+  "added-desc",
+  "added-asc",
+  "status-asc",
+  "status-desc",
+  "people-desc",
+  "people-asc",
+] as const;
+type InviteOrder = (typeof INVITE_ORDERS)[number];
 
 /** Equal ones keep the order they come in, newest first. */
-function sortInvites(
-  invites: Invite[],
-  { key, direction }: Sorting<InviteSort>,
-  event: Event,
-  language: string,
-): Invite[] {
+function sortInvites(invites: Invite[], order: InviteOrder, event: Event, language: string): Invite[] {
+  if (order === "added-desc") return invites;
+  if (order === "added-asc") return [...invites].reverse();
   const collator = nameCollator(language);
   const rank = { open: 0, partial: 1, done: 2 } satisfies Record<Progress, number>;
+  const [kind, direction] = order.split("-");
   const sign = direction === "asc" ? 1 : -1;
-  if (key === "added") return direction === "desc" ? invites : [...invites].reverse();
-  return [...invites].sort((a, b) =>
-    key === "name"
-      ? sign * collator.compare(a.name, b.name)
-      : sign * (rank[inviteProgress(event, a)] - rank[inviteProgress(event, b)]),
+  return [...invites].sort(
+    (a, b) =>
+      sign *
+      (kind === "name"
+        ? collator.compare(a.name, b.name)
+        : kind === "status"
+          ? rank[inviteProgress(event, a)] - rank[inviteProgress(event, b)]
+          : a.persons.length - b.persons.length),
   );
 }
 

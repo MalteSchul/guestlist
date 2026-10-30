@@ -3,21 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { IconButton } from "../features/admin/forms";
 import { Icon } from "./Icon";
 
-export type Direction = "asc" | "desc";
-export type Sorting<T extends string> = { key: T; direction: Direction };
-
 export type SortOption<T extends string> = {
-  key: T;
+  value: T;
   label: string;
-  /** What each direction means for this key, e.g. "A–Z" and "Z–A". */
-  directions: Record<Direction, string>;
-  /** The direction a key starts with when it is picked. */
-  first: Direction;
+  /** Options with the same group (one thing, either way) sit together, with a line between groups. */
+  group: string;
 };
 
-/** The sort icon, and next to it a list of what to sort by. Each row says which way it would
- * go; the one in use has an arrow for its direction. Picking it again turns it around, picking
- * another one starts that one in its usual direction. */
+/** The sort icon, and next to it every order to choose from, each way of each kind of sorting
+ * as its own entry. The one in use has a check; picking another closes the list. */
 export function SortMenu<T extends string>({
   label,
   options,
@@ -26,12 +20,12 @@ export function SortMenu<T extends string>({
 }: {
   label: string;
   options: readonly SortOption<T>[];
-  value: Sorting<T>;
-  onChange: (value: Sorting<T>) => void;
+  value: T;
+  onChange: (value: T) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
-  const current = options.find((option) => option.key === value.key)!;
+  const current = options.find((option) => option.value === value)!;
 
   useEffect(() => {
     if (!open) return;
@@ -52,44 +46,34 @@ export function SortMenu<T extends string>({
     };
   }, [open]);
 
-  function pick(option: SortOption<T>) {
-    const same = option.key === value.key;
-    onChange({
-      key: option.key,
-      direction: same ? (value.direction === "asc" ? "desc" : "asc") : option.first,
-    });
-    setOpen(false);
-  }
-
   return (
     <span className="menu-wrap wide" ref={ref}>
       <IconButton
         icon="sort"
-        label={`${label}: ${current.label}, ${current.directions[value.direction]}`}
+        label={`${label}: ${current.label}`}
         expanded={open}
         onClick={() => setOpen(!open)}
       />
       {open && (
         <div className="menu" role="menu" aria-label={label}>
-          {options.map((option) => {
-            const active = option.key === value.key;
-            const direction = active ? value.direction : option.first;
-            return (
-              <button
-                key={option.key}
-                type="button"
-                role="menuitemradio"
-                aria-checked={active}
-                onClick={() => pick(option)}
-              >
-                <span className="menu-check" aria-hidden="true">
-                  {active && <Icon name={value.direction === "asc" ? "up" : "down"} />}
-                </span>
-                <span className="menu-label">{option.label}</span>
-                <span className="muted">{option.directions[direction]}</span>
-              </button>
-            );
-          })}
+          {options.map((option, i) => (
+            <button
+              key={option.value}
+              type="button"
+              role="menuitemradio"
+              aria-checked={option.value === value}
+              className={i > 0 && options[i - 1]!.group !== option.group ? "group-start" : undefined}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+            >
+              <span className="menu-check" aria-hidden="true">
+                {option.value === value && <Icon name="check" />}
+              </span>
+              {option.label}
+            </button>
+          ))}
         </div>
       )}
     </span>

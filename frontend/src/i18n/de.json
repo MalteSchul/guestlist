@@ -84,15 +84,15 @@
       "noInvites": "Noch keine Einladungen.",
       "onlyUnfinished": "Nur offene Einladungen",
       "sort": "Sortieren",
-      "sortBy": {
-        "name": "Name",
-        "added": "Hinzugefügt",
-        "status": "Status"
-      },
-      "sortDirection": {
-        "name": { "asc": "A–Z", "desc": "Z–A" },
-        "added": { "asc": "Älteste zuerst", "desc": "Neueste zuerst" },
-        "status": { "asc": "Offene zuerst", "desc": "Erledigte zuerst" }
+      "order": {
+        "name-asc": "Name A–Z",
+        "name-desc": "Name Z–A",
+        "added-desc": "Neueste zuerst",
+        "added-asc": "Älteste zuerst",
+        "status-asc": "Offene zuerst",
+        "status-desc": "Erledigte zuerst",
+        "people-desc": "Meiste Personen zuerst",
+        "people-asc": "Wenigste Personen zuerst"
       },
       "allFinished": "Alle Einladungen sind fertig.",
       "openLink": "Öffnen",

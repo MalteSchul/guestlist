@@ -1147,18 +1147,22 @@ main:has(.selection-bar) {
   padding: 0.5rem 0.65rem;
 }
 
-.menu .menu-label {
-  flex: 1;
-}
-
 /* A menu wider than the icon it opens from hangs from the nearest positioned parent, not from
    the icon, so on a phone it stays inside the window. */
 .menu-wrap.wide {
   position: static;
 }
 
-.menu button .muted {
+.menu button {
   white-space: nowrap;
+}
+
+/* A line between the kinds of sorting. */
+.menu button.group-start {
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 6px 6px;
+  padding-top: 0.6rem;
 }
 
 .menu .menu-check {

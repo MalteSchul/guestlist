@@ -84,15 +84,15 @@
       "noInvites": "No invites yet.",
       "onlyUnfinished": "Only unfinished invites",
       "sort": "Sort",
-      "sortBy": {
-        "name": "Name",
-        "added": "Added",
-        "status": "Status"
-      },
-      "sortDirection": {
-        "name": { "asc": "A–Z", "desc": "Z–A" },
-        "added": { "asc": "Oldest first", "desc": "Newest first" },
-        "status": { "asc": "Open first", "desc": "Done first" }
+      "order": {
+        "name-asc": "Name A–Z",
+        "name-desc": "Name Z–A",
+        "added-desc": "Newest first",
+        "added-asc": "Oldest first",
+        "status-asc": "Open first",
+        "status-desc": "Done first",
+        "people-desc": "Most people first",
+        "people-asc": "Fewest people first"
       },
       "allFinished": "Every invite is finished.",
       "openLink": "Open",
