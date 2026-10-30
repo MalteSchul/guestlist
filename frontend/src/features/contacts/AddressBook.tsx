@@ -153,14 +153,15 @@ function Book({
       <div className="row">
         <h1>{t("contacts.title")}</h1>
         <span className="heading-actions">
-          {!selecting && <ExportMenu contacts={contacts} groups={groups} />}
-          {!selecting && !importing && (
+          {!selecting && (
             <IconButton
               icon="import"
               label={t("contacts.import.open")}
+              disabled={importing}
               onClick={() => setImporting(true)}
             />
           )}
+          {!selecting && <ExportMenu contacts={contacts} groups={groups} />}
           <IconButton
             icon="select"
             label={t("contacts.selection.start")}
