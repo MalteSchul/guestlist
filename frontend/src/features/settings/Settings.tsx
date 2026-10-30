@@ -97,6 +97,7 @@ export function Settings({ admin = false }: { admin?: boolean }) {
 
       {admin && (
         <section className="card">
+          <h2>{t("settings.host")}</h2>
           <fieldset className="field plain">
             <legend>{t("settings.progress")}</legend>
             <div className="choices">

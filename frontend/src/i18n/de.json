@@ -306,6 +306,7 @@
     },
     "language": "Sprache",
     "languageSystem": "Wie das Gerät",
+    "host": "Für Gastgeber",
     "progress": "Status der Einladungen",
     "progressMarks": {
       "bar": "Farbiger Balken",

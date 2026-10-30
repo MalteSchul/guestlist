@@ -306,6 +306,7 @@
     },
     "language": "Language",
     "languageSystem": "Like the device",
+    "host": "For hosts",
     "progress": "Invite status",
     "progressMarks": {
       "bar": "Coloured bar",
