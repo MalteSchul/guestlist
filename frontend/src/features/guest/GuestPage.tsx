@@ -48,19 +48,34 @@ function Invitation({
   const [drafts, setDrafts] = useState(() => draftsOf(invite));
   const [comment, setComment] = useState(invite.comment ?? "");
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const [unsaved, setUnsaved] = useState(false);
   const [tried, setTried] = useState(false); // to save with a gap; only then are gaps marked
   const [reopened, setReopened] = useState<string[]>([]); // done persons opened with "Change"
   const [error, setError] = useState<string>();
 
-  function changed() {
+  // Compared as the backend would store it, so ticking something and unticking it again, or
+  // answers hidden by "no", count as no change.
+  const changed = !sameRequest(
+    requestOf(drafts, comment),
+    requestOf(draftsOf(invite), invite.comment ?? ""),
+  );
+
+  function edited() {
     setStatus("idle");
-    setUnsaved(true);
   }
 
   function update(personId: string, change: Partial<Draft>) {
-    changed();
+    edited();
     setDrafts((all) => ({ ...all, [personId]: { ...all[personId]!, ...change } }));
+  }
+
+  // Back to what is stored; rows opened with "Change" close again.
+  function revert() {
+    setDrafts(draftsOf(invite));
+    setComment(invite.comment ?? "");
+    setStatus("idle");
+    setTried(false);
+    setReopened([]);
+    setError(undefined);
   }
 
   async function submit(e: FormEvent) {
@@ -70,7 +85,6 @@ function Invitation({
     try {
       await onSave(requestOf(drafts, comment));
       setStatus("saved");
-      setUnsaved(false);
       setTried(false);
       setReopened([]);
     } catch (failure) {
@@ -200,22 +214,29 @@ function Invitation({
               value={comment}
               onChange={(e) => {
                 setComment(e.target.value);
-                changed();
+                edited();
               }}
               rows={3}
             />
           </label>
 
           <div className="actions">
-            <button type="submit" className="primary">
+            <button type="submit" className="primary" disabled={!changed}>
               {status === "saving" ? t("common.saving") : t("common.save")}
+            </button>
+            <button
+              type="button"
+              onClick={revert}
+              disabled={!changed && reopened.length === 0}
+            >
+              {t("common.cancel")}
             </button>
             {status === "saved" && (
               <span className="success">
                 {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang), count })}
               </span>
             )}
-            {unsaved && status === "idle" && <span className="unsaved">{t("guest.unsaved")}</span>}
+            {changed && status === "idle" && <span className="unsaved">{t("guest.unsaved")}</span>}
             {error && <span className="error">{error}</span>}
           </div>
         </fieldset>
@@ -462,6 +483,20 @@ function requestOf(drafts: Record<string, Draft>, comment: string): Schemas["Gue
       answers: answersOf(draft),
     })),
   };
+}
+
+/** Whether two requests store the same, whatever order the options were ticked in. */
+function sameRequest(a: Schemas["GuestResponseIn"], b: Schemas["GuestResponseIn"]): boolean {
+  const sorted = (request: Schemas["GuestResponseIn"]) => ({
+    ...request,
+    persons: request.persons.map((person) => ({
+      ...person,
+      answers: person.answers
+        .map((answer) => ({ ...answer, option_ids: [...answer.option_ids].sort() }))
+        .sort((x, y) => x.question_id.localeCompare(y.question_id)),
+    })),
+  });
+  return JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
 }
 
 function mapsUrl(location: string): string {
