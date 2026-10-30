@@ -21,7 +21,9 @@
     "removeItem": "Remove {{name}}",
     "noMatch": "No matches.",
     "moreMatches_one": "{{count}} more match – keep typing",
-    "moreMatches_other": "{{count}} more matches – keep typing"
+    "moreMatches_other": "{{count}} more matches – keep typing",
+    "showAll": "Show all",
+    "showLess": "Show less"
   },
   "guest": {
     "closed": "Answers are closed.",

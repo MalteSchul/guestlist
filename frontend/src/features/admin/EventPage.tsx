@@ -6,6 +6,7 @@ import { AttendanceCounts } from "../../components/AttendanceCounts";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Icon, type IconName } from "../../components/Icon";
 import { EventWhenWhere } from "../../components/EventWhenWhere";
+import { ExpandableText } from "../../components/ExpandableText";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { SortMenu } from "../../components/SortMenu";
@@ -118,6 +119,7 @@ function EventDetails({
         </span>
       </div>
       <EventWhenWhere event={event} />
+      {event.description && <ExpandableText text={event.description} />}
 
       <AttendanceCounts counts={countAttendance(persons)} />
 

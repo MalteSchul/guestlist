@@ -47,6 +47,7 @@ const PATHS = {
   up: <path d="M12 19V5M6 11l6-6 6 6" />,
   back: <path d="M19 12H5M11 6l-6 6 6 6" />,
   down: <path d="M12 5v14M6 13l6 6 6-6" />,
+  expand: <path d="M6 9l6 6 6-6" />,
   hide: (
     <>
       <path d="M10.6 5.1A10 10 0 0 1 12 5c5.5 0 9 5.5 9 7 0 .6-.6 1.8-1.7 3.1" />

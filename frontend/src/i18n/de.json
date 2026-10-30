@@ -21,7 +21,9 @@
     "removeItem": "{{name}} entfernen",
     "noMatch": "Keine Treffer.",
     "moreMatches_one": "{{count}} weiterer Treffer – weitertippen",
-    "moreMatches_other": "{{count}} weitere Treffer – weitertippen"
+    "moreMatches_other": "{{count}} weitere Treffer – weitertippen",
+    "showAll": "Alles anzeigen",
+    "showLess": "Weniger anzeigen"
   },
   "guest": {
     "closed": "Die Antwortfrist ist vorbei.",

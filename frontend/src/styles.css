@@ -597,6 +597,27 @@ button.danger {
   margin: 0;
 }
 
+/* Text cut to three lines (ExpandableText), the chevron under it to open it; the chevron's
+   padding hangs out to the left so the arrow lines up with the text. */
+.expandable {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: var(--space-block) 0;
+}
+
+.expandable > p {
+  margin: 0;
+}
+
+.expandable > button {
+  margin-left: -0.4rem;
+}
+
+.expandable > button[aria-expanded="true"] .line-icon {
+  transform: rotate(180deg);
+}
+
 /* Guest page: who still has to answer, who is done */
 
 h3 {
@@ -990,7 +1011,8 @@ button.icon.ghost.done {
 }
 
 .title-row:has(> .back) + .meta,
-.title-row:has(> .back) + .meta + .meta {
+.title-row:has(> .back) + .meta + .meta,
+.title-row:has(> .back) ~ .expandable {
   padding-left: 2.5rem; /* the arrow's 2.25rem less its 0.5rem overhang, plus the row's gap */
 }
 
