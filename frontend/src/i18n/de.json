@@ -75,6 +75,7 @@
       "requiredOpen_one": "{{count}} Pflichtfrage offen",
       "requiredOpen_other": "{{count}} Pflichtfragen offen",
       "invites": "Einladungen",
+      "invitesHint": "Der farbige Balken zeigt, wie weit eine Einladung ist. Rot: noch niemand hat geantwortet. Grün: alle sind fertig, also abgesagt oder zugesagt mit allen Pflichtfragen beantwortet. Gelb: alles dazwischen, z. B. „vielleicht“ oder offene Pflichtfragen.",
       "noInvites": "Noch keine Einladungen.",
       "onlyUnfinished": "Nur offene Einladungen",
       "allFinished": "Alle Einladungen sind fertig.",
