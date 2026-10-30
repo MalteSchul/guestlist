@@ -21,9 +21,10 @@ const MAX_THICKNESS = 24;
 const RADIUS = 4;
 const LABEL_EVERY = [1, 2, 5, 10, 20, 50]; // round, so the labels land on round ages
 
-/** "30–39", "80+". */
+/** "30–39", "80+", and just "5" for a group of one year. */
 export function ageLabel(band: Band, short = false): string {
   if (band.max_age === null) return `${band.min_age}+`;
+  if (band.max_age === band.min_age) return String(band.min_age);
   return short ? String(band.min_age) : `${band.min_age}–${band.max_age}`;
 }
 
@@ -151,7 +152,11 @@ export function AgeChart({ bands }: { bands: Band[] }) {
         <Tooltip
           x={centre(hover.index)}
           bounds={width}
-          title={`${ageLabel(band)} ${t("admin.stats.years")}`}
+          title={
+            band.max_age === band.min_age
+              ? t("admin.stats.groupYears", { count: band.min_age })
+              : `${ageLabel(band)} ${t("admin.stats.years")}`
+          }
           live={hover.keyboard}
           rows={[
             { key: "yes", value: band.yes },
