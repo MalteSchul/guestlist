@@ -219,7 +219,11 @@ function SectionForm({
         required
         multiline
       />
-      <SaveBar save={save} onCancel={onCancel} />
+      <SaveBar
+        save={save}
+        onCancel={onCancel}
+        disabled={title.trim() === (section?.title ?? "") && body.trim() === (section?.body ?? "")}
+      />
     </form>
   );
 }
