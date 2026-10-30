@@ -2991,6 +2991,30 @@
               "title": "Event Id",
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "age_step",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 120,
+              "minimum": 1,
+              "title": "Age Step",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "age_from",
+            "required": false,
+            "schema": {
+              "default": 80,
+              "maximum": 120,
+              "minimum": 1,
+              "title": "Age From",
+              "type": "integer"
+            }
           }
         ],
         "responses": {

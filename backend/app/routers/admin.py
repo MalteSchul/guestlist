@@ -1,8 +1,9 @@
 """Host API. Every endpoint needs a logged-in user; services check their role on the event."""
 
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 
 from app.auth.dependencies import CurrentUser
 from app.db import SessionDep
@@ -20,7 +21,7 @@ from app.schemas.events import (
     SectionOut,
 )
 from app.schemas.invites import GroupInviteIn, GroupInviteOut, InviteIn, InviteOut
-from app.schemas.stats import EventStats
+from app.schemas.stats import AgeGrouping, EventStats
 from app.schemas.users import UserOut
 from app.services import events, invites, stats
 
@@ -82,8 +83,13 @@ def delete_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) ->
 
 
 @router.get("/events/{event_id}/stats")
-def event_stats(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> EventStats:
-    return stats.event_stats(session, user, event_id)
+def event_stats(
+    session: SessionDep,
+    user: CurrentUser,
+    event_id: uuid.UUID,
+    grouping: Annotated[AgeGrouping, Query()],
+) -> EventStats:
+    return stats.event_stats(session, user, event_id, grouping)
 
 
 # Sections

@@ -1892,7 +1892,10 @@ export interface operations {
     };
     event_stats_api_admin_events__event_id__stats_get: {
         parameters: {
-            query?: never;
+            query?: {
+                age_step?: number;
+                age_from?: number;
+            };
             header?: never;
             path: {
                 event_id: string;

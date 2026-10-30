@@ -37,8 +37,8 @@ def answer(session: Session, name: str, created, attendance="pending", changed=N
     session.flush()
 
 
-def stats(client: TestClient, event_id: str) -> dict:
-    response = client.get(f"{EVENTS}/{event_id}/stats")
+def stats(client: TestClient, event_id: str, **grouping: int) -> dict:
+    response = client.get(f"{EVENTS}/{event_id}/stats", params=grouping)
     assert response.status_code == 200, response.text
     return response.json()
 
@@ -119,6 +119,58 @@ def test_ages_are_counted_on_the_day_of_the_event(client: TestClient, session: S
     # Dora said no and Paula nothing: not coming. Greta (130), Hans (born after the event),
     # Fritz (no year) and Emil (no contact) are coming without a usable age.
     assert data["age_unknown"] == 4
+
+
+def test_ages_can_be_grouped_differently(client: TestClient, session: Session):
+    event_id = event(client)  # 2030
+    born = {"Anna": 2025, "Ben": 1990, "Carla": 1940, "Dora": 1993, "Emil": 1947}
+    ids = {
+        name: client.post(CONTACTS, json={"name": name, "birth_year": year}).json()["id"]
+        for name, year in born.items()
+    }
+    invite(client, event_id, *ids, **ids)
+    for name in born:
+        answer(session, name, at(1), "yes" if name != "Dora" else "maybe", at(2))
+
+    # Ages 5, 40, 90, 37 (maybe) and 83.
+    data = stats(client, event_id, age_step=20, age_from=65)
+    assert [(b["min_age"], b["max_age"]) for b in data["ages"]] == [
+        (0, 19),
+        (20, 39),
+        (40, 59),
+        (60, 64),  # the last closed band stops where the open one starts
+        (65, None),
+    ]
+    assert [(b["yes"], b["maybe"]) for b in data["ages"]] == [
+        (1, 0),
+        (0, 1),
+        (1, 0),
+        (0, 0),
+        (2, 0),
+    ]
+
+    # Everyone from the age on counts together, however old.
+    data = stats(client, event_id, age_from=40)
+    assert [(b["min_age"], b["yes"], b["maybe"]) for b in data["ages"]] == [
+        (0, 1, 0),
+        (10, 0, 0),
+        (20, 0, 0),
+        (30, 0, 1),
+        (40, 3, 0),
+    ]
+    assert data["ages"][-1]["max_age"] is None
+
+
+def test_age_groupings_that_make_no_sense_are_refused(client: TestClient):
+    event_id = event(client)
+    for grouping in (
+        {"age_step": 0},
+        {"age_from": 0},
+        {"age_step": 121},
+        {"age_step": 1, "age_from": 100},  # 101 groups
+    ):
+        response = client.get(f"{EVENTS}/{event_id}/stats", params=grouping)
+        assert response.status_code == 422, grouping
 
 
 def test_stats_are_for_people_with_a_role_on_the_event(client: TestClient, log_in_as):
