@@ -11,6 +11,7 @@ import {
   TextField,
   useSave,
 } from "./forms";
+import { InfoTip } from "../../components/InfoTip";
 import { useLoad } from "../../components/useLoad";
 import { useReveal } from "../../components/useReveal";
 
@@ -60,7 +61,9 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
   return (
     <>
       <div className="row">
-        <h2>{t("admin.setup.questions")}</h2>
+        <h2>
+          {t("admin.setup.questions")} <InfoTip text={t("admin.setup.questionsHint")} />
+        </h2>
         {!adding && (
           <IconButton
             icon="plus"
@@ -70,7 +73,6 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
           />
         )}
       </div>
-      <p className="muted">{t("admin.setup.questionsHint")}</p>
       {action.error && <p className="error">{action.error}</p>}
       <ul className="cards">
         {questions.map((question, index) =>

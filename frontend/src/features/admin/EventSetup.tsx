@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
 import { Icon } from "../../components/Icon";
+import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { EventForm } from "./EventForm";
@@ -131,7 +132,9 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
   return (
     <>
       <div className="row">
-        <h2>{t("admin.setup.sections")}</h2>
+        <h2>
+          {t("admin.setup.sections")} <InfoTip text={t("admin.setup.sectionsHint")} />
+        </h2>
         {!adding && (
           <IconButton
             icon="plus"
@@ -141,7 +144,6 @@ function Sections({ event, reload }: { event: Event; reload: () => Promise<void>
           />
         )}
       </div>
-      <p className="muted">{t("admin.setup.sectionsHint")}</p>
       {action.error && <p className="error">{action.error}</p>}
       <ul className="cards">
         {sections.map((section, index) =>
