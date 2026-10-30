@@ -1,4 +1,5 @@
 import i18n from "i18next";
+import { useSyncExternalStore } from "react";
 import { initReactI18next } from "react-i18next";
 
 import de from "./de.json";
@@ -6,6 +7,8 @@ import en from "./en.json";
 
 export const LANGUAGES = ["de", "en"] as const;
 export type Language = (typeof LANGUAGES)[number];
+/** What the settings offer: a language, or the browser's (no choice stored). */
+export type LanguageChoice = Language | "system";
 
 const STORAGE_KEY = "language";
 
@@ -19,19 +22,39 @@ export function chosenLanguage(): Language | undefined {
   }
 }
 
-/** The language to show when the page doesn't decide: the choice, else the browser's (A21). */
-export function preferredLanguage(): Language {
-  return chosenLanguage() ?? (navigator.language.toLowerCase().startsWith("de") ? "de" : "en");
+const listeners = new Set<() => void>();
+let chosen = chosenLanguage();
+
+function browserLanguage(): Language {
+  return navigator.language.toLowerCase().startsWith("de") ? "de" : "en";
 }
 
-/** Switch and remember the choice for the next visit. */
-export function chooseLanguage(language: Language) {
+/** The language to show when the page doesn't decide: the choice, else the browser's (A21). */
+export function preferredLanguage(): Language {
+  return chosen ?? browserLanguage();
+}
+
+/** Switch and remember the choice for the next visit; "system" follows the browser again. */
+export function chooseLanguage(choice: LanguageChoice) {
+  chosen = choice === "system" ? undefined : choice;
   try {
-    localStorage.setItem(STORAGE_KEY, language);
+    if (chosen) localStorage.setItem(STORAGE_KEY, chosen);
+    else localStorage.removeItem(STORAGE_KEY);
   } catch {
     // Not remembered then; the choice still holds for this visit.
   }
-  void i18n.changeLanguage(language);
+  listeners.forEach((listener) => listener());
+  void i18n.changeLanguage(preferredLanguage());
+}
+
+/** The choice, for the settings to show it as picked. */
+export function useLanguageChoice(): LanguageChoice {
+  return useSyncExternalStore(subscribe, () => chosen ?? "system");
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
 }
 
 i18n.on("languageChanged", (language) => {
