@@ -12,8 +12,8 @@ const THEME_CHOICES: ThemeChoice[] = ["light", "dark", "system"];
 /** Each language in its own words, so it can be found whatever the page is in. */
 const LANGUAGE_NAMES: Record<Language, string> = { de: "Deutsch", en: "English" };
 
-/** For hosts and guests alike, so it asks for no login: theme, language, how an invite's progress
- * shows and which build runs.
+/** For hosts and guests alike, so it asks for no login: theme, language and which build runs; the
+ * host also chooses how an invite's progress shows.
  * Behind the host's gear (`admin`) it has the host's header, with the way back to the events. */
 export function Settings({ admin = false }: { admin?: boolean }) {
   const { t, i18n } = useTranslation();
@@ -93,23 +93,28 @@ export function Settings({ admin = false }: { admin?: boolean }) {
             </label>
           </div>
         </fieldset>
-        <fieldset className="field plain">
-          <legend>{t("settings.progress")}</legend>
-          <div className="choices">
-            {PROGRESS_MARKS.map((choice) => (
-              <label key={choice} className="choice">
-                <input
-                  type="radio"
-                  name="progress-mark"
-                  checked={progressMark === choice}
-                  onChange={() => chooseProgressMark(choice)}
-                />
-                {t(`settings.progressMarks.${choice}`)}
-              </label>
-            ))}
-          </div>
-        </fieldset>
       </section>
+
+      {admin && (
+        <section className="card">
+          <fieldset className="field plain">
+            <legend>{t("settings.progress")}</legend>
+            <div className="choices">
+              {PROGRESS_MARKS.map((choice) => (
+                <label key={choice} className="choice">
+                  <input
+                    type="radio"
+                    name="progress-mark"
+                    checked={progressMark === choice}
+                    onChange={() => chooseProgressMark(choice)}
+                  />
+                  {t(`settings.progressMarks.${choice}`)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </section>
+      )}
 
       <section className="card">
         <dl className="facts">
