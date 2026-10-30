@@ -31,7 +31,7 @@
       },
       "AgeBand": {
         "additionalProperties": false,
-        "description": "People who said yes or maybe, by their age on the day of the event.",
+        "description": "The people invited from the address book, by their age on the day of the event and what\nthey answered.",
         "properties": {
           "max_age": {
             "anyOf": [
@@ -52,6 +52,14 @@
             "title": "Min Age",
             "type": "integer"
           },
+          "no": {
+            "title": "No",
+            "type": "integer"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "integer"
+          },
           "yes": {
             "title": "Yes",
             "type": "integer"
@@ -61,7 +69,9 @@
           "min_age",
           "max_age",
           "yes",
-          "maybe"
+          "maybe",
+          "no",
+          "pending"
         ],
         "title": "AgeBand",
         "type": "object"

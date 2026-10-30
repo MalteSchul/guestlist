@@ -68,14 +68,12 @@ def _timeline(people: Sequence[_Person]) -> list[AttendanceStep]:
 
 
 def _ages(people: Sequence[_Person], year: int, grouping: AgeGrouping) -> tuple[list[AgeBand], int]:
-    """Yes and maybe by band, everyone from `age_from` on together; the age is the year of the
-    event minus the birth year, so it is right within a year."""
+    """Everyone invited by band and answer, everyone from `age_from` on together; the age is the
+    year of the event minus the birth year, so it is right within a year."""
     starts = grouping.starts()
-    counts = {state: Counter[int]() for state in ("yes", "maybe")}
+    counts = {state: Counter[int]() for state in STATES}
     unknown = 0
     for person in people:
-        if person.attendance not in counts:
-            continue
         age = None if person.birth_year is None else year - person.birth_year
         if age is None or not 0 <= age <= MAX_AGE:
             unknown += 1
@@ -88,6 +86,8 @@ def _ages(people: Sequence[_Person], year: int, grouping: AgeGrouping) -> tuple[
             max_age=starts[i + 1] - 1 if i < last else None,
             yes=counts["yes"][i],
             maybe=counts["maybe"][i],
+            no=counts["no"][i],
+            pending=counts["pending"][i],
         )
         for i, start in enumerate(starts)
     ]

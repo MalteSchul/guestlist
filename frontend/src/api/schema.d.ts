@@ -412,7 +412,8 @@ export interface components {
         };
         /**
          * AgeBand
-         * @description People who said yes or maybe, by their age on the day of the event.
+         * @description The people invited from the address book, by their age on the day of the event and what
+         *     they answered.
          */
         AgeBand: {
             /** Max Age */
@@ -421,6 +422,10 @@ export interface components {
             maybe: number;
             /** Min Age */
             min_age: number;
+            /** No */
+            no: number;
+            /** Pending */
+            pending: number;
             /** Yes */
             yes: number;
         };
