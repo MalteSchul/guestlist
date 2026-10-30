@@ -2,31 +2,30 @@
 
 ## Git
 
-- **Commit whenever a piece of work is finished**, without waiting to be asked. One commit per
-  finished step, with a message that says what changed and why. Do not let finished work pile up
-  uncommitted.
-- Unrelated changes go into separate commits.
-- `main` is protected: work happens on a branch and reaches `main` through a pull request
-  (squash-merged). Open a PR or merge only when asked.
-- Never skip hooks and never rewrite published history.
+- Commit each finished step without being asked; the message says what changed and why.
+  Unrelated changes go into separate commits.
+- Other agents may work in this checkout at the same time. Their uncommitted changes are not
+  yours: stage only the files (or hunks) you changed (`git add <path>` / `git add -p`, never
+  `git add .` or `git commit -a`), check `git status` and `git diff --staged` before committing,
+  and never revert, stash or reformat changes you did not make. If a file holds both your changes
+  and someone else's, commit only your hunks.
+- `main` is protected: work on a branch, reach `main` by PR (squash-merged). Open a PR or merge
+  only when asked.
+- Never skip hooks or rewrite published history.
 
 ## Checks before committing
 
 - Backend (`backend/`): `uv run ruff check .`, `uv run pytest`.
 - Frontend (`frontend/`): `npx tsc --noEmit -p .`, `npm run build`.
-- After changing API routes or schemas: `uv run python -m scripts.export_openapi` in `backend/`,
-  then `npm run generate-api` in `frontend/`, and commit `contract/openapi.json` and
+- After changing API routes or schemas: run `uv run python -m scripts.export_openapi` in
+  `backend/`, then `npm run generate-api` in `frontend/`; commit `contract/openapi.json` and
   `frontend/src/api/schema.d.ts` with the change.
 
 ## Conventions
 
-- Texts live in `frontend/src/i18n/de.json` and `en.json`; change both together and remove keys
-  that are no longer used.
-- Vertical spacing on a page comes from two variables in `styles.css`: `--space-block` (12px,
-  between neighbouring blocks and from a heading to its block) and `--space-section` (32px,
-  above a section's heading). A card or list of cards directly in `main` gets its top gap from
-  `main > * + .card` / `main > * + .cards`, whatever precedes it. Do not add new spacing
-  numbers; use the variables, and for a new kind of block check the gap to its neighbours
-  against the others on the same page.
-- The UI prefers icons to text. Colours come from the CSS variables in `frontend/src/styles.css`.
+- Texts live in `frontend/src/i18n/de.json` and `en.json`: change both, remove unused keys.
+- Vertical spacing uses only `--space-block` (12px; between blocks, heading to block) and
+  `--space-section` (32px; above a section heading) from `styles.css`. No new spacing numbers;
+  check a new kind of block against its neighbours on the same page.
+- Prefer icons to text. Colours come from the CSS variables in `styles.css`.
 - The dev database holds real data: look before deleting or overwriting, and ask first.
