@@ -7,8 +7,8 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import EventQuestion, Invite, Person, PersonAnswer, PersonAnswerOption
-from app.schemas.invites import AnswerIn, GuestResponseIn, PersonResponseIn
+from app.models import Event, EventQuestion, Invite, Person, PersonAnswer, PersonAnswerOption
+from app.schemas.invites import AnswerIn, GuestListEntry, GuestResponseIn, PersonResponseIn
 from app.services.access import find
 from app.services.errors import Conflict, Invalid, NotFound
 
@@ -20,22 +20,28 @@ def get_invite(session: Session, token: str) -> Invite:
     return invite
 
 
-def guest_list(session: Session, invite: Invite) -> Sequence[Person] | None:
+def guest_list(session: Session, event: Event) -> Sequence[Person] | None:
     """Who's coming, as other guests see it, if the host turned the list on. Only people who
     agreed to be listed, and only "yes" and "maybe" (D33). Nothing but names and attendance
     may leave this: answers stay private (D3)."""
-    if not invite.event.guest_list_enabled:
+    if not event.guest_list_enabled:
         return None
     return session.scalars(
         select(Person)
         .join(Invite)
         .where(
-            Invite.event_id == invite.event_id,
+            Invite.event_id == event.id,
             Person.attendance_public,
             Person.attendance.in_(("yes", "maybe")),
         )
         .order_by(Invite.created_at, Person.position, Person.created_at)
     ).all()
+
+
+def guest_list_entries(session: Session, event: Event) -> list[GuestListEntry] | None:
+    """The guest list as guests get it; the host's preview shows the same."""
+    listed = guest_list(session, event)
+    return None if listed is None else [GuestListEntry.model_validate(p) for p in listed]
 
 
 def save_response(session: Session, token: str, data: GuestResponseIn) -> Invite:

@@ -20,10 +20,17 @@ from app.schemas.events import (
     SectionIn,
     SectionOut,
 )
-from app.schemas.invites import GroupInviteIn, GroupInviteOut, InviteIn, InviteOut
+from app.schemas.invites import (
+    GroupInviteIn,
+    GroupInviteOut,
+    GuestEvent,
+    GuestPreviewOut,
+    InviteIn,
+    InviteOut,
+)
 from app.schemas.stats import AgeGrouping, EventStats
 from app.schemas.users import UserOut
-from app.services import events, invites, stats
+from app.services import events, guests, invites, stats
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -90,6 +97,16 @@ def event_stats(
     grouping: Annotated[AgeGrouping, Query()],
 ) -> EventStats:
     return stats.event_stats(session, user, event_id, grouping)
+
+
+@router.get("/events/{event_id}/preview")
+def preview_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> GuestPreviewOut:
+    """The invitation as guests see it, without an invite of its own."""
+    event = events.get_event(session, user, event_id)
+    return GuestPreviewOut(
+        event=GuestEvent.model_validate(event),
+        guest_list=guests.guest_list_entries(session, event),
+    )
 
 
 # Sections

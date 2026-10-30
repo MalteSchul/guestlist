@@ -180,6 +180,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/events/{event_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Event
+         * @description The invitation as guests see it, without an invite of its own.
+         */
+        get: operations["preview_event_api_admin_events__event_id__preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/events/{event_id}/questions": {
         parameters: {
             query?: never;
@@ -739,6 +759,15 @@ export interface components {
             attendance: "pending" | "yes" | "no" | "maybe";
             /** Name */
             name: string;
+        };
+        /**
+         * GuestPreviewOut
+         * @description The invitation as guests see it, for the host's preview: no invite, so no persons.
+         */
+        GuestPreviewOut: {
+            event: components["schemas"]["GuestEvent"];
+            /** Guest List */
+            guest_list?: components["schemas"]["GuestListEntry"][] | null;
         };
         /** GuestQuestion */
         GuestQuestion: {
@@ -1577,6 +1606,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_event_api_admin_events__event_id__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuestPreviewOut"];
+                };
             };
             /** @description Validation Error */
             422: {

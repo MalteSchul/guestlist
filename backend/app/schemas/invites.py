@@ -106,6 +106,13 @@ class GuestInviteOut(Schema):
     """Who's coming, if the host shows a guest list; only people who agreed (D33)."""
 
 
+class GuestPreviewOut(Schema):
+    """The invitation as guests see it, for the host's preview: no invite, so no persons."""
+
+    event: GuestEvent
+    guest_list: list[GuestListEntry] | None = None
+
+
 class AnswerIn(Schema):
     question_id: uuid.UUID
     option_ids: list[uuid.UUID] = []

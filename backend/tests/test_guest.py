@@ -262,3 +262,25 @@ def test_guest_list_shows_only_people_who_agreed_and_come(client: TestClient, pa
     assert client.get(GUEST, headers=carla).json()["guest_list"] == [
         {"name": "Anna", "attendance": "yes"}
     ]
+
+
+def test_host_previews_the_invitation_as_guests_see_it(client: TestClient, party: dict, log_in_as):
+    event = party["event"]
+    preview = f"{EVENTS}/{event['id']}/preview"
+    options = f"{EVENTS}/{event['id']}/questions/{party['food']['id']}/options"
+    meat = party["food"]["options"][0]
+    client.put(f"{options}/{meat['id']}", json={"label": meat["label"], "active": False})
+    shown = {"title": event["title"], "starts_at": event["starts_at"], "guest_list_enabled": True}
+    client.put(f"{EVENTS}/{event['id']}", json=shown)
+    save(client, party, {"id": party["anna"], "attendance": "maybe", "attendance_public": True})
+
+    data = client.get(preview).json()
+    guest = client.get(GUEST, headers=as_guest(party)).json()
+    assert data == {"event": guest["event"], "guest_list": guest["guest_list"]}
+    assert [o["label"] for o in data["event"]["questions"][0]["options"]] == ["Vegetarisch"]
+    assert data["guest_list"] == [{"name": "Anna", "attendance": "maybe"}]
+
+    log_in_as("viewer@example.com", event["id"], "viewer")
+    assert client.get(preview).status_code == 200
+    log_in_as("stranger@example.com")
+    assert client.get(preview).status_code == 404

@@ -896,6 +896,34 @@
         "title": "GuestListEntry",
         "type": "object"
       },
+      "GuestPreviewOut": {
+        "additionalProperties": false,
+        "description": "The invitation as guests see it, for the host's preview: no invite, so no persons.",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/GuestEvent"
+          },
+          "guest_list": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GuestListEntry"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest List"
+          }
+        },
+        "required": [
+          "event"
+        ],
+        "title": "GuestPreviewOut",
+        "type": "object"
+      },
       "GuestQuestion": {
         "additionalProperties": false,
         "properties": {
@@ -2428,6 +2456,55 @@
           }
         ],
         "summary": "Delete Invite",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/admin/events/{event_id}/preview": {
+      "get": {
+        "description": "The invitation as guests see it, without an invite of its own.",
+        "operationId": "preview_event_api_admin_events__event_id__preview_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview Event",
         "tags": [
           "admin"
         ]
