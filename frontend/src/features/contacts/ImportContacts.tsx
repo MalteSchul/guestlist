@@ -3,7 +3,13 @@ import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
 import { SaveBar, useSave } from "../admin/forms";
-import { type ImportedContact, type ImportedGroup, importBody, parseContacts } from "./importFile";
+import {
+  type ImportedContact,
+  type ImportedGroup,
+  type Share,
+  importBody,
+  parseContacts,
+} from "./importFile";
 import { matches } from "../../components/search";
 import { SearchField } from "../../components/SearchField";
 import { useReveal } from "../../components/useReveal";
@@ -30,6 +36,7 @@ export function ImportContacts({
   const [fileName, setFileName] = useState<string>();
   const [withoutName, setWithoutName] = useState(0);
   const [search, setSearch] = useState("");
+  const [share, setShare] = useState<Share>({ birthYear: true, labels: true });
   const known = new Set(contacts.map((contact) => contact.name.toLocaleLowerCase()));
   const isKnown = (contact: ImportedContact) => known.has(contact.name.toLocaleLowerCase());
   // Names are unique (the backend skips the rest too): a name already in the address book, or
@@ -76,8 +83,9 @@ export function ImportContacts({
     );
   }
 
+  // The list shows, and searches, only what the import will carry.
   const visible = importable.filter((i) =>
-    matches(search, found![i]!.name, ...found![i]!.groups),
+    matches(search, found![i]!.name, ...(share.labels ? found![i]!.groups : [])),
   );
   const visiblePicked = visible.filter((i) => picked.has(i)).length;
 
@@ -104,7 +112,7 @@ export function ImportContacts({
   function submit(e: FormEvent) {
     e.preventDefault();
     if (!found) return;
-    const body = importBody(found, declared, picked);
+    const body = importBody(found, declared, picked, share);
     void save.run(async () => {
       setResult(await unwrap(api.POST("/api/admin/contacts/import", { body })));
       setFound(undefined);
@@ -117,6 +125,27 @@ export function ImportContacts({
       <h2>{t("contacts.import.title")}</h2>
       <p className="muted">{t("contacts.import.how")}</p>
       <p className="hint">{t("contacts.import.privacy")}</p>
+      <div className="field">
+        <span>{t("contacts.import.include")}</span>
+        <div className="choices">
+          <label className="choice">
+            <input
+              type="checkbox"
+              checked={share.birthYear}
+              onChange={(e) => setShare({ ...share, birthYear: e.target.checked })}
+            />
+            {t("contacts.import.birthYear")}
+          </label>
+          <label className="choice">
+            <input
+              type="checkbox"
+              checked={share.labels}
+              onChange={(e) => setShare({ ...share, labels: e.target.checked })}
+            />
+            {t("contacts.import.labels")}
+          </label>
+        </div>
+      </div>
       {/* A button like every other, in the page's language; the browser's own file input
           would say "Choose File" in the browser's. */}
       <div className="field">
@@ -197,10 +226,10 @@ export function ImportContacts({
                       />
                       <span>
                         {contact.name}
-                        {contact.birth_year && (
+                        {share.birthYear && contact.birth_year && (
                           <span className="muted"> · {contact.birth_year}</span>
                         )}
-                        {contact.groups.length > 0 && (
+                        {share.labels && contact.groups.length > 0 && (
                           <span className="muted"> · {contact.groups.join(", ")}</span>
                         )}
                       </span>
