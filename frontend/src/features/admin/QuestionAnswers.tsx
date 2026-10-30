@@ -6,7 +6,7 @@ import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Icon } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
 import { sortedByName } from "../../i18n/text";
-import { KindIcon, kindOf } from "./Questions";
+import { KindIcon, kindOf, QuestionIconKey, RequiredIcon } from "./Questions";
 
 type Event = Schemas["EventOut"];
 type Person = Schemas["PersonOut"];
@@ -36,7 +36,10 @@ export function QuestionAnswers({
     <>
       <div className="row">
         <h2>
-          {t("admin.event.totals")} <InfoTip text={t("admin.event.totalsHint")} />
+          {t("admin.event.totals")}{" "}
+          <InfoTip text={t("admin.event.totalsHint")}>
+            <QuestionIconKey />
+          </InfoTip>
         </h2>
         <span className="heading-actions">
           <button
@@ -56,6 +59,7 @@ export function QuestionAnswers({
           <div className="row">
             <span className="question-name">
               <KindIcon kind={kindOf(question)} />
+              <RequiredIcon required={question.required} />
               <strong>{question.label}</strong>
             </span>
             <button

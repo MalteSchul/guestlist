@@ -65,18 +65,7 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
         <h2>
           {t("admin.setup.questions")}{" "}
           <InfoTip text={t("admin.setup.questionsHint")}>
-            <ul className="icon-key">
-              {KINDS.map((kind) => (
-                <li key={kind}>
-                  <Icon name={KIND_ICONS[kind]} />
-                  {t(`admin.setup.kinds.${kind}`)}
-                </li>
-              ))}
-              <li>
-                <Icon name="required" />
-                {t("admin.setup.required")}
-              </li>
-            </ul>
+            <QuestionIconKey />
           </InfoTip>
         </h2>
         {!adding && (
@@ -163,9 +152,28 @@ export function KindIcon({ kind }: { kind: Kind }) {
   );
 }
 
+/** What the icons on a question mean, one per line: for the tooltip at a list of questions. */
+export function QuestionIconKey() {
+  const { t } = useTranslation();
+  return (
+    <ul className="icon-key">
+      {KINDS.map((kind) => (
+        <li key={kind}>
+          <Icon name={KIND_ICONS[kind]} />
+          {t(`admin.setup.kinds.${kind}`)}
+        </li>
+      ))}
+      <li>
+        <Icon name="required" />
+        {t("admin.setup.required")}
+      </li>
+    </ul>
+  );
+}
+
 /** An asterisk when the question has to be answered. The slot stays when it doesn't, so the
  * names line up. */
-function RequiredIcon({ required }: { required: boolean }) {
+export function RequiredIcon({ required }: { required: boolean }) {
   const { t } = useTranslation();
   if (!required) {
     return (
