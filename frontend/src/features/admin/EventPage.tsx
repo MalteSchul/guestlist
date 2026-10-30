@@ -83,7 +83,8 @@ function EventDetails({
             aria-label={t("admin.event.preview")}
             title={t("admin.event.preview")}
           >
-            <Icon name="show" />
+            {/* Like an invite's link, but for the event without a guest of its own. */}
+            <Icon name="open" />
           </a>
           <a
             className="icon"
