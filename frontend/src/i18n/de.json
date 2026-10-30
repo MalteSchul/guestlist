@@ -150,6 +150,7 @@
       "startsAt": "Beginn",
       "endsAt": "Ende",
       "rsvpDeadline": "Antworten bis",
+      "clear": "Leeren",
       "rsvpDeadlineHint": "Leer lassen, dann können Gäste bis zum Beginn antworten.",
       "keepData": "Daten nach dem Event behalten",
       "keepDataHint": "Sonst werden Einladungen und Antworten 90 Tage nach dem Event gelöscht.",

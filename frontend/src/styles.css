@@ -326,6 +326,18 @@ fieldset.field > legend {
   font-weight: normal;
 }
 
+/* An input with a small button after it, e.g. to clear an optional date. */
+.with-clear {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.with-clear > input {
+  flex: 1;
+  min-width: 0;
+}
+
 .choices {
   display: flex;
   flex-wrap: wrap;

@@ -150,6 +150,7 @@
       "startsAt": "Starts",
       "endsAt": "Ends",
       "rsvpDeadline": "Answer by",
+      "clear": "Clear",
       "rsvpDeadlineHint": "Leave it empty and guests can answer until the event starts.",
       "keepData": "Keep the data after the event",
       "keepDataHint": "Otherwise invites and answers are deleted 90 days after the event.",

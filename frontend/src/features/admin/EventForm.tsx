@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../../api/client";
 import {
+  IconButton,
   isoOf,
   localInput,
   SaveBar,
@@ -11,6 +12,26 @@ import {
 } from "./forms";
 
 type EventIn = Schemas["EventIn"];
+
+/** An optional date and time. The browser's own field can only be emptied by blanking each part
+ * of it, so a button next to it clears it at once. */
+function OptionalDateTime({
+  value,
+  onChange,
+  min,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  min?: string;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="with-clear">
+      <input type="datetime-local" value={value} min={min} onChange={(e) => onChange(e.target.value)} />
+      {value && <IconButton icon="close" label={t("admin.form.clear")} onClick={() => onChange("")} />}
+    </div>
+  );
+}
 
 /** The event's own fields, for creating it and for editing it later. */
 export function EventForm({
@@ -115,18 +136,13 @@ export function EventForm({
         </label>
         <label className="field">
           <span>{t("admin.form.endsAt")}</span>
-          <input
-            type="datetime-local"
-            value={endsAt}
-            min={startsAt || undefined}
-            onChange={(e) => setEndsAt(e.target.value)}
-          />
+          <OptionalDateTime value={endsAt} min={startsAt || undefined} onChange={setEndsAt} />
         </label>
       </div>
 
       <label className="field">
         <span>{t("admin.form.rsvpDeadline")}</span>
-        <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+        <OptionalDateTime value={deadline} onChange={setDeadline} />
         <span className="hint">{t("admin.form.rsvpDeadlineHint")}</span>
       </label>
 
