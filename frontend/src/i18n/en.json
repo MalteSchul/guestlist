@@ -153,14 +153,14 @@
       "clear": "Clear",
       "rsvpDeadlineHint": "Leave it empty and guests can answer until the event starts.",
       "keepData": "Keep the data after the event",
-      "keepDataHint": "Otherwise invites and answers are deleted 90 days after the event.",
+      "keepDataHint": "Otherwise invites and answers are deleted 1 year after the event.",
       "guestList": "Show guests who's coming",
       "guestListHint": "Only people who agree are listed – with name and attendance, nothing else."
     },
     "details": {
       "answersUntil": "Answers until {{date}}",
       "answersUntilStart": "Answers until the event starts",
-      "deleted": "Data deleted 90 days after the event",
+      "deleted": "Data deleted 1 year after the event",
       "kept": "Data kept after the event",
       "guestList": "Guests see who's coming",
       "noGuestList": "Guests don't see who's coming"

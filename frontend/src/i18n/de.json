@@ -153,14 +153,14 @@
       "clear": "Leeren",
       "rsvpDeadlineHint": "Leer lassen, dann können Gäste bis zum Beginn antworten.",
       "keepData": "Daten nach dem Event behalten",
-      "keepDataHint": "Sonst werden Einladungen und Antworten 90 Tage nach dem Event gelöscht.",
+      "keepDataHint": "Sonst werden Einladungen und Antworten 1 Jahr nach dem Event gelöscht.",
       "guestList": "Gästen zeigen, wer kommt",
       "guestListHint": "Auf der Liste steht nur, wer zustimmt – mit Name und Zusage, sonst nichts."
     },
     "details": {
       "answersUntil": "Antworten bis {{date}}",
       "answersUntilStart": "Antworten bis zum Beginn",
-      "deleted": "Daten werden 90 Tage nach dem Event gelöscht",
+      "deleted": "Daten werden 1 Jahr nach dem Event gelöscht",
       "kept": "Daten bleiben nach dem Event erhalten",
       "guestList": "Gäste sehen, wer kommt",
       "noGuestList": "Gäste sehen nicht, wer kommt"

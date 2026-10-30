@@ -13,7 +13,7 @@ below. 🔑 = primary key, → = foreign key, *italic* = optional. All IDs are U
                                                       event_question_options         person_answer_options
 
  logins + rights        per user, kept forever        what the host sets up          what guests answer
-                                                                                     (deleted 90 days after the event)
+                                                                                     (deleted 1 year after the event)
 ```
 
 ```mermaid
@@ -104,7 +104,7 @@ erDiagram
 | starts_at | timestamp | |
 | *ends_at* | timestamp | multi-day events |
 | *rsvp_deadline* | timestamp | answers close here, otherwise at `starts_at` |
-| keep_data | yes/no | default no: deleted 90 days after the event |
+| keep_data | yes/no | default no: deleted 1 year after the event |
 | guest_list_enabled | yes/no | default no: show the attendance list to guests |
 
 **`event_sections`**: info cards such as "Dress code" or "Parking"

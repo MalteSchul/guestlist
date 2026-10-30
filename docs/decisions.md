@@ -66,7 +66,7 @@ new one that replaces it, not by silently editing the old one.
 | D8 | Address book per user: contacts, groups, members (a contact can be in several groups) | Reuse guest lists across events |
 | D9 | Inviting **copies** contacts into invites/persons, with `persons.contact_id` as the link back | History stays correct, private address book vs shared event, deleting in either place never breaks the other |
 | D10 | Address book is never deleted automatically | It's the user's own data |
-| D11 | Event data deleted 90 days after the event unless `keep_data` | Data minimisation (GDPR) |
+| D11 | Event data deleted 1 year after the event unless `keep_data` | Data minimisation (GDPR) |
 | D12 | Answer window: until `rsvp_deadline` if set (may be after the start), otherwise until `starts_at` | Simple and predictable |
 | D13 | Optional `ends_at` | Multi-day events; retention counts from the end |
 | D14 | Several owners per event allowed; the app never removes the last owner | Simpler than a single-owner rule |
