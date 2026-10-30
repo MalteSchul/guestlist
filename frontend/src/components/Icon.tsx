@@ -90,6 +90,21 @@ const PATHS = {
     </>
   ),
   sort: <path d="M8 5v14M4 15l4 4 4-4M16 19V5M12 9l4-4 4 4" />,
+  choiceOne: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="2.5" />
+    </>
+  ),
+  choiceMany: (
+    <>
+      <rect x="4" y="4" width="7" height="7" rx="1.5" />
+      <path d="M5.8 7.6l1.4 1.4 2-2.6" />
+      <rect x="4" y="13" width="7" height="7" rx="1.5" />
+      <path d="M14.5 7.5H20M14.5 16.5H20" />
+    </>
+  ),
+  freeText: <path d="M5 7h14M5 12h14M5 17h9" />,
   table: (
     <>
       <rect x="4" y="5" width="16" height="14" rx="2" />

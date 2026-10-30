@@ -1354,6 +1354,23 @@ button.icon.accent:hover {
   gap: 0.5rem;
 }
 
+/* A question's name with the icon for its kind before it; a long name wraps beside the icon. */
+.question-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.kind-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 1.5em; /* one line, so the icon stays on the first line of a wrapped name */
+  color: var(--muted);
+  cursor: default;
+}
+
 .badge {
   display: inline-block;
   font-size: 0.8rem;

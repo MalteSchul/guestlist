@@ -11,6 +11,7 @@ import {
   TextField,
   useSave,
 } from "./forms";
+import { Icon, type IconName } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
 import { useLoad } from "../../components/useLoad";
 import { useReveal } from "../../components/useReveal";
@@ -87,7 +88,10 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
           ) : (
             <li key={question.id} className="card">
               <div className="row">
-                <strong>{question.label}</strong>
+                <span className="question-name">
+                  <KindIcon kind={kindOf(question)} />
+                  <strong>{question.label}</strong>
+                </span>
                 <ItemControls
                   index={index}
                   count={questions.length}
@@ -111,10 +115,11 @@ function QuestionSummary({ question }: { question: Question }) {
   const { t } = useTranslation();
   return (
     <>
-      <p className="tally">
-        <span className="badge">{t(`admin.setup.kinds.${kindOf(question)}`)}</span>
-        {question.required && <span className="badge">{t("admin.setup.required")}</span>}
-      </p>
+      {question.required && (
+        <p className="tally">
+          <span className="badge">{t("admin.setup.required")}</span>
+        </p>
+      )}
       {question.kind === "choice" && (
         <p className="muted">
           {question.options
@@ -127,6 +132,24 @@ function QuestionSummary({ question }: { question: Question }) {
         </p>
       )}
     </>
+  );
+}
+
+const KIND_ICONS = {
+  single: "choiceOne",
+  multiple: "choiceMany",
+  text: "freeText",
+} as const satisfies Record<Kind, IconName>;
+
+/** What kind of answer a question takes, as an icon before its name; the kind in words is its
+ * tooltip. */
+function KindIcon({ kind }: { kind: Kind }) {
+  const { t } = useTranslation();
+  const label = t(`admin.setup.kinds.${kind}`);
+  return (
+    <span className="kind-icon" role="img" aria-label={label} title={label}>
+      <Icon name={KIND_ICONS[kind]} />
+    </span>
   );
 }
 
