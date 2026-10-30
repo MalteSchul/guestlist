@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
+import { Icon } from "../../components/Icon";
 import { Layout } from "../../components/Layout";
 import { EventForm } from "./EventForm";
 
@@ -15,10 +16,17 @@ export function NewEvent() {
 
   return (
     <Layout admin>
-      <p>
-        <a href="/">← {t("admin.event.back")}</a>
-      </p>
-      <h1>{t("admin.newEvent.title")}</h1>
+      <div className="row title-row">
+        <a
+          className="icon back"
+          href="/"
+          aria-label={t("admin.event.back")}
+          title={t("admin.event.back")}
+        >
+          <Icon name="back" />
+        </a>
+        <h1>{t("admin.newEvent.title")}</h1>
+      </div>
       <div className="card">
         <EventForm label={t("admin.newEvent.create")} onSubmit={create} />
       </div>

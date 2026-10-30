@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
+import { Icon } from "../../components/Icon";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
 import { EventForm } from "./EventForm";
@@ -22,7 +23,6 @@ type Section = Schemas["SectionOut"];
 
 /** Where hosts set an event up: its details, the information guests see, the questions. */
 export function EventSetup({ eventId }: { eventId: string }) {
-  const { t } = useTranslation();
   const params = { path: { event_id: eventId } };
   const event = useLoad(() => unwrap(api.GET("/api/admin/events/{event_id}", { params })), [eventId]);
 
@@ -33,9 +33,6 @@ export function EventSetup({ eventId }: { eventId: string }) {
 
   return (
     <Layout admin>
-      <p>
-        <a href={`/admin/events/${eventId}`}>← {t("admin.setup.back")}</a>
-      </p>
       <Loaded {...event}>{(event) => <Setup event={event} reload={reload} />}</Loaded>
     </Layout>
   );
@@ -52,7 +49,17 @@ function Setup({ event, reload }: { event: Event; reload: () => Promise<void> })
 
   return (
     <>
-      <h1>{t("admin.setup.title", { title: event.title })}</h1>
+      <div className="row title-row">
+        <a
+          className="icon back"
+          href={`/admin/events/${event.id}`}
+          aria-label={t("admin.setup.back")}
+          title={t("admin.setup.back")}
+        >
+          <Icon name="back" />
+        </a>
+        <h1>{t("admin.setup.title", { title: event.title })}</h1>
+      </div>
 
         <h2>{t("admin.setup.details")}</h2>
         <div className="card">

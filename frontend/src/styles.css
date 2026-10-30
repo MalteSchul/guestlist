@@ -479,7 +479,7 @@ button.danger {
 }
 
 /* The date follows right under an event's title. */
-.title-row > h1 {
+.title-row:has(+ .meta) > h1 {
   margin-bottom: 0.5rem;
 }
 
