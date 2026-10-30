@@ -1310,6 +1310,18 @@ button.icon.accent:hover {
   border-left: 4px solid var(--progress);
 }
 
+/* The same state as an icon, for those who can't tell the colours apart. Sized like the icon
+   buttons next to it. */
+.progress-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--progress);
+  cursor: default;
+}
+
 /* A filter that is on or off, e.g. only the unfinished invites. */
 button.icon.ghost.toggle[aria-pressed="true"] {
   background: color-mix(in srgb, var(--accent) 12%, transparent);

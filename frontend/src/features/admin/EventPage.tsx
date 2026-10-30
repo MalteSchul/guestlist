@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { api, type Schemas, unwrap } from "../../api/client";
 import { AttendanceCounts } from "../../components/AttendanceCounts";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
-import { Icon } from "../../components/Icon";
+import { Icon, type IconName } from "../../components/Icon";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
@@ -228,8 +228,18 @@ function InviteCard({
   const single =
     invite.persons.length === 1 &&
     invite.persons[0]!.name.trim().toLocaleLowerCase() === invite.name.trim().toLocaleLowerCase();
+  const progress = inviteProgress(event, invite);
+  const progressLabel = t(`admin.event.progress.${progress}`);
   const actions = (
     <span className="card-actions">
+      <span
+        className="progress-icon"
+        role="img"
+        aria-label={progressLabel}
+        title={progressLabel}
+      >
+        <Icon name={PROGRESS_ICONS[progress]} />
+      </span>
       <a
         className="icon ghost"
         href={link}
@@ -298,7 +308,7 @@ function InviteCard({
   );
 
   return (
-    <li className={`card progress ${inviteProgress(event, invite)}`}>
+    <li className={`card progress ${progress}`}>
       {single ? (
         <div className="row single">
           {persons}
@@ -343,6 +353,12 @@ function countAttendance(persons: Person[]): Schemas["AttendanceCounts"] {
 
 const progressOf = (event: Event, person: Person) =>
   personProgress(event.questions, person.attendance, person.answers);
+
+const PROGRESS_ICONS = {
+  open: "progressOpen",
+  partial: "progressPartial",
+  done: "progressDone",
+} as const satisfies Record<Progress, IconName>;
 
 /** Red while nobody answered, green once everyone is done, yellow in between. */
 function inviteProgress(event: Event, invite: Invite): Progress {

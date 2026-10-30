@@ -126,6 +126,20 @@ const PATHS = {
       <path d="M8 20h8M12 16v4" />
     </>
   ),
+  // How far an invite is: empty, half, done. The colour is only a second cue.
+  progressOpen: <circle cx="12" cy="12" r="8" />,
+  progressPartial: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 4a8 8 0 0 0 0 16Z" fill="currentColor" />
+    </>
+  ),
+  progressDone: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M8.5 12.5l2.5 2.5 4.5-5" />
+    </>
+  ),
   help: (
     <>
       <circle cx="12" cy="12" r="9" />
