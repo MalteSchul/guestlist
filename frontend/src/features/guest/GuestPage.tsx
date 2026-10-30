@@ -5,7 +5,7 @@ import { ApiError, api, type Schemas, unwrap } from "../../api/client";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { formatDateTime, sortedByName } from "../../i18n/text";
+import { formatDateRange, formatDateTime, sortedByName } from "../../i18n/text";
 import { openRequired, personProgress, summary } from "../answers";
 
 type Invite = Schemas["GuestInviteOut"];
@@ -125,10 +125,7 @@ function Invitation({
   return (
     <>
       <h1>{event.title}</h1>
-      <p className="meta">
-        {formatDateTime(event.starts_at, lang)}
-        {event.ends_at && ` – ${formatDateTime(event.ends_at, lang)}`}
-      </p>
+      <p className="meta">{formatDateRange(event.starts_at, event.ends_at, lang)}</p>
       {event.location && (
         <p className="meta">
           <a href={mapsUrl(event.location)} target="_blank" rel="noreferrer">
