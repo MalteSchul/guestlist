@@ -79,17 +79,20 @@ export function useSave() {
 export type Save = ReturnType<typeof useSave>;
 
 /** The submit button, Cancel if given, and how the save went. `disabled` while there's nothing to
- * submit yet, e.g. no group chosen. */
+ * submit yet, e.g. no group chosen or nothing changed; `cancelDisabled` while there's nothing to
+ * cancel. */
 export function SaveBar({
   save,
   label,
   onCancel,
   disabled = false,
+  cancelDisabled = false,
 }: {
   save: Save;
   label?: string;
   onCancel?: () => void;
   disabled?: boolean;
+  cancelDisabled?: boolean;
 }) {
   const { t } = useTranslation();
   return (
@@ -98,7 +101,7 @@ export function SaveBar({
         {save.status === "saving" ? t("common.saving") : (label ?? t("common.save"))}
       </button>
       {onCancel && (
-        <button type="button" onClick={onCancel}>
+        <button type="button" onClick={onCancel} disabled={cancelDisabled}>
           {t("common.cancel")}
         </button>
       )}

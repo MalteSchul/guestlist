@@ -33,6 +33,40 @@ export function EventForm({
   const [keepData, setKeepData] = useState(event?.keep_data ?? false);
   const [guestList, setGuestList] = useState(event?.guest_list_enabled ?? false);
 
+  // What is stored, for knowing whether anything changed and for Cancel to go back to.
+  const stored = {
+    title: event?.title ?? "",
+    description: event?.description ?? "",
+    location: event?.location ?? "",
+    startsAt: localInput(event?.starts_at),
+    endsAt: localInput(event?.ends_at),
+    deadline: localInput(event?.rsvp_deadline),
+    keepData: event?.keep_data ?? false,
+    guestList: event?.guest_list_enabled ?? false,
+  };
+  const changed =
+    title.trim() !== stored.title ||
+    description.trim() !== stored.description ||
+    location.trim() !== stored.location ||
+    startsAt !== stored.startsAt ||
+    endsAt !== stored.endsAt ||
+    deadline !== stored.deadline ||
+    keepData !== stored.keepData ||
+    guestList !== stored.guestList;
+
+  function revert() {
+    setTitle(stored.title);
+    setDescription(stored.description);
+    setLocation(stored.location);
+    setStartsAt(stored.startsAt);
+    setEndsAt(stored.endsAt);
+    setDeadline(stored.deadline);
+    setKeepData(stored.keepData);
+    setGuestList(stored.guestList);
+    save.reset();
+    save.clearError();
+  }
+
   function submit(e: FormEvent) {
     e.preventDefault();
     void save.run(() =>
@@ -116,7 +150,13 @@ export function EventForm({
         <span className="hint">{t("admin.form.guestListHint")}</span>
       </div>
 
-      <SaveBar save={save} label={label} />
+      <SaveBar
+        save={save}
+        label={label}
+        onCancel={revert}
+        disabled={!changed}
+        cancelDisabled={!changed || save.status === "saving"}
+      />
     </form>
   );
 }
