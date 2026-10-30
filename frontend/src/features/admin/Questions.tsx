@@ -63,7 +63,21 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
     <>
       <div className="row">
         <h2>
-          {t("admin.setup.questions")} <InfoTip text={t("admin.setup.questionsHint")} />
+          {t("admin.setup.questions")}{" "}
+          <InfoTip text={t("admin.setup.questionsHint")}>
+            <ul className="icon-key">
+              {KINDS.map((kind) => (
+                <li key={kind}>
+                  <Icon name={KIND_ICONS[kind]} />
+                  {t(`admin.setup.kinds.${kind}`)}
+                </li>
+              ))}
+              <li>
+                <Icon name="required" />
+                {t("admin.setup.required")}
+              </li>
+            </ul>
+          </InfoTip>
         </h2>
         {!adding && (
           <IconButton

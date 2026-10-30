@@ -1335,6 +1335,25 @@ button.icon.accent:hover {
   gap: 0.5rem;
 }
 
+/* A key to icons inside an InfoTip bubble: the icon and its meaning, one per line. */
+.icon-key {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.icon-key li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-key .line-icon {
+  color: var(--muted);
+}
+
 /* A question's name with the icon for its kind before it; a long name wraps beside the icon. */
 .question-name {
   display: flex;
