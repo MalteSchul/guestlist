@@ -28,4 +28,8 @@
   `--space-section` (32px; above a section heading) from `styles.css`. No new spacing numbers;
   check a new kind of block against its neighbours on the same page.
 - Prefer icons to text. Colours come from the CSS variables in `styles.css`.
+- Hints: a tooltip when the hint only explains what a section is for (nice to know); inline text
+  under the field when it says what happens if you choose an option (need to know before
+  deciding, e.g. data deleted after 90 days). Touch screens have no hover, so a tooltip is easy
+  to miss.
 - The dev database holds real data: look before deleting or overwriting, and ask first.
