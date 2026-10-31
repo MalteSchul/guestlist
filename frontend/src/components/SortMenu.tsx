@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { IconButton } from "../features/admin/forms";
 import { Icon, type IconName } from "./Icon";
+import { useDismiss } from "./useDismiss";
 
 export type SortOption<T extends string> = {
   value: T;
@@ -33,24 +34,14 @@ export function SortMenu<T extends string>({
   const ref = useRef<HTMLSpanElement>(null);
   const current = options.find((option) => option.value === value)!;
 
+  // Opened: the cursor on the choice in use. Closed with Escape: back on the icon.
   useEffect(() => {
-    if (!open) return;
-    ref.current?.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
-    const outside = (e: PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const escape = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      setOpen(false);
-      ref.current?.querySelector<HTMLElement>("button")?.focus();
-    };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", escape);
-    };
+    if (open) ref.current?.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
   }, [open]);
+  useDismiss(ref, open, (by) => {
+    setOpen(false);
+    if (by === "escape") ref.current?.querySelector<HTMLElement>("button")?.focus();
+  });
 
   return (
     <span className={active ? "menu-wrap wide active" : "menu-wrap wide"} ref={ref}>

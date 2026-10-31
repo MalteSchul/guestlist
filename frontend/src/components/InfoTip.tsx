@@ -1,6 +1,7 @@
-import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 import { Icon } from "./Icon";
+import { useDismiss } from "./useDismiss";
 
 /** A "?" that shows a short explanation in a bubble: on hover with a mouse, on tap on a phone,
  * on Enter or Space with the keyboard. Tapping elsewhere, Esc or leaving it closes it again.
@@ -18,21 +19,7 @@ export function InfoTip({ text, children }: { text: string; children?: ReactNode
     el.style.transform = over > 0 ? `translateX(${-over}px)` : "";
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const outside = (e: PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const escape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [open]);
+  useDismiss(ref, open, () => setOpen(false));
 
   return (
     <span
