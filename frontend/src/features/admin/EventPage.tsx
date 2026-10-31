@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
-import { AttendanceCounts } from "../../components/AttendanceCounts";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { Icon, type IconName } from "../../components/Icon";
 import { EventWhenWhere } from "../../components/EventWhenWhere";
@@ -135,7 +134,6 @@ function EventDetails({
       <EventWhenWhere event={event} />
       {event.description && <ExpandableText text={event.description} />}
 
-      <AttendanceCounts counts={countAttendance(persons)} />
       <AttendanceNames persons={persons} />
 
       <QuestionAnswers event={event} persons={persons} onShow={showInInvites} />
@@ -398,12 +396,6 @@ function GuestListIcon({ person }: { person: Person }) {
       <Icon name="show" />
     </span>
   );
-}
-
-function countAttendance(persons: Person[]): Schemas["AttendanceCounts"] {
-  const counts = { yes: 0, maybe: 0, no: 0, pending: 0 };
-  for (const person of persons) counts[person.attendance] += 1;
-  return counts;
 }
 
 const progressOf = (event: Event, person: Person) =>
