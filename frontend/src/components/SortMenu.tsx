@@ -3,6 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { IconButton } from "../features/admin/forms";
 import { Icon, type IconName } from "./Icon";
 
+/** A switch below the choices, e.g. "only those who answered". It can be turned on and off
+ * without the list closing, so the choice above stays in view. */
+export type MenuSwitch = {
+  label: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (checked: boolean) => void;
+};
+
 export type SortOption<T extends string> = {
   value: T;
   label: string;
@@ -19,6 +28,7 @@ export function SortMenu<T extends string>({
   onChange,
   icon = "sort",
   active = false,
+  extra,
 }: {
   label: string;
   options: readonly SortOption<T>[];
@@ -28,6 +38,7 @@ export function SortMenu<T extends string>({
   icon?: IconName;
   /** Shown like a filter that is on, for a choice other than the usual one. */
   active?: boolean;
+  extra?: MenuSwitch;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
@@ -80,6 +91,21 @@ export function SortMenu<T extends string>({
               {option.label}
             </button>
           ))}
+          {extra && (
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={extra.checked}
+              aria-disabled={extra.disabled || undefined}
+              className="group-start"
+              onClick={() => !extra.disabled && extra.onChange(!extra.checked)}
+            >
+              <span className="menu-check" aria-hidden="true">
+                {extra.checked && <Icon name="check" />}
+              </span>
+              {extra.label}
+            </button>
+          )}
         </div>
       )}
     </span>

@@ -155,19 +155,13 @@ function EventDetails({
                 { value: ALL_QUESTIONS, label: t("admin.event.allQuestions"), group: "all" },
                 ...event.questions.map((q) => ({ value: q.id, label: q.label, group: "questions" })),
               ]}
+              extra={{
+                label: t("admin.event.onlyAnswered"),
+                checked: onlyAnswered,
+                disabled: question === undefined,
+                onChange: setOnlyAnswered,
+              }}
             />
-          )}
-          {question && (
-            <button
-              type="button"
-              className="icon ghost toggle"
-              aria-pressed={onlyAnswered}
-              aria-label={t("admin.event.onlyAnswered")}
-              title={t("admin.event.onlyAnswered")}
-              onClick={() => setOnlyAnswered(!onlyAnswered)}
-            >
-              <Icon name="check" />
-            </button>
           )}
           {!adding && (
             <IconButton
