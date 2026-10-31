@@ -1165,11 +1165,6 @@ main:has(.selection-bar) {
   white-space: nowrap;
 }
 
-.menu button[aria-disabled="true"] {
-  color: var(--muted);
-  cursor: default;
-}
-
 /* A line between the kinds of sorting. */
 .menu button.group-start {
   margin-top: 0.25rem;

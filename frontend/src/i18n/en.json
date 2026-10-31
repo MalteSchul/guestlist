@@ -89,7 +89,6 @@
       "noTextAnswers": "No answers yet.",
       "byQuestion": "By question",
       "allQuestions": "All questions",
-      "onlyAnswered": "Only guests who answered",
       "withoutAnswer_one": "{{count}} without an answer",
       "withoutAnswer_other": "{{count}} without an answer",
       "sort": "Sort",
