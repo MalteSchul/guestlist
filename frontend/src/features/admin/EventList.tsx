@@ -75,7 +75,7 @@ function EventCard({ event, past }: { event: Summary; past: boolean }) {
         <a href={`/admin/events/${event.id}`}>
           <strong>{event.title}</strong>
         </a>
-        <AttendanceCounts counts={event.attendance} small />
+        <AttendanceCounts counts={event.attendance} />
         {action.error && <span className="error">{action.error}</span>}
       </div>
       <span className="card-actions">
