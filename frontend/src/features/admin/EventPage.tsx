@@ -17,6 +17,7 @@ import { formatDateTime, nameCollator, sortedByName } from "../../i18n/text";
 import { useProgressMark } from "../../progressMark";
 import { hasAnswer, openRequired, type Progress, personProgress, summary } from "../answers";
 import { IconButton, useSave } from "./forms";
+import { AttendanceNames } from "./AttendanceNames";
 import { NewInvite, type NewInviteKind } from "./NewInvite";
 import { QuestionAnswers } from "./QuestionAnswers";
 
@@ -59,15 +60,13 @@ function EventDetails({
   const { t, i18n } = useTranslation();
   const [order, setOrder] = useState<InviteOrder>("name-asc");
   const [search, setSearch] = useState("");
-  // Narrowing the invites to one question: its answers only, and optionally only those who gave one.
+  // Narrowing the invites to one question: its answers only, and only the guests who gave one.
   const [questionId, setQuestionId] = useState(ALL_QUESTIONS);
-  const [onlyAnswered, setOnlyAnswered] = useState(false);
   // Counts up each time the host asks to see the invites for a question; see showInInvites.
   const [jumps, setJumps] = useState(0);
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const question = event.questions.find((q) => q.id === questionId);
-  const asked = question && onlyAnswered;
   // A search finds invites by their name or by a person in them, best match first; equal
   // matches, and everything without a search, keep the chosen order.
   const shown = searchList(
@@ -75,21 +74,14 @@ function EventDetails({
     search,
     (invite) => invite.name,
     (invite) => invite.persons.map((person) => person.name),
-  ).filter((invite) => !asked || invite.persons.some((person) => hasAnswer(person, question.id)));
+  ).filter((invite) => !question || invite.persons.some((person) => hasAnswer(person, question.id)));
   // As the backend decides for guests: the deadline, or the start without one (D12).
   const answersCloseAt = event.rsvp_deadline ?? event.starts_at;
   const answersOpen = Date.now() < new Date(answersCloseAt).getTime();
   const persons = invites.flatMap((invite) => invite.persons);
 
-  // Picking a question narrows to the guests who answered it; "all questions" lifts that again.
-  // The switch can still be turned off for the question.
-  function chooseQuestion(id: string) {
-    setQuestionId(id);
-    setOnlyAnswered(id !== ALL_QUESTIONS);
-  }
-
   function showInInvites(id: string) {
-    chooseQuestion(id);
+    setQuestionId(id);
     setJumps(jumps + 1);
   }
 
@@ -144,6 +136,7 @@ function EventDetails({
       {event.description && <ExpandableText text={event.description} />}
 
       <AttendanceCounts counts={countAttendance(persons)} />
+      <AttendanceNames persons={persons} />
 
       <QuestionAnswers event={event} persons={persons} onShow={showInInvites} />
 
@@ -176,19 +169,12 @@ function EventDetails({
               label={t("admin.event.byQuestion")}
               icon="ask"
               active={question !== undefined}
-              stayOpen
               value={questionId}
-              onChange={chooseQuestion}
+              onChange={setQuestionId}
               options={[
                 { value: ALL_QUESTIONS, label: t("admin.event.allQuestions"), group: "all" },
                 ...event.questions.map((q) => ({ value: q.id, label: q.label, group: "questions" })),
               ]}
-              extra={{
-                label: t("admin.event.onlyAnswered"),
-                checked: onlyAnswered,
-                disabled: question === undefined,
-                onChange: setOnlyAnswered,
-              }}
             />
           )}
           {!adding && (
@@ -239,7 +225,6 @@ function EventDetails({
             event={event}
             invite={invite}
             question={question}
-            onlyAnswered={onlyAnswered}
             onDeleted={() => onChange(invites.filter((i) => i.id !== invite.id))}
           />
         ))}
@@ -252,15 +237,12 @@ function InviteCard({
   event,
   invite,
   question,
-  onlyAnswered,
   onDeleted,
 }: {
   event: Event;
   invite: Invite;
-  /** Show only this question's answers; all of them without. */
+  /** Show only this question's answers, and only the people who gave one; all without. */
   question?: Event["questions"][number];
-  /** With a question: leave out the people who gave no answer to it. */
-  onlyAnswered: boolean;
   onDeleted: () => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -346,7 +328,7 @@ function InviteCard({
   const persons = (
     <ul className="persons">
       {sortedByName(invite.persons, i18n.language)
-        .filter((person) => !question || !onlyAnswered || hasAnswer(person, question.id))
+        .filter((person) => !question || hasAnswer(person, question.id))
         .map((person) => {
         // Saving "yes" needs every required answer, so this only happens when a question
         // became required after the guest answered.
