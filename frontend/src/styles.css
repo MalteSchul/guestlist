@@ -525,6 +525,8 @@ button.danger {
 /* A heading with a control next to it: the row takes the heading's spacing, so both centre. */
 .row:has(> h2) {
   margin: var(--space-section) 0 var(--space-block);
+  /* Jumped to (e.g. the invites): a little room under the header, which scroll-padding keeps. */
+  scroll-margin-top: 1rem;
 }
 
 .row > h2 {
@@ -536,17 +538,6 @@ button.danger {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: 0 0.75rem;
-}
-
-.controls {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.controls button {
-  font-size: 0.85rem;
-  padding: 0.2rem 0.6rem;
 }
 
 .options {
@@ -720,7 +711,6 @@ h3 {
   padding: 0.2rem 0.6rem;
 }
 
-.item-row .controls,
 .item-row .card-actions {
   flex: none;
 }
@@ -1329,12 +1319,6 @@ button.icon.accent:hover {
 
 /* Host overview */
 
-.tally {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
 /* A key to icons inside an InfoTip bubble: the icon and its meaning, one per line. */
 .icon-key {
   display: grid;
@@ -1472,17 +1456,11 @@ button.icon.ghost.toggle[aria-pressed="true"] {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 1.25rem;
-  margin: var(--space-block) 0;
-  padding: 0;
-  font-size: 1.15rem;
-  font-weight: 600;
-}
-
-.stats.small {
-  margin: 0.15rem 0 0;
   gap: 0 1rem;
+  margin: 0.15rem 0 0;
+  padding: 0;
   font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .stats li {

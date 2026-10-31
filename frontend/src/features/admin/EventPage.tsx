@@ -21,9 +21,10 @@ import { NewInvite, type NewInviteKind } from "./NewInvite";
 import { QuestionAnswers } from "./QuestionAnswers";
 
 type Event = Schemas["EventOut"];
-const ALL_QUESTIONS = "all"; // the question filter's "no question"
 type Invite = Schemas["InviteOut"];
 type Person = Schemas["PersonOut"];
+
+const ALL_QUESTIONS = "all"; // the question filter's "no question"
 
 /** The overview: who is coming, what they chose, and the invites. Setup is on EventSetup. */
 export function EventPage({ eventId }: { eventId: string }) {
@@ -138,11 +139,7 @@ function EventDetails({
 
       <QuestionAnswers event={event} persons={persons} onShow={showInInvites} />
 
-      <div
-        className="row heading-search"
-        id="invites"
-        style={{ scrollMarginTop: "calc(var(--topbar-height) + 1rem)" }}
-      >
+      <div className="row heading-search" id="invites">
         <h2>
           {t("admin.event.invites")} <InfoTip text={t("admin.event.invitesHint")} />
         </h2>
@@ -200,8 +197,12 @@ function EventDetails({
         })}
       </p>
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
-      {invites.length > 0 && search.trim() && shown.length === 0 && (
-        <p className="muted">{t("admin.event.noMatch", { query: search.trim() })}</p>
+      {invites.length > 0 && shown.length === 0 && (
+        <p className="muted">
+          {search.trim()
+            ? t("admin.event.noMatch", { query: search.trim() })
+            : t("admin.event.noAnswerTo", { question: question?.label })}
+        </p>
       )}
       {adding && (
         <NewInvite
@@ -321,38 +322,33 @@ function InviteCard({
       </button>
     </span>
   );
-  const answersLine = (person: Person) =>
-    summary(question ? [question] : event.questions, person.answers, !question);
   const persons = (
     <ul className="persons">
       {sortedByName(invite.persons, i18n.language)
         .filter((person) => !question || hasAnswer(person, question.id))
         .map((person) => {
-        // Saving "yes" needs every required answer, so this only happens when a question
-        // became required after the guest answered.
-        const open =
-          person.attendance === "yes" ? openRequired(event.questions, person.answers).length : 0;
-        const status =
-          t(`admin.attendance.${person.attendance}`) +
-          (open > 0 ? ` · ${t("admin.event.requiredOpen", { count: open })}` : "");
-        return (
-          <li key={person.id}>
-            <span
-              className="status"
-              role="img"
-              aria-label={status}
-              title={status}
-            >
-              <AttendanceIcon attendance={person.attendance} />
-            </span>
-            {event.guest_list_enabled && <GuestListIcon person={person} />}
-            <span>
-              {single ? <strong>{person.name}</strong> : person.name}
-              {answersLine(person) && <span className="muted"> · {answersLine(person)}</span>}
-            </span>
-          </li>
-        );
-      })}
+          // Saving "yes" needs every required answer, so this only happens when a question
+          // became required after the guest answered.
+          const open =
+            person.attendance === "yes" ? openRequired(event.questions, person.answers).length : 0;
+          const status =
+            t(`admin.attendance.${person.attendance}`) +
+            (open > 0 ? ` · ${t("admin.event.requiredOpen", { count: open })}` : "");
+          // Only the picked question's answer, without its name; otherwise all of them.
+          const answers = summary(question ? [question] : event.questions, person.answers, !question);
+          return (
+            <li key={person.id}>
+              <span className="status" role="img" aria-label={status} title={status}>
+                <AttendanceIcon attendance={person.attendance} />
+              </span>
+              {event.guest_list_enabled && <GuestListIcon person={person} />}
+              <span>
+                {single ? <strong>{person.name}</strong> : person.name}
+                {answers && <span className="muted"> · {answers}</span>}
+              </span>
+            </li>
+          );
+        })}
     </ul>
   );
 

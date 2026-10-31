@@ -2,13 +2,13 @@ import {
   type CSSProperties,
   type KeyboardEvent,
   type PointerEvent,
-  useEffect,
   useId,
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../../../api/client";
+import { useDismiss } from "../../../components/useDismiss";
 import { hatchStyle, Patterns, type Series, SERIES, Tooltip, without } from "./ChartCard";
 import { countTicks, DAY, HOUR, linear, timeTicks } from "./scale";
 import { useElementWidth } from "./useElementWidth";
@@ -64,15 +64,8 @@ export function AttendanceTimeline({
   const full = new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" });
   const manyYears = new Date(from).getFullYear() !== new Date(to).getFullYear();
 
-  // Touch has no pointer leaving: a tap elsewhere puts the readout away.
-  useEffect(() => {
-    if (!cursor || cursor.keyboard) return;
-    const away = (e: globalThis.PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setCursor(undefined);
-    };
-    document.addEventListener("pointerdown", away);
-    return () => document.removeEventListener("pointerdown", away);
-  }, [cursor, ref]);
+  // A tap elsewhere puts the readout away; with the keyboard, Escape does (onKey).
+  useDismiss(ref, !!cursor && !cursor.keyboard, () => setCursor(undefined), { escape: false });
 
   /** The closed outline of a series, stepping along its top and back along its bottom. */
   function area(i: number): string {

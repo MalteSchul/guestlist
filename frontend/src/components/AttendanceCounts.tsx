@@ -5,17 +5,12 @@ import { AttendanceIcon } from "./AttendanceIcon";
 
 export const ATTENDANCE = ["yes", "maybe", "no", "pending"] as const;
 
-/** "1 ✓  3 ?  2 ✕  1 ◷": how many people gave which answer; the answer's name is the tooltip. */
-export function AttendanceCounts({
-  counts,
-  small = false,
-}: {
-  counts: Schemas["AttendanceCounts"];
-  small?: boolean;
-}) {
+/** "1 ✓  3 ?  2 ✕  1 ◷": how many people gave which answer, e.g. under an event's name in the
+ * list; the answer's name is the tooltip. */
+export function AttendanceCounts({ counts }: { counts: Schemas["AttendanceCounts"] }) {
   const { t } = useTranslation();
   return (
-    <ul className={small ? "stats small" : "stats"} aria-label={t("admin.event.personsTally")}>
+    <ul className="stats" aria-label={t("admin.event.personsTally")}>
       {ATTENDANCE.map((attendance) => {
         const label = `${t(`admin.attendance.${attendance}`)}: ${counts[attendance]}`;
         return (

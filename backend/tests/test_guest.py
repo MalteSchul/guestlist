@@ -2,7 +2,10 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from app.models import Invite
 from app.services.invites import TOKEN_ALPHABET
 
 EVENTS = "/api/admin/events"
@@ -83,6 +86,21 @@ def test_host_creates_lists_and_deletes_invites(client: TestClient, party: dict,
 
     log_in_as("stranger@example.com")
     assert client.get(url).status_code == 404
+
+
+def test_invites_are_listed_newest_first(client: TestClient, session: Session, party: dict):
+    url = f"{EVENTS}/{party['event']['id']}/invites"
+    for name in ("Dora", "Carla", "Bert"):
+        client.post(url, json={"name": name, "persons": [{"name": name}]})
+    # The real times are all the test's one moment; Bert and Carla as if invited in one go.
+    day = {"Familie Müller": 1, "Carla": 2, "Bert": 2, "Dora": 3}
+    for invite in session.scalars(select(Invite)):
+        invite.created_at = datetime(2030, 6, day[invite.name], tzinfo=UTC)
+    session.flush()
+
+    # Newest first; invites made at the same moment go by name.
+    names = [invite["name"] for invite in client.get(url).json()]
+    assert names == ["Dora", "Bert", "Carla", "Familie Müller"]
 
 
 # Guests

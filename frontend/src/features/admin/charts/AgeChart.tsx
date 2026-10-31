@@ -2,13 +2,13 @@ import {
   type CSSProperties,
   type KeyboardEvent,
   type PointerEvent,
-  useEffect,
   useId,
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../../../api/client";
+import { useDismiss } from "../../../components/useDismiss";
 import { hatchStyle, Patterns, type Series, SERIES, Tooltip, without } from "./ChartCard";
 import { countTicks, linear } from "./scale";
 import { useElementWidth } from "./useElementWidth";
@@ -69,15 +69,8 @@ export function AgeChart({
   const labelled = (i: number) =>
     i === bands.length - 1 || (i % every === 0 && bands.length - 1 - i >= every);
 
-  // Touch has no pointer leaving: a tap elsewhere puts the readout away.
-  useEffect(() => {
-    if (!hover || hover.keyboard) return;
-    const away = (e: globalThis.PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setHover(undefined);
-    };
-    document.addEventListener("pointerdown", away);
-    return () => document.removeEventListener("pointerdown", away);
-  }, [hover, ref]);
+  // A tap elsewhere puts the readout away; with the keyboard, Escape does (onKey).
+  useDismiss(ref, !!hover && !hover.keyboard, () => setHover(undefined), { escape: false });
 
   function onKey(e: KeyboardEvent) {
     if (e.key === "Escape") return setHover(undefined);
