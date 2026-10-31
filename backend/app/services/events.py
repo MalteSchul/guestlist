@@ -1,4 +1,4 @@
-"""Events and what hosts set up on them: sections, questions, options."""
+"""Events and what hosts set up on them: questions and their options."""
 
 import uuid
 from collections.abc import Sequence
@@ -12,13 +12,12 @@ from app.models import (
     EventQuestion,
     EventQuestionOption,
     EventRole,
-    EventSection,
     Invite,
     Person,
     PersonAnswerOption,
     User,
 )
-from app.schemas.events import EventIn, OptionIn, QuestionIn, QuestionUpdate, SectionIn
+from app.schemas.events import EventIn, OptionIn, QuestionIn, QuestionUpdate
 from app.services.access import find, require_role
 from app.services.errors import Conflict, Invalid
 
@@ -78,14 +77,11 @@ def update_event(session: Session, user: User, event_id: uuid.UUID, data: EventI
 
 
 def duplicate_event(session: Session, user: User, event_id: uuid.UUID) -> Event:
-    """A new event with the same details, sections and questions, for the next party of the same
+    """A new event with the same details and questions, for the next party of the same
     kind. Invites and answers stay behind, and so do options nobody can pick any more. The user
     becomes the copy's owner."""
     original = require_role(session, user, event_id, "viewer")
     copy = Event(**EventIn.model_validate(original).model_dump())
-    copy.sections = [
-        EventSection(title=s.title, body=s.body, position=s.position) for s in original.sections
-    ]
     copy.questions = [
         EventQuestion(
             label=q.label,
@@ -110,35 +106,6 @@ def duplicate_event(session: Session, user: User, event_id: uuid.UUID) -> Event:
 
 def delete_event(session: Session, user: User, event_id: uuid.UUID) -> None:
     session.delete(require_role(session, user, event_id, "owner"))
-    session.commit()
-
-
-# Sections
-
-
-def add_section(session: Session, user: User, event_id: uuid.UUID, data: SectionIn) -> EventSection:
-    event = require_role(session, user, event_id, "admin")
-    section = EventSection(**data.model_dump())
-    event.sections.append(section)
-    session.commit()
-    return section
-
-
-def update_section(
-    session: Session, user: User, event_id: uuid.UUID, section_id: uuid.UUID, data: SectionIn
-) -> EventSection:
-    event = require_role(session, user, event_id, "admin")
-    section = find(event.sections, section_id, "section")
-    _assign(section, data)
-    session.commit()
-    return section
-
-
-def delete_section(
-    session: Session, user: User, event_id: uuid.UUID, section_id: uuid.UUID
-) -> None:
-    event = require_role(session, user, event_id, "admin")
-    event.sections.remove(find(event.sections, section_id, "section"))
     session.commit()
 
 

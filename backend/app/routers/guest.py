@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.db import SessionDep
 from app.models import Invite
-from app.schemas.invites import GuestInviteOut, GuestListEntry, GuestResponseIn
+from app.schemas.invites import GuestInviteOut, GuestResponseIn
 from app.services import guests
 
 router = APIRouter(prefix="/guest", tags=["guest"])
@@ -27,6 +27,5 @@ def save_response(session: SessionDep, token: InviteToken, data: GuestResponseIn
 
 
 def _with_guest_list(session: Session, invite: Invite) -> GuestInviteOut:
-    listed = guests.guest_list(session, invite)
-    entries = None if listed is None else [GuestListEntry.model_validate(p) for p in listed]
+    entries = guests.guest_list_entries(session, invite.event)
     return GuestInviteOut.model_validate(invite).model_copy(update={"guest_list": entries})

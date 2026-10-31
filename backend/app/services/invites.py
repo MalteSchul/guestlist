@@ -24,9 +24,13 @@ def new_token() -> str:
 
 
 def list_invites(session: Session, user: User, event_id: uuid.UUID) -> Sequence[Invite]:
+    """Newest first, so what was just added is at the top. Invites made together (a group, one
+    per member) share a moment, and go by name."""
     require_role(session, user, event_id, "viewer")
     return session.scalars(
-        select(Invite).where(Invite.event_id == event_id).order_by(Invite.created_at)
+        select(Invite)
+        .where(Invite.event_id == event_id)
+        .order_by(Invite.created_at.desc(), Invite.name)
     ).all()
 
 

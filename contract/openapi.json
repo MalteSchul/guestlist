@@ -31,7 +31,7 @@
       },
       "AgeBand": {
         "additionalProperties": false,
-        "description": "People who said yes or maybe, by their age on the day of the event.",
+        "description": "The people invited from the address book, by their age on the day of the event and what\nthey answered.",
         "properties": {
           "max_age": {
             "anyOf": [
@@ -52,6 +52,14 @@
             "title": "Min Age",
             "type": "integer"
           },
+          "no": {
+            "title": "No",
+            "type": "integer"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "integer"
+          },
           "yes": {
             "title": "Yes",
             "type": "integer"
@@ -61,7 +69,9 @@
           "min_age",
           "max_age",
           "yes",
-          "maybe"
+          "maybe",
+          "no",
+          "pending"
         ],
         "title": "AgeBand",
         "type": "object"
@@ -487,13 +497,6 @@
             ],
             "title": "Rsvp Deadline"
           },
-          "sections": {
-            "items": {
-              "$ref": "#/components/schemas/SectionOut"
-            },
-            "title": "Sections",
-            "type": "array"
-          },
           "starts_at": {
             "format": "date-time",
             "title": "Starts At",
@@ -510,7 +513,6 @@
           "title",
           "starts_at",
           "id",
-          "sections",
           "questions"
         ],
         "title": "EventOut",
@@ -776,13 +778,6 @@
             "title": "Questions",
             "type": "array"
           },
-          "sections": {
-            "items": {
-              "$ref": "#/components/schemas/SectionOut"
-            },
-            "title": "Sections",
-            "type": "array"
-          },
           "starts_at": {
             "format": "date-time",
             "title": "Starts At",
@@ -802,7 +797,6 @@
           "answers_close_at",
           "answers_open",
           "guest_list_enabled",
-          "sections",
           "questions"
         ],
         "title": "GuestEvent",
@@ -884,6 +878,34 @@
           "attendance"
         ],
         "title": "GuestListEntry",
+        "type": "object"
+      },
+      "GuestPreviewOut": {
+        "additionalProperties": false,
+        "description": "The invitation as guests see it, for the host's preview: no invite, so no persons.",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/GuestEvent"
+          },
+          "guest_list": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GuestListEntry"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest List"
+          }
+        },
+        "required": [
+          "event"
+        ],
+        "title": "GuestPreviewOut",
         "type": "object"
       },
       "GuestQuestion": {
@@ -1535,68 +1557,6 @@
           "label"
         ],
         "title": "QuestionUpdate",
-        "type": "object"
-      },
-      "SectionIn": {
-        "additionalProperties": false,
-        "properties": {
-          "body": {
-            "maxLength": 5000,
-            "minLength": 1,
-            "title": "Body",
-            "type": "string"
-          },
-          "position": {
-            "default": 0,
-            "title": "Position",
-            "type": "integer"
-          },
-          "title": {
-            "maxLength": 5000,
-            "minLength": 1,
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "title",
-          "body"
-        ],
-        "title": "SectionIn",
-        "type": "object"
-      },
-      "SectionOut": {
-        "additionalProperties": false,
-        "properties": {
-          "body": {
-            "maxLength": 5000,
-            "minLength": 1,
-            "title": "Body",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "position": {
-            "default": 0,
-            "title": "Position",
-            "type": "integer"
-          },
-          "title": {
-            "maxLength": 5000,
-            "minLength": 1,
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "title",
-          "body",
-          "id"
-        ],
-        "title": "SectionOut",
         "type": "object"
       },
       "UserOut": {
@@ -2423,6 +2383,55 @@
         ]
       }
     },
+    "/api/admin/events/{event_id}/preview": {
+      "get": {
+        "description": "The invitation as guests see it, without an invite of its own.",
+        "operationId": "preview_event_api_admin_events__event_id__preview_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview Event",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/admin/events/{event_id}/questions": {
       "post": {
         "operationId": "add_question_api_admin_events__event_id__questions_post",
@@ -2803,181 +2812,6 @@
         ]
       }
     },
-    "/api/admin/events/{event_id}/sections": {
-      "post": {
-        "operationId": "add_section_api_admin_events__event_id__sections_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "event_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Event Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SectionIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SectionOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Add Section",
-        "tags": [
-          "admin"
-        ]
-      }
-    },
-    "/api/admin/events/{event_id}/sections/{section_id}": {
-      "delete": {
-        "operationId": "delete_section_api_admin_events__event_id__sections__section_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "event_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Event Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "section_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Section Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Delete Section",
-        "tags": [
-          "admin"
-        ]
-      },
-      "put": {
-        "operationId": "update_section_api_admin_events__event_id__sections__section_id__put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "event_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Event Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "section_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Section Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SectionIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SectionOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Update Section",
-        "tags": [
-          "admin"
-        ]
-      }
-    },
     "/api/admin/events/{event_id}/stats": {
       "get": {
         "operationId": "event_stats_api_admin_events__event_id__stats_get",
@@ -2990,6 +2824,30 @@
               "format": "uuid",
               "title": "Event Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "age_step",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 120,
+              "minimum": 1,
+              "title": "Age Step",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "age_from",
+            "required": false,
+            "schema": {
+              "default": 80,
+              "maximum": 120,
+              "minimum": 1,
+              "title": "Age From",
+              "type": "integer"
             }
           }
         ],

@@ -2,18 +2,26 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
-import { AttendanceCounts } from "../../components/AttendanceCounts";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
-import { Icon } from "../../components/Icon";
+import { Icon, type IconName } from "../../components/Icon";
+import { EventWhenWhere } from "../../components/EventWhenWhere";
+import { ExpandableText } from "../../components/ExpandableText";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
+import { searchList } from "../../components/search";
+import { SearchField } from "../../components/SearchField";
+import { SortMenu } from "../../components/SortMenu";
 import { useLoad } from "../../components/useLoad";
-import { formatDateTime } from "../../i18n/text";
-import { openRequired, type Progress, personProgress, summary } from "../answers";
+import { formatDateTime, nameCollator, sortedByName } from "../../i18n/text";
+import { useProgressMark } from "../../progressMark";
+import { hasAnswer, openRequired, type Progress, personProgress, summary } from "../answers";
 import { IconButton, useSave } from "./forms";
+import { AttendanceNames } from "./AttendanceNames";
 import { NewInvite, type NewInviteKind } from "./NewInvite";
+import { QuestionAnswers } from "./QuestionAnswers";
 
 type Event = Schemas["EventOut"];
+const ALL_QUESTIONS = "all"; // the question filter's "no question"
 type Invite = Schemas["InviteOut"];
 type Person = Schemas["PersonOut"];
 
@@ -49,27 +57,61 @@ function EventDetails({
   onChange: (invites: Invite[]) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language;
-  const [onlyOpen, setOnlyOpen] = useState(false);
+  const [order, setOrder] = useState<InviteOrder>("name-asc");
+  const [search, setSearch] = useState("");
+  // Narrowing the invites to one question: its answers only, and only the guests who gave one.
+  const [questionId, setQuestionId] = useState(ALL_QUESTIONS);
+  // Counts up each time the host asks to see the invites for a question; see showInInvites.
+  const [jumps, setJumps] = useState(0);
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
-  const unfinished = invites.filter((invite) => inviteProgress(event, invite) !== "done");
-  const shown = onlyOpen ? unfinished : invites;
+  const question = event.questions.find((q) => q.id === questionId);
+  // A search finds invites by their name or by a person in them, best match first; equal
+  // matches, and everything without a search, keep the chosen order.
+  const shown = searchList(
+    sortInvites(invites, order, event, i18n.language),
+    search,
+    (invite) => invite.name,
+    (invite) => invite.persons.map((person) => person.name),
+  ).filter((invite) => !question || invite.persons.some((person) => hasAnswer(person, question.id)));
+  // As the backend decides for guests: the deadline, or the start without one (D12).
+  const answersCloseAt = event.rsvp_deadline ?? event.starts_at;
+  const answersOpen = Date.now() < new Date(answersCloseAt).getTime();
   const persons = invites.flatMap((invite) => invite.persons);
-  const coming = persons.filter((person) => person.attendance === "yes");
+
+  function showInInvites(id: string) {
+    setQuestionId(id);
+    setJumps(jumps + 1);
+  }
+
+  // After the list has its new length: scrolled before, a short list (few invites answered) cuts
+  // the page short, and the heading could not be brought to the top when the list grew again.
+  useEffect(() => {
+    if (jumps === 0) return;
+    document.getElementById("invites")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [jumps]);
 
   return (
     <>
       <div className="row title-row">
+        <a
+          className="icon back"
+          href="/"
+          aria-label={t("admin.event.back")}
+          title={t("admin.event.back")}
+        >
+          <Icon name="back" />
+        </a>
         <h1>{event.title}</h1>
         <span className="heading-actions">
           <a
             className="icon"
-            href="/"
-            aria-label={t("admin.event.back")}
-            title={t("admin.event.back")}
+            href={`/admin/events/${event.id}/preview`}
+            aria-label={t("admin.event.preview")}
+            title={t("admin.event.preview")}
           >
-            <Icon name="back" />
+            {/* Like an invite's link, but for the event without a guest of its own. */}
+            <Icon name="open" />
           </a>
           <a
             className="icon"
@@ -89,50 +131,49 @@ function EventDetails({
           </a>
         </span>
       </div>
-      <p className="meta">{formatDateTime(event.starts_at, lang)}</p>
+      <EventWhenWhere event={event} />
+      {event.description && <ExpandableText text={event.description} />}
 
-      <AttendanceCounts counts={countAttendance(persons)} />
+      <AttendanceNames persons={persons} />
 
-      {event.questions.some((question) => question.kind === "choice") && (
-        <>
-          <h2>
-            {t("admin.event.totals")} <InfoTip text={t("admin.event.totalsHint")} />
-          </h2>
-          {event.questions
-            .filter((question) => question.kind === "choice")
-            .map((question) => (
-              <div key={question.id} className="card">
-                <strong>{question.label}</strong>
-                <ul className="totals">
-                  {question.options.map((option) => (
-                    <li key={option.id}>
-                      <span className={option.active ? undefined : "muted"}>
-                        {option.label}
-                        {!option.active && ` (${t("admin.setup.hidden")})`}
-                      </span>
-                      <span>{coming.filter((p) => picked(p, question.id, option.id)).length}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-        </>
-      )}
+      <QuestionAnswers event={event} persons={persons} onShow={showInInvites} />
 
-      <div className="row">
-        <h2>{t("admin.event.invites", { count: invites.length })}</h2>
+      <div
+        className="row heading-search"
+        id="invites"
+        style={{ scrollMarginTop: "calc(var(--topbar-height) + 1rem)" }}
+      >
+        <h2>
+          {t("admin.event.invites")} <InfoTip text={t("admin.event.invitesHint")} />
+        </h2>
+        {invites.length > 1 && (
+          <SearchField label={t("admin.event.search")} value={search} onChange={setSearch} />
+        )}
         <span className="heading-actions">
-          {invites.length > 0 && (
-            <button
-              type="button"
-              className="icon ghost toggle"
-              aria-pressed={onlyOpen}
-              aria-label={t("admin.event.onlyUnfinished")}
-              title={t("admin.event.onlyUnfinished")}
-              onClick={() => setOnlyOpen(!onlyOpen)}
-            >
-              <Icon name="filter" />
-            </button>
+          {invites.length > 1 && (
+            <SortMenu
+              label={t("admin.event.sort")}
+              value={order}
+              onChange={setOrder}
+              options={INVITE_ORDERS.map((value) => ({
+                value,
+                label: t(`admin.event.order.${value}`),
+                group: value.split("-")[0]!,
+              }))}
+            />
+          )}
+          {invites.length > 0 && event.questions.length > 0 && (
+            <SortMenu
+              label={t("admin.event.byQuestion")}
+              icon="ask"
+              active={question !== undefined}
+              value={questionId}
+              onChange={setQuestionId}
+              options={[
+                { value: ALL_QUESTIONS, label: t("admin.event.allQuestions"), group: "all" },
+                ...event.questions.map((q) => ({ value: q.id, label: q.label, group: "questions" })),
+              ]}
+            />
           )}
           {!adding && (
             <IconButton
@@ -152,9 +193,28 @@ function EventDetails({
           )}
         </span>
       </div>
+      {/* Where the deadline matters: who still has to answer, and until when. */}
+      <p className="muted">
+        {t(answersOpen ? "admin.event.answersUntil" : "admin.event.answersClosed", {
+          date: formatDateTime(answersCloseAt, i18n.language),
+        })}
+      </p>
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
-      {onlyOpen && unfinished.length === 0 && invites.length > 0 && (
-        <p className="muted">{t("admin.event.allFinished")}</p>
+      {invites.length > 0 && search.trim() && shown.length === 0 && (
+        <p className="muted">{t("admin.event.noMatch", { query: search.trim() })}</p>
+      )}
+      {adding && (
+        <NewInvite
+          kind={adding}
+          event={event}
+          invites={invites}
+          groups={groups.data ?? []}
+          // Newest first, as the host's list is; invites made together go by name.
+          onCreated={(created) =>
+            onChange([...[...created].sort((a, b) => a.name.localeCompare(b.name)), ...invites])
+          }
+          onClose={() => setAdding(undefined)}
+        />
       )}
       <ul className="cards">
         {shown.map((invite) => (
@@ -162,20 +222,11 @@ function EventDetails({
             key={invite.id}
             event={event}
             invite={invite}
+            question={question}
             onDeleted={() => onChange(invites.filter((i) => i.id !== invite.id))}
           />
         ))}
       </ul>
-      {adding && (
-        <NewInvite
-          kind={adding}
-          event={event}
-          invites={invites}
-          groups={groups.data ?? []}
-          onCreated={(created) => onChange([...invites, ...created])}
-          onClose={() => setAdding(undefined)}
-        />
-      )}
     </>
   );
 }
@@ -183,13 +234,16 @@ function EventDetails({
 function InviteCard({
   event,
   invite,
+  question,
   onDeleted,
 }: {
   event: Event;
   invite: Invite;
+  /** Show only this question's answers, and only the people who gave one; all without. */
+  question?: Event["questions"][number];
   onDeleted: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
   const action = useSave();
   const link = `${window.location.origin}/i/${invite.token}`;
@@ -226,6 +280,14 @@ function InviteCard({
   const single =
     invite.persons.length === 1 &&
     invite.persons[0]!.name.trim().toLocaleLowerCase() === invite.name.trim().toLocaleLowerCase();
+  const mark = useProgressMark();
+  const progress = inviteProgress(event, invite);
+  const progressLabel = t(`admin.event.progress.${progress}`);
+  const progressIcon = mark !== "bar" && (
+    <span className="progress-icon" role="img" aria-label={progressLabel} title={progressLabel}>
+      <Icon name={PROGRESS_ICONS[progress]} />
+    </span>
+  );
   const actions = (
     <span className="card-actions">
       <a
@@ -259,9 +321,13 @@ function InviteCard({
       </button>
     </span>
   );
+  const answersLine = (person: Person) =>
+    summary(question ? [question] : event.questions, person.answers, !question);
   const persons = (
     <ul className="persons">
-      {invite.persons.map((person) => {
+      {sortedByName(invite.persons, i18n.language)
+        .filter((person) => !question || hasAnswer(person, question.id))
+        .map((person) => {
         // Saving "yes" needs every required answer, so this only happens when a question
         // became required after the guest answered.
         const open =
@@ -282,12 +348,7 @@ function InviteCard({
             {event.guest_list_enabled && <GuestListIcon person={person} />}
             <span>
               {single ? <strong>{person.name}</strong> : person.name}
-              {person.answers.length > 0 && (
-                <span className="muted">
-                  {" "}
-                  · {summary(event.questions, person.answers)}
-                </span>
-              )}
+              {answersLine(person) && <span className="muted"> · {answersLine(person)}</span>}
             </span>
           </li>
         );
@@ -296,15 +357,19 @@ function InviteCard({
   );
 
   return (
-    <li className={`card progress ${inviteProgress(event, invite)}`}>
+    <li className={`card progress ${progress}${mark === "icon" ? "" : " bar"}`}>
       {single ? (
         <div className="row single">
+          {progressIcon}
           {persons}
           {actions}
         </div>
       ) : (
         <div className="row">
-          <strong>{invite.name}</strong>
+          <span className="invite-title">
+            {progressIcon}
+            <strong>{invite.name}</strong>
+          </span>
           {actions}
         </div>
       )}
@@ -333,14 +398,49 @@ function GuestListIcon({ person }: { person: Person }) {
   );
 }
 
-function countAttendance(persons: Person[]): Schemas["AttendanceCounts"] {
-  const counts = { yes: 0, maybe: 0, no: 0, pending: 0 };
-  for (const person of persons) counts[person.attendance] += 1;
-  return counts;
-}
-
 const progressOf = (event: Event, person: Person) =>
   personProgress(event.questions, person.attendance, person.answers);
+
+const PROGRESS_ICONS = {
+  open: "progressOpen",
+  partial: "progressPartial",
+  done: "progressDone",
+} as const satisfies Record<Progress, IconName>;
+
+/** The orders the invites can be listed in: each kind of sorting either way. The list from the
+ * server, and the page's own, is newest first. */
+const INVITE_ORDERS = [
+  "name-asc",
+  "name-desc",
+  "added-desc",
+  "added-asc",
+  "status-asc",
+  "status-desc",
+  "people-desc",
+  "people-asc",
+] as const;
+type InviteOrder = (typeof INVITE_ORDERS)[number];
+
+/** Equal status or number of people: by name A to Z, whichever way the main order runs. Equal
+ * names keep the order they come in, newest first. */
+function sortInvites(invites: Invite[], order: InviteOrder, event: Event, language: string): Invite[] {
+  if (order === "added-desc") return invites;
+  if (order === "added-asc") return [...invites].reverse();
+  const collator = nameCollator(language);
+  const rank = { open: 0, partial: 1, done: 2 } satisfies Record<Progress, number>;
+  const [kind, direction] = order.split("-");
+  const sign = direction === "asc" ? 1 : -1;
+  const byName = (a: Invite, b: Invite) => collator.compare(a.name, b.name);
+  return [...invites].sort(
+    (a, b) =>
+      kind === "name"
+        ? sign * byName(a, b)
+        : sign *
+            (kind === "status"
+              ? rank[inviteProgress(event, a)] - rank[inviteProgress(event, b)]
+              : a.persons.length - b.persons.length) || byName(a, b),
+  );
+}
 
 /** Red while nobody answered, green once everyone is done, yellow in between. */
 function inviteProgress(event: Event, invite: Invite): Progress {
@@ -348,8 +448,4 @@ function inviteProgress(event: Event, invite: Invite): Progress {
   if (all.every((progress) => progress === "open")) return "open";
   if (all.every((progress) => progress === "done")) return "done";
   return "partial";
-}
-
-function picked(person: Person, questionId: string, optionId: string): boolean {
-  return person.answers.some((a) => a.question_id === questionId && a.option_ids.includes(optionId));
 }

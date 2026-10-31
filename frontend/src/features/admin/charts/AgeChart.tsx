@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../../../api/client";
-import { hatchStyle, Patterns, Tooltip } from "./ChartCard";
+import { hatchStyle, Patterns, type Series, SERIES, Tooltip, without } from "./ChartCard";
 import { countTicks, linear } from "./scale";
 import { useElementWidth } from "./useElementWidth";
 
@@ -19,10 +19,12 @@ const HEIGHT = 236;
 const GAP = 2; // surface between the two segments of a column
 const MAX_THICKNESS = 24;
 const RADIUS = 4;
+const LABEL_EVERY = [1, 2, 5, 10, 20, 50]; // round, so the labels land on round ages
 
-/** "30–39", "80+". */
+/** "30–39", "80+", and just "5" for a group of one year. */
 export function ageLabel(band: Band, short = false): string {
   if (band.max_age === null) return `${band.min_age}+`;
+  if (band.max_age === band.min_age) return String(band.min_age);
   return short ? String(band.min_age) : `${band.min_age}–${band.max_age}`;
 }
 
@@ -36,24 +38,36 @@ function column(x: number, top: number, bottom: number, width: number, round: bo
   return `M${x},${bottom}V${top + r}${cap}V${bottom}Z`;
 }
 
-/** The people coming (yes, and maybe on top), by age on the day of the event. */
-export function AgeChart({ bands }: { bands: Band[] }) {
+/** The people invited by age on the day of the event, stacked by answer. */
+export function AgeChart({
+  bands: all,
+  hidden,
+}: {
+  bands: Band[];
+  hidden: ReadonlySet<Series>;
+}) {
   const { t } = useTranslation();
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const id = useId().replace(/:/g, "");
   const [hover, setHover] = useState<{ index: number; keyboard: boolean }>();
 
-  const totals = bands.map((band) => band.yes + band.maybe);
-  const most = Math.max(...totals);
-  const peak = totals.indexOf(most);
-  const yTicks = countTicks(most);
-  const margin = { top: 22, right: 12, bottom: 28, left: 30 };
+  const bands = all.map((band) => without(band, hidden));
+  const totals = bands.map((band) => SERIES.reduce((sum, key) => sum + band[key], 0));
+  const yTicks = countTicks(Math.max(...totals));
+  const margin = { top: 10, right: 12, bottom: 28, left: 30 };
   const plotW = Math.max(0, width - margin.left - margin.right);
   const plotH = HEIGHT - margin.top - margin.bottom;
   const y = linear([0, yTicks[yTicks.length - 1]!], [margin.top + plotH, margin.top]);
   const bandW = plotW / bands.length;
-  const thickness = Math.min(MAX_THICKNESS, bandW * 0.6);
+  const thickness = Math.min(MAX_THICKNESS, bandW * (bandW < 12 ? 0.8 : 0.6)); // fatter when crowded
   const centre = (i: number) => margin.left + bandW * (i + 0.5);
+  // Narrow columns don't each get a label: every 2nd, 5th, 10th ... as many as fit, and always
+  // the open one at the end.
+  const shortLabels = bandW < 40;
+  const labelWidth = Math.max(...bands.map((b) => ageLabel(b, shortLabels).length)) * 6.5 + 4;
+  const every = LABEL_EVERY.find((n) => n * bandW >= labelWidth) ?? LABEL_EVERY[LABEL_EVERY.length - 1]!;
+  const labelled = (i: number) =>
+    i === bands.length - 1 || (i % every === 0 && bands.length - 1 - i >= every);
 
   // Touch has no pointer leaving: a tap elsewhere puts the readout away.
   useEffect(() => {
@@ -75,7 +89,7 @@ export function AgeChart({ bands }: { bands: Band[] }) {
     setHover({ index: Math.min(Math.max(target, 0), last), keyboard: true });
   }
 
-  const coming = totals.reduce((sum, n) => sum + n, 0);
+  const known = all.reduce((sum, b) => sum + SERIES.reduce((n, key) => n + b[key], 0), 0);
   const band = hover && bands[hover.index];
 
   return (
@@ -84,7 +98,7 @@ export function AgeChart({ bands }: { bands: Band[] }) {
       ref={ref}
       tabIndex={0}
       role="group"
-      aria-label={t("admin.stats.agesSummary", { count: coming, band: ageLabel(bands[peak]!) })}
+      aria-label={t("admin.stats.agesSummary", { count: known })}
       onKeyDown={onKey}
       onBlur={() => setHover(undefined)}
     >
@@ -102,27 +116,28 @@ export function AgeChart({ bands }: { bands: Band[] }) {
           {bands.map((b, i) => {
             const left = centre(i) - thickness / 2;
             const base = y(0);
-            const yesTop = y(b.yes);
-            const allTop = y(b.yes + b.maybe);
-            // The gap only where both segments are tall enough to give some up.
-            const gap = b.yes > 0 && b.maybe > 0 && yesTop - allTop > 3 * GAP ? GAP : 0;
+            // Stacked in the order of the legend; the last one drawn gets the round top.
+            const shown = SERIES.filter((key) => b[key] > 0);
+            let below = 0;
             return (
               <g key={b.min_age} className={hover && hover.index !== i ? "dim" : undefined}>
-                {b.yes > 0 && (
-                  <path className="seg s-yes" d={column(left, yesTop, base, thickness, b.maybe === 0)} />
-                )}
-                {b.maybe > 0 && (
-                  <path
-                    className="seg s-maybe"
-                    d={column(left, allTop, yesTop - gap, thickness, true)}
-                  />
-                )}
-                <text className="x-label" x={centre(i)} y={base + 17} textAnchor="middle">
-                  {ageLabel(b, bandW < 40)}
-                </text>
-                {i === peak && most > 0 && (
-                  <text className="direct" x={centre(i)} y={allTop - 7} textAnchor="middle">
-                    {most}
+                {shown.map((key, n) => {
+                  const top = y(below + b[key]);
+                  const bottom = y(below);
+                  // A gap to the segment below, only where this one is tall enough to give some up.
+                  const gap = below > 0 && bottom - top > 3 * GAP ? GAP : 0;
+                  below += b[key];
+                  return (
+                    <path
+                      key={key}
+                      className={`seg s-${key}`}
+                      d={column(left, top, bottom - gap, thickness, n === shown.length - 1)}
+                    />
+                  );
+                })}
+                {labelled(i) && (
+                  <text className="x-label" x={centre(i)} y={base + 17} textAnchor="middle">
+                    {ageLabel(b, shortLabels)}
                   </text>
                 )}
               </g>
@@ -148,12 +163,13 @@ export function AgeChart({ bands }: { bands: Band[] }) {
         <Tooltip
           x={centre(hover.index)}
           bounds={width}
-          title={`${ageLabel(band)} ${t("admin.stats.years")}`}
+          title={
+            band.max_age === band.min_age
+              ? t("admin.stats.groupYears", { count: band.min_age })
+              : `${ageLabel(band)} ${t("admin.stats.years")}`
+          }
           live={hover.keyboard}
-          rows={[
-            { key: "yes", value: band.yes },
-            { key: "maybe", value: band.maybe },
-          ]}
+          rows={SERIES.filter((key) => !hidden.has(key)).map((key) => ({ key, value: band[key] }))}
         />
       )}
     </div>

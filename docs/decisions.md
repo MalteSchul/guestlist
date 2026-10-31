@@ -66,7 +66,7 @@ new one that replaces it, not by silently editing the old one.
 | D8 | Address book per user: contacts, groups, members (a contact can be in several groups) | Reuse guest lists across events |
 | D9 | Inviting **copies** contacts into invites/persons, with `persons.contact_id` as the link back | History stays correct, private address book vs shared event, deleting in either place never breaks the other |
 | D10 | Address book is never deleted automatically | It's the user's own data |
-| D11 | Event data deleted 90 days after the event unless `keep_data` | Data minimisation (GDPR) |
+| D11 | Event data deleted 1 year after the event unless `keep_data` | Data minimisation (GDPR) |
 | D12 | Answer window: until `rsvp_deadline` if set (may be after the start), otherwise until `starts_at` | Simple and predictable |
 | D13 | Optional `ends_at` | Multi-day events; retention counts from the end |
 | D14 | Several owners per event allowed; the app never removes the last owner | Simpler than a single-owner rule |
@@ -90,6 +90,7 @@ new one that replaces it, not by silently editing the old one.
 | D32 | Contacts are imported from an address book export (Google CSV or vCard), read in the browser. Only name, birth year and labels of the contacts the host picks are sent; labels join a group with the same name (any case) or become one. Contacts whose name is already in the address book start unticked. No live Google connection for now (replaces the "CSV import" open item) | Works without a Google Cloud project or OAuth client. Emails, phone numbers and addresses never reach the server (data minimisation) |
 | D33 | Guest list: the host turns it on per event (`guest_list_enabled`); each person opts in (`attendance_public`, off by default). Guests see the names of people who opted in and said "yes" or "maybe", nothing else. Specifies D3 | Consent per person. A declined guest isn't listed even if they agreed, so the list reads as "who's coming" |
 | D34 | Invites take typed-in names or contacts from the inviting host's own address book (replaces D29). A contact gets at most one person per event (D21); another user's contacts are not found | Co-hosts each have their own address book; contacts are private to their owner |
+| D35 | Extra info such as parking or dress code goes into the event's description; `event_sections` is gone (replaces D17). Existing sections were appended to their event's description, title above body | Hosts couldn't tell what belongs in the description and what in a section, and to guests both were just text. One text with line breaks is enough for an invitation |
 
 ## Open
 

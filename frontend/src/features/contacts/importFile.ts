@@ -35,16 +35,26 @@ export function parseContacts(text: string): {
   return { contacts, withoutName: all.length - contacts.length, groups };
 }
 
-/** What the backend gets for the picked contacts. A file with groups of its own says who is in
- * each, in order, so its contacts carry no labels; a group stays if someone in it is picked, or
- * it never had members. */
+/** What the user lets the import carry besides the names. */
+export type Share = { birthYear: boolean; labels: boolean };
+
+/** What the backend gets for the picked contacts, less what `share` leaves out. A file with
+ * groups of its own says who is in each, in order, so its contacts carry no labels; a group stays
+ * if someone in it is picked, or it never had members. */
 export function importBody(
   contacts: ImportedContact[],
   groups: ImportedGroup[],
   picked: Set<number>,
+  share: Share,
 ): { contacts: ImportedContact[]; groups: ImportedGroup[] } {
-  const chosen = contacts.filter((_, i) => picked.has(i));
-  if (groups.length === 0) return { contacts: chosen, groups: [] };
+  const chosen = contacts
+    .filter((_, i) => picked.has(i))
+    .map((contact) => ({
+      ...contact,
+      birth_year: share.birthYear ? contact.birth_year : null,
+      groups: share.labels ? contact.groups : [],
+    }));
+  if (!share.labels || groups.length === 0) return { contacts: chosen, groups: [] };
   const names = new Set(chosen.map((contact) => contact.name.toLocaleLowerCase()));
   return {
     contacts: chosen.map((contact) => ({ ...contact, groups: [] })),

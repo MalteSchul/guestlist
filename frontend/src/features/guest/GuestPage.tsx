@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 
 import { ApiError, api, type Schemas, unwrap } from "../../api/client";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
+import { EventWhenWhere } from "../../components/EventWhenWhere";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { formatDateTime } from "../../i18n/text";
+import { formatDateTime, sortedByName } from "../../i18n/text";
 import { openRequired, personProgress, summary } from "../answers";
 
 type Invite = Schemas["GuestInviteOut"];
@@ -34,12 +35,16 @@ export function GuestPage({ token }: { token: string }) {
   );
 }
 
-function Invitation({
+/** The invitation and the form to answer it. In the host's `preview` everything can be tried
+ * out, but nothing is saved. */
+export function Invitation({
   invite,
   onSave,
+  preview = false,
 }: {
   invite: Invite;
   onSave: (body: Schemas["GuestResponseIn"]) => Promise<void>;
+  preview?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
@@ -48,29 +53,44 @@ function Invitation({
   const [drafts, setDrafts] = useState(() => draftsOf(invite));
   const [comment, setComment] = useState(invite.comment ?? "");
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const [unsaved, setUnsaved] = useState(false);
   const [tried, setTried] = useState(false); // to save with a gap; only then are gaps marked
   const [reopened, setReopened] = useState<string[]>([]); // done persons opened with "Change"
   const [error, setError] = useState<string>();
 
-  function changed() {
+  // Compared as the backend would store it, so ticking something and unticking it again, or
+  // answers hidden by "no", count as no change.
+  const changed = !sameRequest(
+    requestOf(drafts, comment),
+    requestOf(draftsOf(invite), invite.comment ?? ""),
+  );
+
+  function edited() {
     setStatus("idle");
-    setUnsaved(true);
   }
 
   function update(personId: string, change: Partial<Draft>) {
-    changed();
+    edited();
     setDrafts((all) => ({ ...all, [personId]: { ...all[personId]!, ...change } }));
+  }
+
+  // Back to what is stored; rows opened with "Change" close again.
+  function revert() {
+    setDrafts(draftsOf(invite));
+    setComment(invite.comment ?? "");
+    setStatus("idle");
+    setTried(false);
+    setReopened([]);
+    setError(undefined);
   }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (preview) return;
     setStatus("saving");
     setError(undefined);
     try {
       await onSave(requestOf(drafts, comment));
       setStatus("saved");
-      setUnsaved(false);
       setTried(false);
       setReopened([]);
     } catch (failure) {
@@ -83,8 +103,9 @@ function Invitation({
   // Done: "no", or "yes" with every required question answered. "Maybe" isn't done.
   const isDone = (person: Person) =>
     personProgress(event.questions, person.attendance, person.answers) === "done";
-  const toAnswer = invite.persons.filter((person) => !isDone(person));
-  const done = invite.persons.filter(isDone);
+  const people = sortedByName(invite.persons, lang);
+  const toAnswer = people.filter((person) => !isDone(person));
+  const done = people.filter(isDone);
   // Required questions added after someone said yes: why their saved answer is open again.
   const added = event.questions.filter((question) =>
     invite.persons.some(
@@ -110,25 +131,8 @@ function Invitation({
   return (
     <>
       <h1>{event.title}</h1>
-      <p className="meta">
-        {formatDateTime(event.starts_at, lang)}
-        {event.ends_at && ` – ${formatDateTime(event.ends_at, lang)}`}
-      </p>
-      {event.location && (
-        <p className="meta">
-          <a href={mapsUrl(event.location)} target="_blank" rel="noreferrer">
-            {event.location}
-          </a>
-        </p>
-      )}
+      <EventWhenWhere event={event} />
       {event.description && <p className="prose">{event.description}</p>}
-
-      {event.sections.map((section) => (
-        <section key={section.id} className="card">
-          <h2>{section.title}</h2>
-          <p className="prose">{section.body}</p>
-        </section>
-      ))}
 
       {invite.guest_list && <GuestList entries={invite.guest_list} />}
 
@@ -200,24 +204,37 @@ function Invitation({
               value={comment}
               onChange={(e) => {
                 setComment(e.target.value);
-                changed();
+                edited();
               }}
               rows={3}
             />
           </label>
 
-          <div className="actions">
-            <button type="submit" className="primary">
-              {status === "saving" ? t("common.saving") : t("common.save")}
-            </button>
-            {status === "saved" && (
-              <span className="success">
-                {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang), count })}
-              </span>
-            )}
-            {unsaved && status === "idle" && <span className="unsaved">{t("guest.unsaved")}</span>}
-            {error && <span className="error">{error}</span>}
-          </div>
+          {preview ? (
+            <p className="muted">{t("admin.preview.notSaved")}</p>
+          ) : (
+            <div className="actions">
+              <button type="submit" className="primary" disabled={!changed}>
+                {status === "saving" ? t("common.saving") : t("common.save")}
+              </button>
+              <button
+                type="button"
+                onClick={revert}
+                disabled={!changed && reopened.length === 0}
+              >
+                {t("common.cancel")}
+              </button>
+              {status === "saved" && (
+                <span className="success">
+                  {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang), count })}
+                </span>
+              )}
+              {changed && status === "idle" && (
+                <span className="unsaved">{t("guest.unsaved")}</span>
+              )}
+              {error && <span className="error">{error}</span>}
+            </div>
+          )}
         </fieldset>
       </form>
     </>
@@ -384,8 +401,8 @@ function QuestionField({
   );
 }
 
-/** Who's coming, for guests: only people who agreed, nothing but names (D33). A part of the
- * app, not a card the host wrote, so it looks like the answer form below, not like the sections. */
+/** Who's coming, for guests: only people who agreed, nothing but names (D33). A list of people,
+ * so a card, unlike the host's text above it. */
 function GuestList({ entries }: { entries: Schemas["GuestListEntry"][] }) {
   const { t } = useTranslation();
   const names = (attendance: Attendance) =>
@@ -398,25 +415,28 @@ function GuestList({ entries }: { entries: Schemas["GuestListEntry"][] }) {
     <section>
       {/* No explanation here: the guest list checkbox in each person's form says who is shown. */}
       <h2>{t("guest.guestList")}</h2>
-      {rows.length === 0 ? (
-        <p className="muted">{t("guest.guestListEmpty")}</p>
-      ) : (
-        <ul className="persons">
-          {rows.map((row) => (
-            <li key={row.attendance}>
-              <span
-                className="status"
-                role="img"
-                aria-label={t(row.label, { count: row.names.length })}
-                title={t(row.label, { count: row.names.length })}
-              >
-                <AttendanceIcon attendance={row.attendance} />
-              </span>
-              <span>{row.names.join(", ")}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* A list of people, so a card, unlike the host's text above it. */}
+      <div className="card">
+        {rows.length === 0 ? (
+          <p className="muted">{t("guest.guestListEmpty")}</p>
+        ) : (
+          <ul className="persons">
+            {rows.map((row) => (
+              <li key={row.attendance}>
+                <span
+                  className="status"
+                  role="img"
+                  aria-label={t(row.label, { count: row.names.length })}
+                  title={t(row.label, { count: row.names.length })}
+                >
+                  <AttendanceIcon attendance={row.attendance} />
+                </span>
+                <span>{row.names.join(", ")}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }
@@ -464,6 +484,16 @@ function requestOf(drafts: Record<string, Draft>, comment: string): Schemas["Gue
   };
 }
 
-function mapsUrl(location: string): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+/** Whether two requests store the same, whatever order the options were ticked in. */
+function sameRequest(a: Schemas["GuestResponseIn"], b: Schemas["GuestResponseIn"]): boolean {
+  const sorted = (request: Schemas["GuestResponseIn"]) => ({
+    ...request,
+    persons: request.persons.map((person) => ({
+      ...person,
+      answers: person.answers
+        .map((answer) => ({ ...answer, option_ids: [...answer.option_ids].sort() }))
+        .sort((x, y) => x.question_id.localeCompare(y.question_id)),
+    })),
+  });
+  return JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
 }

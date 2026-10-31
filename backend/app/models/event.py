@@ -26,9 +26,6 @@ class Event(Timestamps, Base):
     keep_data: Mapped[bool] = mapped_column(server_default=false())
     guest_list_enabled: Mapped[bool] = mapped_column(server_default=false())
 
-    sections: Mapped[list["EventSection"]] = owned_children(
-        lambda: [EventSection.position, EventSection.created_at]
-    )
     questions: Mapped[list["EventQuestion"]] = owned_children(
         lambda: [EventQuestion.position, EventQuestion.created_at]
     )
@@ -45,20 +42,6 @@ class Event(Timestamps, Base):
     @property
     def answers_open(self) -> bool:
         return datetime.now(UTC) < self.answers_close_at
-
-
-class EventSection(Timestamps, Base):
-    """Info cards such as "Dress code" or "Parking"."""
-
-    __tablename__ = "event_sections"
-
-    id: Mapped[UuidPk]
-    event_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("events.id", ondelete="CASCADE"), index=True
-    )
-    title: Mapped[str]
-    body: Mapped[str]
-    position: Mapped[int]
 
 
 class EventQuestion(Timestamps, Base):

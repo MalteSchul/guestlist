@@ -46,16 +46,6 @@ class QuestionOut(QuestionUpdate):
     options: list[OptionOut]
 
 
-class SectionIn(Schema):
-    title: LongText
-    body: LongText
-    position: int = 0
-
-
-class SectionOut(SectionIn):
-    id: uuid.UUID
-
-
 class EventIn(Schema):
     title: LongText
     description: LongText | None = None
@@ -92,5 +82,4 @@ class EventSummary(Schema):
 
 class EventOut(EventIn):
     id: uuid.UUID
-    sections: list[SectionOut]
     questions: list[QuestionOut]

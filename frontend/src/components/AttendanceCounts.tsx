@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { Schemas } from "../api/client";
 import { AttendanceIcon } from "./AttendanceIcon";
 
-const ATTENDANCE = ["yes", "maybe", "no", "pending"] as const;
+export const ATTENDANCE = ["yes", "maybe", "no", "pending"] as const;
 
 /** "1 ✓  3 ?  2 ✕  1 ◷": how many people gave which answer; the answer's name is the tooltip. */
 export function AttendanceCounts({

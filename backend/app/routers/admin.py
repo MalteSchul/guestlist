@@ -1,8 +1,9 @@
 """Host API. Every endpoint needs a logged-in user; services check their role on the event."""
 
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 
 from app.auth.dependencies import CurrentUser
 from app.db import SessionDep
@@ -16,13 +17,18 @@ from app.schemas.events import (
     QuestionIn,
     QuestionOut,
     QuestionUpdate,
-    SectionIn,
-    SectionOut,
 )
-from app.schemas.invites import GroupInviteIn, GroupInviteOut, InviteIn, InviteOut
-from app.schemas.stats import EventStats
+from app.schemas.invites import (
+    GroupInviteIn,
+    GroupInviteOut,
+    GuestEvent,
+    GuestPreviewOut,
+    InviteIn,
+    InviteOut,
+)
+from app.schemas.stats import AgeGrouping, EventStats
 from app.schemas.users import UserOut
-from app.services import events, invites, stats
+from app.services import events, guests, invites, stats
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -82,37 +88,23 @@ def delete_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) ->
 
 
 @router.get("/events/{event_id}/stats")
-def event_stats(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> EventStats:
-    return stats.event_stats(session, user, event_id)
-
-
-# Sections
-
-
-@router.post("/events/{event_id}/sections", **CREATED)
-def add_section(
-    session: SessionDep, user: CurrentUser, event_id: uuid.UUID, data: SectionIn
-) -> SectionOut:
-    return SectionOut.model_validate(events.add_section(session, user, event_id, data))
-
-
-@router.put("/events/{event_id}/sections/{section_id}")
-def update_section(
+def event_stats(
     session: SessionDep,
     user: CurrentUser,
     event_id: uuid.UUID,
-    section_id: uuid.UUID,
-    data: SectionIn,
-) -> SectionOut:
-    section = events.update_section(session, user, event_id, section_id, data)
-    return SectionOut.model_validate(section)
+    grouping: Annotated[AgeGrouping, Query()],
+) -> EventStats:
+    return stats.event_stats(session, user, event_id, grouping)
 
 
-@router.delete("/events/{event_id}/sections/{section_id}", **NO_CONTENT)
-def delete_section(
-    session: SessionDep, user: CurrentUser, event_id: uuid.UUID, section_id: uuid.UUID
-) -> None:
-    events.delete_section(session, user, event_id, section_id)
+@router.get("/events/{event_id}/preview")
+def preview_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> GuestPreviewOut:
+    """The invitation as guests see it, without an invite of its own."""
+    event = events.get_event(session, user, event_id)
+    return GuestPreviewOut(
+        event=GuestEvent.model_validate(event),
+        guest_list=guests.guest_list_entries(session, event),
+    )
 
 
 # Questions and their options

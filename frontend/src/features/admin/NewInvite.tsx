@@ -9,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
+import { InfoTip } from "../../components/InfoTip";
 import { InviteModeIcon } from "../../components/InviteModeIcon";
 import { Picker } from "../../components/Picker";
 import { type SuggestItem, SuggestInput } from "../../components/Suggest";
@@ -200,7 +201,16 @@ function PersonsForm({
     <form onSubmit={submit} onChange={save.reset} className="card" ref={reveal}>
       <h2>{t("admin.event.newInvite")}</h2>
       <fieldset className="field plain">
-        <legend>{t("admin.event.persons")}</legend>
+        <legend>
+          {t("admin.event.persons")}{" "}
+          <InfoTip
+            text={
+              contacts.length > 0
+                ? t("admin.event.personsHintContacts")
+                : t("admin.event.personsHint")
+            }
+          />
+        </legend>
         <ul className="name-rows">
           {rows.map((row, i) => (
             <li key={row.key}>
@@ -245,9 +255,6 @@ function PersonsForm({
             </li>
           ))}
         </ul>
-        <span className="hint">
-          {contacts.length > 0 ? t("admin.event.personsHintContacts") : t("admin.event.personsHint")}
-        </span>
       </fieldset>
       <label className="field">
         <span>{t("admin.event.inviteName")}</span>

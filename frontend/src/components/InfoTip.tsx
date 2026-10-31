@@ -1,10 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { Icon } from "./Icon";
 
 /** A "?" that shows a short explanation in a bubble: on hover with a mouse, on tap on a phone,
- * on Enter or Space with the keyboard. Tapping elsewhere, Esc or leaving it closes it again. */
-export function InfoTip({ text }: { text: string }) {
+ * on Enter or Space with the keyboard. Tapping elsewhere, Esc or leaving it closes it again.
+ * `children` go under the text in the bubble, e.g. a key to icons. */
+export function InfoTip({ text, children }: { text: string; children?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
   const bubble = useRef<HTMLSpanElement>(null);
@@ -54,6 +55,7 @@ export function InfoTip({ text }: { text: string }) {
       {open && (
         <span className="bubble" role="tooltip" ref={bubble}>
           {text}
+          {children}
         </span>
       )}
     </span>

@@ -123,7 +123,7 @@ everything the backend sends.
 
 ## Data lifecycle
 
-- **Event data is deleted 90 days after the event** (after `ends_at`, or after `starts_at` if
+- **Event data is deleted 1 year after the event** (after `ends_at`, or after `starts_at` if
   there's no end), unless `keep_data` is set. A daily Container Apps Job does this, and cascades
   remove everything below the event.
 - **The address book (contacts, groups) is never deleted automatically.**
@@ -151,7 +151,7 @@ guestlist/
 │   │   ├── schemas/             ① Pydantic request/response models = the API contract
 │   │   ├── services/            ② business rules and role checks, one module per area
 │   │   ├── routers/             thin HTTP layer: guest, admin, health
-│   │   └── jobs/                cleanup (90-day retention)
+│   │   └── jobs/                cleanup (1-year retention)
 │   ├── migrations/              Alembic
 │   ├── scripts/                 export_openapi.py
 │   ├── tests/

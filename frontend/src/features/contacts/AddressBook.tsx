@@ -153,14 +153,15 @@ function Book({
       <div className="row">
         <h1>{t("contacts.title")}</h1>
         <span className="heading-actions">
-          {!selecting && <ExportMenu contacts={contacts} groups={groups} />}
-          {!selecting && !importing && (
+          {!selecting && (
             <IconButton
               icon="import"
               label={t("contacts.import.open")}
+              disabled={importing}
               onClick={() => setImporting(true)}
             />
           )}
+          {!selecting && <ExportMenu contacts={contacts} groups={groups} />}
           <IconButton
             icon="select"
             label={t("contacts.selection.start")}
@@ -548,7 +549,7 @@ function Contacts({
   return (
     <>
       <div className="row heading-search">
-        <h2>{t("contacts.list", { count: contacts.length })}</h2>
+        <h2>{t("contacts.heading")}</h2>
         {selecting && shown.length > 0 && (
           <SelectBox
             label={t("contacts.selection.allContacts")}

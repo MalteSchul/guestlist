@@ -7,7 +7,7 @@ from pydantic import Field, field_validator
 from app.models.address_book import InviteMode
 from app.models.guests import Attendance
 from app.schemas.common import LongText, Schema, ShortText
-from app.schemas.events import QuestionOut, SectionOut
+from app.schemas.events import QuestionOut
 
 # Shared by hosts and guests
 
@@ -86,7 +86,6 @@ class GuestEvent(Schema):
     answers_close_at: datetime
     answers_open: bool
     guest_list_enabled: bool
-    sections: list[SectionOut]
     questions: list[GuestQuestion]
 
 
@@ -104,6 +103,13 @@ class GuestInviteOut(Schema):
     persons: list[PersonOut]
     guest_list: list[GuestListEntry] | None = None
     """Who's coming, if the host shows a guest list; only people who agreed (D33)."""
+
+
+class GuestPreviewOut(Schema):
+    """The invitation as guests see it, for the host's preview: no invite, so no persons."""
+
+    event: GuestEvent
+    guest_list: list[GuestListEntry] | None = None
 
 
 class AnswerIn(Schema):

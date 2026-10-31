@@ -180,6 +180,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/events/{event_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Event
+         * @description The invitation as guests see it, without an invite of its own.
+         */
+        get: operations["preview_event_api_admin_events__event_id__preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/events/{event_id}/questions": {
         parameters: {
             query?: never;
@@ -245,41 +265,6 @@ export interface paths {
         post?: never;
         /** Delete Option */
         delete: operations["delete_option_api_admin_events__event_id__questions__question_id__options__option_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/events/{event_id}/sections": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add Section */
-        post: operations["add_section_api_admin_events__event_id__sections_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/events/{event_id}/sections/{section_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Update Section */
-        put: operations["update_section_api_admin_events__event_id__sections__section_id__put"];
-        post?: never;
-        /** Delete Section */
-        delete: operations["delete_section_api_admin_events__event_id__sections__section_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -412,7 +397,8 @@ export interface components {
         };
         /**
          * AgeBand
-         * @description People who said yes or maybe, by their age on the day of the event.
+         * @description The people invited from the address book, by their age on the day of the event and what
+         *     they answered.
          */
         AgeBand: {
             /** Max Age */
@@ -421,6 +407,10 @@ export interface components {
             maybe: number;
             /** Min Age */
             min_age: number;
+            /** No */
+            no: number;
+            /** Pending */
+            pending: number;
             /** Yes */
             yes: number;
         };
@@ -594,8 +584,6 @@ export interface components {
             questions: components["schemas"]["QuestionOut"][];
             /** Rsvp Deadline */
             rsvp_deadline?: string | null;
-            /** Sections */
-            sections: components["schemas"]["SectionOut"][];
             /**
              * Starts At
              * Format: date-time
@@ -700,8 +688,6 @@ export interface components {
             location: string | null;
             /** Questions */
             questions: components["schemas"]["GuestQuestion"][];
-            /** Sections */
-            sections: components["schemas"]["SectionOut"][];
             /**
              * Starts At
              * Format: date-time
@@ -734,6 +720,15 @@ export interface components {
             attendance: "pending" | "yes" | "no" | "maybe";
             /** Name */
             name: string;
+        };
+        /**
+         * GuestPreviewOut
+         * @description The invitation as guests see it, for the host's preview: no invite, so no persons.
+         */
+        GuestPreviewOut: {
+            event: components["schemas"]["GuestEvent"];
+            /** Guest List */
+            guest_list?: components["schemas"]["GuestListEntry"][] | null;
         };
         /** GuestQuestion */
         GuestQuestion: {
@@ -1027,35 +1022,6 @@ export interface components {
              * @default false
              */
             required: boolean;
-        };
-        /** SectionIn */
-        SectionIn: {
-            /** Body */
-            body: string;
-            /**
-             * Position
-             * @default 0
-             */
-            position: number;
-            /** Title */
-            title: string;
-        };
-        /** SectionOut */
-        SectionOut: {
-            /** Body */
-            body: string;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Position
-             * @default 0
-             */
-            position: number;
-            /** Title */
-            title: string;
         };
         /** UserOut */
         UserOut: {
@@ -1584,6 +1550,37 @@ export interface operations {
             };
         };
     };
+    preview_event_api_admin_events__event_id__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuestPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_question_api_admin_events__event_id__questions_post: {
         parameters: {
             query?: never;
@@ -1789,110 +1786,12 @@ export interface operations {
             };
         };
     };
-    add_section_api_admin_events__event_id__sections_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                event_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SectionIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SectionOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_section_api_admin_events__event_id__sections__section_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                event_id: string;
-                section_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SectionIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SectionOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_section_api_admin_events__event_id__sections__section_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                event_id: string;
-                section_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     event_stats_api_admin_events__event_id__stats_get: {
         parameters: {
-            query?: never;
+            query?: {
+                age_step?: number;
+                age_from?: number;
+            };
             header?: never;
             path: {
                 event_id: string;

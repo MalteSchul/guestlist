@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
@@ -11,6 +11,8 @@ import {
   TextField,
   useSave,
 } from "./forms";
+import { Icon, type IconName } from "../../components/Icon";
+import { InfoTip } from "../../components/InfoTip";
 import { useLoad } from "../../components/useLoad";
 import { useReveal } from "../../components/useReveal";
 
@@ -60,7 +62,12 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
   return (
     <>
       <div className="row">
-        <h2>{t("admin.setup.questions")}</h2>
+        <h2>
+          {t("admin.setup.questions")}{" "}
+          <InfoTip text={t("admin.setup.questionsHint")}>
+            <QuestionIconKey />
+          </InfoTip>
+        </h2>
         {!adding && (
           <IconButton
             icon="plus"
@@ -70,7 +77,6 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
           />
         )}
       </div>
-      <p className="muted">{t("admin.setup.questionsHint")}</p>
       {action.error && <p className="error">{action.error}</p>}
       <ul className="cards">
         {questions.map((question, index) =>
@@ -85,7 +91,11 @@ export function Questions({ event, reload }: { event: Event; reload: () => Promi
           ) : (
             <li key={question.id} className="card">
               <div className="row">
-                <strong>{question.label}</strong>
+                <span className="question-name">
+                  <KindIcon kind={kindOf(question)} />
+                  <RequiredIcon required={question.required} />
+                  <strong>{question.label}</strong>
+                </span>
                 <ItemControls
                   index={index}
                   count={questions.length}
@@ -109,10 +119,6 @@ function QuestionSummary({ question }: { question: Question }) {
   const { t } = useTranslation();
   return (
     <>
-      <p className="tally">
-        <span className="badge">{t(`admin.setup.kinds.${kindOf(question)}`)}</span>
-        {question.required && <span className="badge">{t("admin.setup.required")}</span>}
-      </p>
       {question.kind === "choice" && (
         <p className="muted">
           {question.options
@@ -128,7 +134,63 @@ function QuestionSummary({ question }: { question: Question }) {
   );
 }
 
-function kindOf(question: Pick<Question, "kind" | "multiple">): Kind {
+const KIND_ICONS = {
+  single: "choiceOne",
+  multiple: "choiceMany",
+  text: "freeText",
+} as const satisfies Record<Kind, IconName>;
+
+/** What kind of answer a question takes, as an icon before its name; the kind in words is its
+ * tooltip. */
+export function KindIcon({ kind }: { kind: Kind }) {
+  const { t } = useTranslation();
+  const label = t(`admin.setup.kinds.${kind}`);
+  return (
+    <span className="kind-icon" role="img" aria-label={label} title={label}>
+      <Icon name={KIND_ICONS[kind]} />
+    </span>
+  );
+}
+
+/** What the icons on a question mean, one per line: for the tooltip at a list of questions. */
+export function QuestionIconKey() {
+  const { t } = useTranslation();
+  return (
+    <ul className="icon-key">
+      {KINDS.map((kind) => (
+        <li key={kind}>
+          <Icon name={KIND_ICONS[kind]} />
+          {t(`admin.setup.kinds.${kind}`)}
+        </li>
+      ))}
+      <li>
+        <Icon name="required" />
+        {t("admin.setup.required")}
+      </li>
+    </ul>
+  );
+}
+
+/** An asterisk when the question has to be answered. The slot stays when it doesn't, so the
+ * names line up. */
+export function RequiredIcon({ required }: { required: boolean }) {
+  const { t } = useTranslation();
+  if (!required) {
+    return (
+      <span className="kind-icon empty" aria-hidden="true">
+        <Icon name="required" />
+      </span>
+    );
+  }
+  const label = t("admin.setup.required");
+  return (
+    <span className="kind-icon" role="img" aria-label={label} title={label}>
+      <Icon name="required" />
+    </span>
+  );
+}
+
+export function kindOf(question: Pick<Question, "kind" | "multiple">): Kind {
   if (question.kind === "text") return "text";
   return question.multiple ? "multiple" : "single";
 }
@@ -155,9 +217,12 @@ function QuestionEditor({
   const [label, setLabel] = useState(question.label ?? "");
   const [required, setRequired] = useState(question.required);
   const askedAgain = useAskedAgain(event, required && !question.required ? question.id : undefined);
+  const changed = label.trim() !== question.label || required !== question.required;
+  const formId = useId();
 
   function submit(e: FormEvent) {
     e.preventDefault();
+    if (!changed) return;
     void save.run(async () => {
       await unwrap(
         api.PUT("/api/admin/events/{event_id}/questions/{question_id}", {
@@ -166,12 +231,13 @@ function QuestionEditor({
         }),
       );
       await reload();
+      onDone();
     });
   }
 
   return (
     <li className="card" ref={reveal}>
-      <form onSubmit={submit} onChange={save.reset}>
+      <form id={formId} onSubmit={submit} onChange={save.reset}>
         <TextField
           label={t("admin.setup.question")}
           value={label}
@@ -182,13 +248,23 @@ function QuestionEditor({
         <p className="hint">
           {t(`admin.setup.kinds.${kindOf(question)}`)} · {t("admin.setup.kindFixed")}
         </p>
-        <SaveBar save={save} />
       </form>
       {question.kind === "choice" && <Options event={event} question={question} reload={reload} />}
+      {/* One bar under the options, which save by themselves: Save (closes the editor) once the
+          label or "Required" differs from what is stored, Cancel closes it without saving. */}
       <div className="actions">
-        <button type="button" onClick={onDone}>
-          {t("admin.setup.done")}
+        <button
+          type="submit"
+          form={formId}
+          className="primary"
+          disabled={!changed || save.status === "saving"}
+        >
+          {save.status === "saving" ? t("common.saving") : t("common.save")}
         </button>
+        <button type="button" onClick={onDone} disabled={save.status === "saving"}>
+          {t("common.cancel")}
+        </button>
+        {save.error && <span className="error">{save.error}</span>}
       </div>
     </li>
   );

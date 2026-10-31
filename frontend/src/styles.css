@@ -15,6 +15,10 @@
   --viz-no: #7a8189;
   --viz-pending: #c7cbd0;
   --radius: 10px;
+  /* The page's vertical rhythm: blocks next to each other, and a section's heading above its
+     block. New things on a page take their gaps from these, not from new numbers. */
+  --space-block: 0.75rem;
+  --space-section: 2rem;
   /* Set from the header's measured height (Layout); this is one line of it. */
   --topbar-height: 3.25rem;
   color-scheme: light;
@@ -89,7 +93,7 @@ h1 {
 
 h2 {
   font-size: 1.15rem;
-  margin: 2rem 0 0.75rem;
+  margin: var(--space-section) 0 var(--space-block);
 }
 
 a {
@@ -157,9 +161,15 @@ a.brand {
   font-weight: 600;
 }
 
-/* The way to the settings, at the far right; it doesn't make the header taller. */
+/* The way to the settings, at the far right; it doesn't make the header taller. On the settings
+   page it is marked like the current tab. */
 .topbar-settings {
   margin: -0.3rem -0.5rem -0.3rem auto;
+}
+
+a.icon.topbar-settings[aria-current="page"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 /* Settings: what's running, label and value side by side. */
@@ -216,7 +226,7 @@ a.brand {
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-block);
 }
 
 /* Spacing inside a card comes from this gap alone. */
@@ -246,11 +256,15 @@ a.brand {
   margin-top: 0;
 }
 
-/* Cards in a .cards list are spaced by its gap; anywhere else, by this margin. */
+/* Cards in a .cards list are spaced by its gap; anywhere else, by this margin. A card on a page
+   keeps its distance from whatever precedes it (a date, a hint, a heading), not only from
+   another card; so does a list of cards. */
 .card + .card,
 .cards + .card,
+main > * + .card,
+main > * + .cards,
 section.card {
-  margin-top: 0.75rem;
+  margin-top: var(--space-block);
 }
 
 .cards > .card {
@@ -310,6 +324,18 @@ fieldset.field > legend {
 
 .field > .hint {
   font-weight: normal;
+}
+
+/* An input with a small button after it, e.g. to clear an optional date. */
+.with-clear {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.with-clear > input {
+  flex: 1;
+  min-width: 0;
 }
 
 .choices {
@@ -479,13 +505,26 @@ button.danger {
 }
 
 /* The date follows right under an event's title. */
-.title-row > h1 {
+.title-row:has(+ .meta) > h1 {
   margin-bottom: 0.5rem;
+}
+
+/* An event's settings in their card (edit page): one line each, led by its icon. The card's gap
+   spaces the lines. */
+.card > .setting {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.setting > .line-icon {
+  flex: none;
+  color: var(--muted);
 }
 
 /* A heading with a control next to it: the row takes the heading's spacing, so both centre. */
 .row:has(> h2) {
-  margin: 2rem 0 0.75rem;
+  margin: var(--space-section) 0 var(--space-block);
 }
 
 .row > h2 {
@@ -558,6 +597,27 @@ button.danger {
   margin: 0;
 }
 
+/* Text cut to three lines (ExpandableText), the chevron under it to open it; the chevron's
+   padding hangs out to the left so the arrow lines up with the text. */
+.expandable {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: var(--space-block) 0;
+}
+
+.expandable > p {
+  margin: 0;
+}
+
+.expandable > button {
+  margin-left: -0.4rem;
+}
+
+.expandable > button[aria-expanded="true"] .line-icon {
+  transform: rotate(180deg);
+}
+
 /* Guest page: who still has to answer, who is done */
 
 h3 {
@@ -567,6 +627,11 @@ h3 {
   text-transform: uppercase;
   color: var(--muted);
   margin: 1.75rem 0 0.6rem;
+}
+
+/* A list alone in its card, e.g. who's coming: the card's padding is the space around it. */
+.card > .persons:first-child {
+  margin-top: 0;
 }
 
 /* Something the reader should know before going on, e.g. a question added after they answered. */
@@ -884,6 +949,7 @@ button.icon.ghost.done {
 .row.single {
   flex-wrap: nowrap;
   align-items: flex-start;
+  gap: 0.5rem; /* as between the icons and the name in the person's row */
 }
 
 .row.single > .persons {
@@ -926,12 +992,28 @@ button.icon.ghost.done {
 }
 
 .title-row > h1 {
+  flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.title-row > .heading-actions {
+.title-row > .heading-actions,
+.title-row > .back {
   margin-top: 0.35rem; /* h1's top margin less half the icons' extra height: centred on line 1 */
+}
+
+/* The way back leads the title, where one looks for it. It hangs out by the icon's padding so
+ * the arrow, not its hover frame, lines up with the page; what follows the title lines up with
+ * the title. */
+.title-row > .back {
+  flex: none;
+  margin-left: -0.5rem;
+}
+
+.title-row:has(> .back) + .meta,
+.title-row:has(> .back) + .meta + .meta,
+.title-row:has(> .back) ~ .expandable {
+  padding-left: 2.5rem; /* the arrow's 2.25rem less its 0.5rem overhang, plus the row's gap */
 }
 
 /* A checkbox as big as the icon buttons around it, to tick a row or, in a heading, all rows. */
@@ -1073,6 +1155,33 @@ main:has(.selection-bar) {
   padding: 0.5rem 0.65rem;
 }
 
+/* A menu wider than the icon it opens from hangs from the nearest positioned parent, not from
+   the icon, so on a phone it stays inside the window. */
+.menu-wrap.wide {
+  position: static;
+}
+
+.menu button {
+  white-space: nowrap;
+}
+
+/* A line between the kinds of sorting. */
+.menu button.group-start {
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 6px 6px;
+  padding-top: 0.6rem;
+}
+
+.menu .menu-check {
+  display: inline-flex;
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  align-self: center;
+  color: var(--accent);
+}
+
 .menu button:hover,
 .menu button:focus-visible {
   background: color-mix(in srgb, var(--text) 8%, transparent);
@@ -1080,6 +1189,8 @@ main:has(.selection-bar) {
 
 /* Icons next to a heading, e.g. filter and new invite next to the invites. */
 .heading-actions {
+  margin-left: auto; /* on the right also when the row wraps */
+  position: relative; /* a wide menu inside lines up with the group's right edge */
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -1224,6 +1335,47 @@ button.icon.accent:hover {
   gap: 0.5rem;
 }
 
+/* A key to icons inside an InfoTip bubble: the icon and its meaning, one per line. */
+.icon-key {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.icon-key li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-key .line-icon {
+  color: var(--muted);
+}
+
+/* A question's name with the icon for its kind before it; a long name wraps beside the icon. */
+.question-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.kind-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 1.5em; /* one line, so the icon stays on the first line of a wrapped name */
+  color: var(--muted);
+  cursor: default;
+}
+
+/* A kind-icon slot with nothing in it keeps the names of all questions in line. */
+.kind-icon.empty .line-icon {
+  visibility: hidden;
+}
+
 .badge {
   display: inline-block;
   font-size: 0.8rem;
@@ -1278,12 +1430,38 @@ button.icon.accent:hover {
   color: var(--progress);
 }
 
-.card.progress {
+.card.progress.bar {
   border-left: 4px solid var(--progress);
+}
+
+/* The same state as an icon, for those who can't tell the colours apart (the settings choose
+   between it and the bar). It leads the name on the card's first line, like the answer icons
+   in the rows below. */
+.progress-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 1.5em; /* one line, so the icon sits on the first line of a wrapped name */
+  color: var(--progress);
+  cursor: default;
+}
+
+.invite-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 /* A filter that is on or off, e.g. only the unfinished invites. */
 button.icon.ghost.toggle[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* A menu button whose choice is not the usual one looks like a filter that is on. */
+.menu-wrap.active > button.icon.ghost {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-color: var(--accent);
   color: var(--accent);
@@ -1295,7 +1473,7 @@ button.icon.ghost.toggle[aria-pressed="true"] {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 1.25rem;
-  margin: 0.75rem 0;
+  margin: var(--space-block) 0;
   padding: 0;
   font-size: 1.15rem;
   font-weight: 600;
@@ -1310,6 +1488,15 @@ button.icon.ghost.toggle[aria-pressed="true"] {
 .stats li {
   cursor: default;
   white-space: nowrap;
+}
+
+/* An answer's icon alone in an icon button: centred, and as big and thin as the line icons. */
+button.icon .attendance-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  vertical-align: baseline;
+  stroke-width: 1.8;
 }
 
 .stats .attendance-icon {
@@ -1351,6 +1538,14 @@ button.icon.ghost.toggle[aria-pressed="true"] {
   margin: 0;
 }
 
+/* How many, before the names of who gave that answer (the overview); numbers line up. */
+.persons .count {
+  flex: none;
+  min-width: 2ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .persons li .badge {
   margin-left: 0.4rem;
 }
@@ -1378,6 +1573,19 @@ button.icon.ghost.toggle[aria-pressed="true"] {
 
 .chart {
   margin: 0;
+}
+
+.chart-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.chart-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
 }
 
 .chart-head {
@@ -1420,8 +1628,40 @@ button.icon.ghost.toggle[aria-pressed="true"] {
 
 .legend li {
   display: flex;
+}
+
+/* Each entry switches its answer in the chart on and off. Released, the swatch is an outline
+   and the words are struck through. */
+.legend button {
+  display: flex;
   align-items: center;
   gap: 0.4rem;
+  margin: -0.15rem -0.4rem;
+  padding: 0.15rem 0.4rem;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.legend button:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.legend button[aria-pressed="false"] {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.legend button[aria-pressed="false"] .swatch {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--series);
+}
+
+.legend button[aria-disabled="true"] {
+  cursor: default;
 }
 
 .swatch {
