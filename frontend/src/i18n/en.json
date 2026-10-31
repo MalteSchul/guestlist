@@ -135,7 +135,8 @@
       "answersUntil": "Guests can answer until {{date}}.",
       "answersClosed": "Answers closed on {{date}}.",
       "search": "Search invites or people …",
-      "noMatch": "No invites for “{{query}}”."
+      "noMatch": "No invites for “{{query}}”.",
+      "noAnswerTo": "Nobody has answered “{{question}}” yet."
     },
     "stats": {
       "timeline": "Answers over time",

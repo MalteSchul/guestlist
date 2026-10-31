@@ -196,8 +196,12 @@ function EventDetails({
         })}
       </p>
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
-      {invites.length > 0 && search.trim() && shown.length === 0 && (
-        <p className="muted">{t("admin.event.noMatch", { query: search.trim() })}</p>
+      {invites.length > 0 && shown.length === 0 && (
+        <p className="muted">
+          {search.trim()
+            ? t("admin.event.noMatch", { query: search.trim() })
+            : t("admin.event.noAnswerTo", { question: question?.label })}
+        </p>
       )}
       {adding && (
         <NewInvite
