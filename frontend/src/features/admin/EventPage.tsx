@@ -59,6 +59,8 @@ function EventDetails({
   // Narrowing the invites to one question: its answers only, and optionally only those who gave one.
   const [questionId, setQuestionId] = useState(ALL_QUESTIONS);
   const [onlyAnswered, setOnlyAnswered] = useState(false);
+  // Counts up each time the host asks to see the invites for a question; see showInInvites.
+  const [jumps, setJumps] = useState(0);
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const question = event.questions.find((q) => q.id === questionId);
@@ -73,8 +75,15 @@ function EventDetails({
 
   function showInInvites(id: string) {
     setQuestionId(id);
-    document.getElementById("invites")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setJumps(jumps + 1);
   }
+
+  // After the list has its new length: scrolled before, a short list (few invites answered) cuts
+  // the page short, and the heading could not be brought to the top when the list grew again.
+  useEffect(() => {
+    if (jumps === 0) return;
+    document.getElementById("invites")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [jumps]);
 
   return (
     <>
