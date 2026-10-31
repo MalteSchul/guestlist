@@ -138,11 +138,7 @@ function EventDetails({
 
       <QuestionAnswers event={event} persons={persons} onShow={showInInvites} />
 
-      <div
-        className="row heading-search"
-        id="invites"
-        style={{ scrollMarginTop: "calc(var(--topbar-height) + 1rem)" }}
-      >
+      <div className="row heading-search" id="invites">
         <h2>
           {t("admin.event.invites")} <InfoTip text={t("admin.event.invitesHint")} />
         </h2>

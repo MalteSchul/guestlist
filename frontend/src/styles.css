@@ -525,6 +525,8 @@ button.danger {
 /* A heading with a control next to it: the row takes the heading's spacing, so both centre. */
 .row:has(> h2) {
   margin: var(--space-section) 0 var(--space-block);
+  /* Jumped to (e.g. the invites): a little room under the header, which scroll-padding keeps. */
+  scroll-margin-top: 1rem;
 }
 
 .row > h2 {
