@@ -29,6 +29,7 @@ export function SortMenu<T extends string>({
   icon = "sort",
   active = false,
   extra,
+  stayOpen = false,
 }: {
   label: string;
   options: readonly SortOption<T>[];
@@ -39,6 +40,8 @@ export function SortMenu<T extends string>({
   /** Shown like a filter that is on, for a choice other than the usual one. */
   active?: boolean;
   extra?: MenuSwitch;
+  /** Keep the list open after a choice, when there is more in it to see or change (a switch). */
+  stayOpen?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
@@ -82,7 +85,7 @@ export function SortMenu<T extends string>({
               className={i > 0 && options[i - 1]!.group !== option.group ? "group-start" : undefined}
               onClick={() => {
                 onChange(option.value);
-                setOpen(false);
+                if (!stayOpen) setOpen(false);
               }}
             >
               <span className="menu-check" aria-hidden="true">

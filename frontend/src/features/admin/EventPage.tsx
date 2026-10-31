@@ -149,6 +149,7 @@ function EventDetails({
               label={t("admin.event.byQuestion")}
               icon="ask"
               active={question !== undefined}
+              stayOpen
               value={questionId}
               onChange={setQuestionId}
               options={[
