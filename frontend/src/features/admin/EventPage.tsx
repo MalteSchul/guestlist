@@ -422,7 +422,8 @@ const INVITE_ORDERS = [
 ] as const;
 type InviteOrder = (typeof INVITE_ORDERS)[number];
 
-/** Equal ones keep the order they come in, newest first. */
+/** Equal status or number of people: by name A to Z, whichever way the main order runs. Equal
+ * names keep the order they come in, newest first. */
 function sortInvites(invites: Invite[], order: InviteOrder, event: Event, language: string): Invite[] {
   if (order === "added-desc") return invites;
   if (order === "added-asc") return [...invites].reverse();
@@ -430,14 +431,15 @@ function sortInvites(invites: Invite[], order: InviteOrder, event: Event, langua
   const rank = { open: 0, partial: 1, done: 2 } satisfies Record<Progress, number>;
   const [kind, direction] = order.split("-");
   const sign = direction === "asc" ? 1 : -1;
+  const byName = (a: Invite, b: Invite) => collator.compare(a.name, b.name);
   return [...invites].sort(
     (a, b) =>
-      sign *
-      (kind === "name"
-        ? collator.compare(a.name, b.name)
-        : kind === "status"
-          ? rank[inviteProgress(event, a)] - rank[inviteProgress(event, b)]
-          : a.persons.length - b.persons.length),
+      kind === "name"
+        ? sign * byName(a, b)
+        : sign *
+            (kind === "status"
+              ? rank[inviteProgress(event, a)] - rank[inviteProgress(event, b)]
+              : a.persons.length - b.persons.length) || byName(a, b),
   );
 }
 
