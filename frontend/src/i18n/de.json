@@ -92,7 +92,6 @@
       "onlyAnswered": "Nur Gäste mit Antwort",
       "withoutAnswer_one": "{{count}} ohne Antwort",
       "withoutAnswer_other": "{{count}} ohne Antwort",
-      "onlyUnfinished": "Nur offene Einladungen",
       "sort": "Sortieren",
       "order": {
         "name-asc": "Name A–Z",
@@ -104,7 +103,6 @@
         "people-desc": "Meiste Personen zuerst",
         "people-asc": "Wenigste Personen zuerst"
       },
-      "allFinished": "Alle Einladungen sind fertig.",
       "openLink": "Öffnen",
       "comment": "„{{comment}}“",
       "copy": {

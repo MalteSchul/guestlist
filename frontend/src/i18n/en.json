@@ -92,7 +92,6 @@
       "onlyAnswered": "Only guests who answered",
       "withoutAnswer_one": "{{count}} without an answer",
       "withoutAnswer_other": "{{count}} without an answer",
-      "onlyUnfinished": "Only unfinished invites",
       "sort": "Sort",
       "order": {
         "name-asc": "Name A–Z",
@@ -104,7 +103,6 @@
         "people-desc": "Most people first",
         "people-asc": "Fewest people first"
       },
-      "allFinished": "Every invite is finished.",
       "openLink": "Open",
       "comment": "“{{comment}}”",
       "copy": {

@@ -55,17 +55,15 @@ function EventDetails({
   onChange: (invites: Invite[]) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const [onlyOpen, setOnlyOpen] = useState(false);
   const [order, setOrder] = useState<InviteOrder>("name-asc");
   // Narrowing the invites to one question: its answers only, and optionally only those who gave one.
   const [questionId, setQuestionId] = useState(ALL_QUESTIONS);
   const [onlyAnswered, setOnlyAnswered] = useState(false);
   const [adding, setAdding] = useState<NewInviteKind>();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
-  const unfinished = invites.filter((invite) => inviteProgress(event, invite) !== "done");
   const question = event.questions.find((q) => q.id === questionId);
   const asked = question && onlyAnswered;
-  const shown = sortInvites(onlyOpen ? unfinished : invites, order, event, i18n.language).filter(
+  const shown = sortInvites(invites, order, event, i18n.language).filter(
     (invite) => !asked || invite.persons.some((person) => hasAnswer(person, question.id)),
   );
   // As the backend decides for guests: the deadline, or the start without one (D12).
@@ -171,18 +169,6 @@ function EventDetails({
               <Icon name="check" />
             </button>
           )}
-          {invites.length > 0 && (
-            <button
-              type="button"
-              className="icon ghost toggle"
-              aria-pressed={onlyOpen}
-              aria-label={t("admin.event.onlyUnfinished")}
-              title={t("admin.event.onlyUnfinished")}
-              onClick={() => setOnlyOpen(!onlyOpen)}
-            >
-              <Icon name="filter" />
-            </button>
-          )}
           {!adding && (
             <IconButton
               icon="personAdd"
@@ -208,9 +194,6 @@ function EventDetails({
         })}
       </p>
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
-      {onlyOpen && unfinished.length === 0 && invites.length > 0 && (
-        <p className="muted">{t("admin.event.allFinished")}</p>
-      )}
       {adding && (
         <NewInvite
           kind={adding}
