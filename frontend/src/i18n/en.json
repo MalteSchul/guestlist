@@ -134,7 +134,9 @@
       "stats": "Statistics",
       "preview": "View as guest",
       "answersUntil": "Guests can answer until {{date}}.",
-      "answersClosed": "Answers closed on {{date}}."
+      "answersClosed": "Answers closed on {{date}}.",
+      "search": "Search invites or people …",
+      "noMatch": "No invites for “{{query}}”."
     },
     "stats": {
       "timeline": "Answers over time",

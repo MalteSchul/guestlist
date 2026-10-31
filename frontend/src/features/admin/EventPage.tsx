@@ -9,6 +9,8 @@ import { EventWhenWhere } from "../../components/EventWhenWhere";
 import { ExpandableText } from "../../components/ExpandableText";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
+import { searchList } from "../../components/search";
+import { SearchField } from "../../components/SearchField";
 import { SortMenu } from "../../components/SortMenu";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime, nameCollator, sortedByName } from "../../i18n/text";
@@ -56,6 +58,7 @@ function EventDetails({
 }) {
   const { t, i18n } = useTranslation();
   const [order, setOrder] = useState<InviteOrder>("name-asc");
+  const [search, setSearch] = useState("");
   // Narrowing the invites to one question: its answers only, and optionally only those who gave one.
   const [questionId, setQuestionId] = useState(ALL_QUESTIONS);
   const [onlyAnswered, setOnlyAnswered] = useState(false);
@@ -65,9 +68,14 @@ function EventDetails({
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const question = event.questions.find((q) => q.id === questionId);
   const asked = question && onlyAnswered;
-  const shown = sortInvites(invites, order, event, i18n.language).filter(
-    (invite) => !asked || invite.persons.some((person) => hasAnswer(person, question.id)),
-  );
+  // A search finds invites by their name or by a person in them, best match first; equal
+  // matches, and everything without a search, keep the chosen order.
+  const shown = searchList(
+    sortInvites(invites, order, event, i18n.language),
+    search,
+    (invite) => invite.name,
+    (invite) => invite.persons.map((person) => person.name),
+  ).filter((invite) => !asked || invite.persons.some((person) => hasAnswer(person, question.id)));
   // As the backend decides for guests: the deadline, or the start without one (D12).
   const answersCloseAt = event.rsvp_deadline ?? event.starts_at;
   const answersOpen = Date.now() < new Date(answersCloseAt).getTime();
@@ -133,13 +141,16 @@ function EventDetails({
       <QuestionAnswers event={event} persons={persons} onShow={showInInvites} />
 
       <div
-        className="row"
+        className="row heading-search"
         id="invites"
         style={{ scrollMarginTop: "calc(var(--topbar-height) + 1rem)" }}
       >
         <h2>
           {t("admin.event.invites")} <InfoTip text={t("admin.event.invitesHint")} />
         </h2>
+        {invites.length > 1 && (
+          <SearchField label={t("admin.event.search")} value={search} onChange={setSearch} />
+        )}
         <span className="heading-actions">
           {invites.length > 1 && (
             <SortMenu
@@ -198,6 +209,9 @@ function EventDetails({
         })}
       </p>
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
+      {invites.length > 0 && search.trim() && shown.length === 0 && (
+        <p className="muted">{t("admin.event.noMatch", { query: search.trim() })}</p>
+      )}
       {adding && (
         <NewInvite
           kind={adding}

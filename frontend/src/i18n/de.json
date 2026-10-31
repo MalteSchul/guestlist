@@ -134,7 +134,9 @@
       "stats": "Auswertung",
       "preview": "Als Gast ansehen",
       "answersUntil": "Gäste können bis {{date}} antworten.",
-      "answersClosed": "Antworten sind seit {{date}} geschlossen."
+      "answersClosed": "Antworten sind seit {{date}} geschlossen.",
+      "search": "Einladungen oder Personen suchen …",
+      "noMatch": "Keine Einladungen zu „{{query}}“."
     },
     "stats": {
       "timeline": "Antworten im Verlauf",
