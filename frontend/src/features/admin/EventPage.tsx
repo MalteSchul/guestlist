@@ -81,8 +81,15 @@ function EventDetails({
   const answersOpen = Date.now() < new Date(answersCloseAt).getTime();
   const persons = invites.flatMap((invite) => invite.persons);
 
-  function showInInvites(id: string) {
+  // Picking a question narrows to the guests who answered it; "all questions" lifts that again.
+  // The switch can still be turned off for the question.
+  function chooseQuestion(id: string) {
     setQuestionId(id);
+    setOnlyAnswered(id !== ALL_QUESTIONS);
+  }
+
+  function showInInvites(id: string) {
+    chooseQuestion(id);
     setJumps(jumps + 1);
   }
 
@@ -171,7 +178,7 @@ function EventDetails({
               active={question !== undefined}
               stayOpen
               value={questionId}
-              onChange={setQuestionId}
+              onChange={chooseQuestion}
               options={[
                 { value: ALL_QUESTIONS, label: t("admin.event.allQuestions"), group: "all" },
                 ...event.questions.map((q) => ({ value: q.id, label: q.label, group: "questions" })),
