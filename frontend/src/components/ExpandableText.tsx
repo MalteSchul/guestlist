@@ -25,7 +25,7 @@ export function ExpandableText({ text }: { text: string }) {
   const label = open ? t("common.showLess") : t("common.showAll");
   return (
     <div className="expandable">
-      <p ref={ref} className={open ? "prose" : "prose clamp"}>
+      <p ref={ref} className={open ? "prose" : cut ? "prose clamp cut" : "prose clamp"}>
         {text}
       </p>
       {(cut || open) && (

@@ -580,21 +580,28 @@ button.danger {
   margin: 0 0 0.15rem;
 }
 
+/* Cut after three lines. The top of the next line fades out below them rather than an ellipsis,
+   which reads like part of the text and is missing when the third line is empty. */
 .clamp {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  max-height: 3.6lh;
   overflow: hidden;
   margin: 0;
 }
 
+.clamp.cut {
+  mask-image: linear-gradient(to bottom, #000 3lh, transparent);
+}
+
 /* Text cut to three lines (ExpandableText), the chevron under it to open it; the chevron's
-   padding hangs out to the left so the arrow lines up with the text. */
+   padding hangs out to the left so the arrow lines up with the text. The bar on the left shows
+   where the host's text starts and ends. */
 .expandable {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   margin: var(--space-block) 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--border);
 }
 
 .expandable > p {
@@ -1001,9 +1008,12 @@ button.icon.ghost.done {
 }
 
 .title-row:has(> .back) + .meta,
-.title-row:has(> .back) + .meta + .meta,
-.title-row:has(> .back) ~ .expandable {
+.title-row:has(> .back) + .meta + .meta {
   padding-left: 2.5rem; /* the arrow's 2.25rem less its 0.5rem overhang, plus the row's gap */
+}
+
+.title-row:has(> .back) ~ .expandable {
+  margin-left: 2.5rem; /* its bar, not its text, lines up with the title */
 }
 
 /* A checkbox as big as the icon buttons around it, to tick a row or, in a heading, all rows. */
