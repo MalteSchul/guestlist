@@ -33,7 +33,6 @@
       "no": "Not coming"
     },
     "comment": "Message to the hosts (optional)",
-    "unsaved": "Not saved yet",
     "missing": "Please answer this",
     "toAnswer": "Still to answer",
     "done": "Done",
