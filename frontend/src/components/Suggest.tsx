@@ -12,7 +12,8 @@ import { useTranslation } from "react-i18next";
 import { rank } from "./search";
 import { scrollIntoViewGently } from "./useReveal";
 
-export type SuggestItem = { id: string; label: string; detail?: string };
+/** `disabled` says why the item can't be picked; it's shown crossed out, after the others. */
+export type SuggestItem = { id: string; label: string; detail?: string; disabled?: string };
 
 const SHOWN = 8;
 
@@ -45,11 +46,12 @@ export function SuggestInput({
   const [active, setActive] = useState(0);
   const [focused, setFocused] = useState(false);
   const [closed, setClosed] = useState(false);
-  // Best matches first; within a rank the items keep their order (sort is stable).
+  // Best matches first, items that can't be picked last; otherwise the items keep their order
+  // (sort is stable). So the highlighted first one can be picked whenever any can.
   const found = items
     .map((item) => ({ item, rank: rank(value, item.label, item.detail ?? "") }))
     .filter((hit) => hit.rank !== null)
-    .sort((a, b) => a.rank! - b.rank!)
+    .sort((a, b) => Number(!!a.item.disabled) - Number(!!b.item.disabled) || a.rank! - b.rank!)
     .map((hit) => hit.item);
   const shown = found.slice(0, SHOWN);
   const open =
@@ -72,7 +74,7 @@ export function SuggestInput({
       e.preventDefault();
       const by = e.key === "ArrowDown" ? 1 : -1;
       setActive((i) => (Math.min(i, shown.length - 1) + by + shown.length) % shown.length);
-    } else if (e.key === "Enter" && current) {
+    } else if (e.key === "Enter" && current && !current.disabled) {
       e.preventDefault(); // takes the suggestion, never submits the form
       pick(current);
     } else if (e.key === "Escape" && open) {
@@ -120,16 +122,22 @@ export function SuggestInput({
               id={`${listId}-${item.id}`}
               role="option"
               aria-selected={item === current}
-              className={item === current ? "active" : undefined}
+              aria-disabled={item.disabled ? true : undefined}
+              className={
+                [item === current && "active", item.disabled && "disabled"]
+                  .filter(Boolean)
+                  .join(" ") || undefined
+              }
               // mousedown, so the input keeps its focus
               onMouseDown={(e) => {
                 e.preventDefault();
-                pick(item);
+                if (!item.disabled) pick(item);
               }}
               onMouseEnter={() => setActive(shown.indexOf(item))}
             >
-              {item.label}
+              {item.disabled ? <s>{item.label}</s> : item.label}
               {item.detail && <span className="muted"> · {item.detail}</span>}
+              {item.disabled && <span className="muted"> · {item.disabled}</span>}
             </li>
           ))}
           {found.length === 0 && <li className="muted empty">{emptyText}</li>}

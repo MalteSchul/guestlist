@@ -837,8 +837,13 @@ h3 {
   background: var(--bg);
 }
 
-.options-list > li.empty {
+.options-list > li.empty,
+.options-list > li.disabled {
   cursor: default;
+}
+
+.options-list > li.disabled {
+  color: var(--muted);
 }
 
 /* One input per person on a new invite. */
@@ -852,8 +857,14 @@ h3 {
 
 .name-rows li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* A warning about one row goes on its own line under it. */
+.name-rows li > .hint {
+  flex-basis: 100%;
 }
 
 .name-input {
