@@ -1,4 +1,11 @@
-import { Fragment, type FormEvent, type MouseEvent, useEffect, useState } from "react";
+import {
+  Fragment,
+  type FormEvent,
+  type MouseEvent,
+  type ReactNode,
+  useEffect,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, type Schemas, unwrap } from "../../api/client";
@@ -14,7 +21,7 @@ import { SelectionBar } from "./SelectionBar";
 import { Picker } from "../../components/Picker";
 import { rank, searchList } from "../../components/search";
 import { SearchField } from "../../components/SearchField";
-import { useReveal } from "../../components/useReveal";
+import { scrollIntoViewGently, useReveal } from "../../components/useReveal";
 
 type Contact = Schemas["ContactOut"];
 type Group = Schemas["GroupOut"];
@@ -70,6 +77,8 @@ function Book({
   // Contacts and groups are ticked in one go, so the selection is the page's, not a list's.
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const bulk = useSave();
+  // The row a link in the other list led to; a new object each time, so it flashes again.
+  const [jump, setJump] = useState<{ row: string }>();
 
   const contactNames = new Map(contacts.map((contact) => [contact.id, contact.name]));
   const groupNames = new Map(groups.map((group) => [group.id, group.name]));
@@ -108,6 +117,41 @@ function Book({
       return next;
     });
   }
+
+  /** To a group's or contact's row, clearing its list's search if that hides it. The address
+   * gets the row's anchor, so Back returns to where the link was. */
+  function jumpTo(kind: Kind, id: string) {
+    if (kind === "group" && !shownGroups.some((group) => group.id === id)) setGroupSearch("");
+    if (kind === "contact" && !shownContacts.some((contact) => contact.id === id)) {
+      setContactSearch("");
+    }
+    window.history.pushState(null, "", `#${rowId(kind, id)}`);
+    setJump({ row: rowId(kind, id) });
+  }
+
+  // A reload keeps the anchor: the row is shown again.
+  useEffect(() => {
+    const row = window.location.hash.slice(1);
+    if (row) setJump({ row });
+  }, []);
+
+  // After the render that cleared the search, so the row is there.
+  useEffect(() => {
+    const row = jump && document.getElementById(jump.row);
+    if (!row) return;
+    scrollIntoViewGently(row, "center"); // at an edge it would be easy to miss
+    // Set on the element, not by React: it only has to last for the animation.
+    row.classList.remove("flash");
+    void row.offsetWidth; // restarts the animation when the same row is jumped to again
+    row.classList.add("flash");
+    // Not on the end of any other animation, e.g. the row's own appear when the search let it in.
+    const end = (e: AnimationEvent) => {
+      if (e.animationName !== "flash") return;
+      row.classList.remove("flash");
+      row.removeEventListener("animationend", end);
+    };
+    row.addEventListener("animationend", end);
+  }, [jump]);
 
   /** Into select mode with nothing ticked, or out of it, dropping what was ticked. */
   function toggleSelecting() {
@@ -188,6 +232,7 @@ function Book({
         selecting={selecting}
         selected={selected}
         onPick={pick}
+        onJump={jumpTo}
         reload={reload}
       />
       <Contacts
@@ -200,6 +245,7 @@ function Book({
         selecting={selecting}
         selected={selected}
         onPick={pick}
+        onJump={jumpTo}
         reload={reload}
       />
       {selecting && (
@@ -223,6 +269,45 @@ type Picking = {
   selected: Set<string>;
   onPick: (ids: string[], on: boolean) => void;
 };
+
+type Kind = "group" | "contact";
+
+/** The ID of a group's or contact's row, which links in the other list lead to. */
+function rowId(kind: Kind, id: string) {
+  return `${kind}-${id}`;
+}
+
+/** A group or contact named in the other list: a link to its row. Not in select mode, where a
+ * tap anywhere on a row ticks it. */
+function JumpLink({
+  kind,
+  id,
+  selecting,
+  onJump,
+  className,
+  children,
+}: {
+  kind: Kind;
+  id: string;
+  selecting: boolean;
+  onJump: (kind: Kind, id: string) => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  if (selecting) return <span className={className}>{children}</span>;
+  return (
+    <a
+      href={`#${rowId(kind, id)}`}
+      className={classes("jump", className ?? false)}
+      onClick={(e) => {
+        e.preventDefault();
+        onJump(kind, id);
+      }}
+    >
+      {children}
+    </a>
+  );
+}
 
 /** In select mode a tap on a row ticks it, like its box; a tap on the box is the box's. */
 function tickOnClick(picking: Picking, id: string) {
@@ -250,6 +335,7 @@ function Groups({
   selecting,
   selected,
   onPick,
+  onJump,
   reload,
 }: {
   contacts: Contact[];
@@ -260,6 +346,7 @@ function Groups({
   names: Map<string, string>;
   search: string;
   onSearch: (search: string) => void;
+  onJump: (kind: Kind, id: string) => void;
   reload: () => Promise<void>;
 } & Picking) {
   const { t } = useTranslation();
@@ -328,7 +415,7 @@ function Groups({
         <ul className="card rows">
           {shown.map((group) =>
             editing === group.id && !selecting ? (
-              <li key={group.id}>
+              <li key={group.id} id={rowId("group", group.id)}>
                 <GroupForm
                   group={group}
                   contacts={contacts}
@@ -348,6 +435,7 @@ function Groups({
             ) : (
               <li
                 key={group.id}
+                id={rowId("group", group.id)}
                 className={classes(
                   selecting && "pickable",
                   selecting && selected.has(group.id) && "selected",
@@ -399,7 +487,15 @@ function Groups({
                         return (
                           <Fragment key={id}>
                             {i > 0 && ", "}
-                            <span className={hit ? "hit" : undefined}>{member}</span>
+                            <JumpLink
+                              kind="contact"
+                              id={id}
+                              selecting={selecting}
+                              onJump={onJump}
+                              className={hit ? "hit" : undefined}
+                            >
+                              {member}
+                            </JumpLink>
                           </Fragment>
                         );
                       })}
@@ -509,6 +605,7 @@ function Contacts({
   selecting,
   selected,
   onPick,
+  onJump,
   reload,
 }: {
   contacts: Contact[];
@@ -519,6 +616,7 @@ function Contacts({
   names: Map<string, string>;
   search: string;
   onSearch: (search: string) => void;
+  onJump: (kind: Kind, id: string) => void;
   reload: () => Promise<void>;
 } & Picking) {
   const { t } = useTranslation();
@@ -584,7 +682,7 @@ function Contacts({
         <ul className="card rows">
           {shown.map((contact) =>
             editing === contact.id && !selecting ? (
-              <li key={contact.id}>
+              <li key={contact.id} id={rowId("contact", contact.id)}>
                 <ContactForm
                   contact={contact}
                   contacts={contacts}
@@ -605,6 +703,7 @@ function Contacts({
             ) : (
               <li
                 key={contact.id}
+                id={rowId("contact", contact.id)}
                 className={classes(
                   "item-row",
                   selecting && "pickable",
@@ -616,8 +715,12 @@ function Contacts({
                   <strong>{contact.name}</strong>
                   {contact.birth_year && <span className="muted">{contact.birth_year}</span>}
                   {contact.group_ids.map((id) => (
-                    <span
+                    <JumpLink
                       key={id}
+                      kind="group"
+                      id={id}
+                      selecting={selecting}
+                      onJump={onJump}
                       className={
                         // Found only through this group: it stands out.
                         search.trim() !== "" &&
@@ -628,7 +731,7 @@ function Contacts({
                       }
                     >
                       {groupNames.get(id)}
-                    </span>
+                    </JumpLink>
                   ))}
                 </span>
                 <span className="card-actions">
