@@ -283,37 +283,42 @@ function PersonForm({
       {tried && draft.attendance === "pending" && (
         <span className="hint missing">{t("guest.missing")}</span>
       )}
-      {/* Always rendered and folded open, so the questions slide in instead of popping up.
-          Disabled while folded, so their required fields don't block saving a "no". */}
-      <div className={sees ? "reveal open" : "reveal"} inert={!sees}>
-        <fieldset disabled={!sees} className="plain">
-          {guestList && (
-            <div className="field">
-              <label className="choice">
-                <input
-                  type="checkbox"
-                  checked={draft.attendance_public}
-                  onChange={(e) => onChange({ attendance_public: e.target.checked })}
-                />
-                {t("guest.showOnList")}
-              </label>
-              <span className="hint">{t("guest.showOnListHint")}</span>
-            </div>
-          )}
-          {questions.map((question) => (
-            <QuestionField
-              key={question.id}
-              name={`${person.id}-${question.id}`}
-              question={question}
-              required={question.required && draft.attendance === "yes"}
-              missing={tried && missing.includes(question)}
-              isNew={added.includes(question)}
-              answer={draft.answers[question.id] ?? { option_ids: [], text_value: "" }}
-              onChange={(answer) => onChange({ answers: { ...draft.answers, [question.id]: answer } })}
-            />
-          ))}
-        </fieldset>
-      </div>
+      {/* Rendered whenever it has something to show, and folded open, so the questions slide in
+          instead of popping up. Disabled while folded, so their required fields don't block
+          saving a "no". Left out when empty: opened, it would still add the card's gap. */}
+      {(guestList || questions.length > 0) && (
+        <div className={sees ? "reveal open" : "reveal"} inert={!sees}>
+          <fieldset disabled={!sees} className="plain">
+            {guestList && (
+              <div className="field">
+                <label className="choice">
+                  <input
+                    type="checkbox"
+                    checked={draft.attendance_public}
+                    onChange={(e) => onChange({ attendance_public: e.target.checked })}
+                  />
+                  {t("guest.showOnList")}
+                </label>
+                <span className="hint">{t("guest.showOnListHint")}</span>
+              </div>
+            )}
+            {questions.map((question) => (
+              <QuestionField
+                key={question.id}
+                name={`${person.id}-${question.id}`}
+                question={question}
+                required={question.required && draft.attendance === "yes"}
+                missing={tried && missing.includes(question)}
+                isNew={added.includes(question)}
+                answer={draft.answers[question.id] ?? { option_ids: [], text_value: "" }}
+                onChange={(answer) =>
+                  onChange({ answers: { ...draft.answers, [question.id]: answer } })
+                }
+              />
+            ))}
+          </fieldset>
+        </div>
+      )}
     </fieldset>
   );
 }
