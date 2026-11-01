@@ -641,9 +641,8 @@ h3 {
   background: var(--surface);
 }
 
-/* A gap shown after a save attempt, and answers not saved yet. */
-.missing,
-.unsaved {
+/* A gap shown after a save attempt. */
+.missing {
   color: var(--warn);
 }
 
@@ -1319,7 +1318,6 @@ button.icon.accent:hover {
 }
 
 .success,
-.unsaved,
 .hint.missing,
 .cards > li,
 .done-list > li,
@@ -1333,7 +1331,6 @@ button.icon.accent:hover {
   }
 
   .success,
-  .unsaved,
   .hint.missing,
   .cards > li,
   .done-list > li,
