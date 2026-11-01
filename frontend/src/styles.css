@@ -973,6 +973,8 @@ button.icon.ghost.done {
   font-size: 0.85rem;
   font-weight: 400;
   line-height: 1.4;
+  /* Wraps also inside a heading that keeps to one line (.heading-search). */
+  white-space: normal;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
