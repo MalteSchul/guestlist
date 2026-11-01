@@ -77,7 +77,7 @@
       "another": "Wer noch mitkommt",
       "tooMany": "Höchstens 10 Personen auf einmal.",
       "submit": "Weiter",
-      "earlier": "Du hast dich auf diesem Gerät schon als {{name}} angemeldet.",
+      "earlier": "Auf diesem Gerät wurde schon „{{name}}“ angemeldet.",
       "toEarlier": "Zu deiner Antwort"
     },
     "keepLink_one": "Diese Seite ist nur für dich: Speichere ihren Link (etwa als Lesezeichen), um deine Antwort später zu ändern.",

@@ -41,7 +41,7 @@ def get_signup(session: SessionDep, token: SignupToken) -> GuestSignupOut:
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
 def sign_up(session: SessionDep, token: SignupToken, data: SignupIn) -> SignupOut:
-    return SignupOut(token=guests.sign_up(session, token, data).token)
+    return SignupOut.model_validate(guests.sign_up(session, token, data))
 
 
 def _with_guest_list(session: Session, invite: Invite) -> GuestInviteOut:

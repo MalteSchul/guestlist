@@ -75,6 +75,7 @@ def test_signing_up_makes_an_invite_of_their_own(client: TestClient, event: dict
     assert response.status_code == 201
     token = response.json()["token"]
     assert token != event["signup_token"]
+    assert response.json()["name"] == "Anna, Tom & Lea"
 
     guest = client.get(GUEST, headers={"X-Invite-Token": token}).json()
     assert guest["name"] == "Anna, Tom & Lea"
