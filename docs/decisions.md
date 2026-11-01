@@ -95,7 +95,6 @@ new one that replaces it, not by silently editing the old one.
 ## Open
 
 - **`invites.last_opened_at`** ("has the guest seen it?"): later.
-- **CSV export of contacts**: later feature.
 - **Live import from Google** (People API, needs an OAuth client ID): only if the file import
   (D32) turns out to be too cumbersome.
 - **Slimmer platform (proposal, not decided):** one image (FastAPI serves the React build, no
