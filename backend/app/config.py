@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import model_validator
@@ -11,6 +12,9 @@ class Settings(BaseSettings):
     # No defaults: a missing variable fails at startup instead of silently running as "local".
     environment: Literal["local", "production"]
     database_url: str
+
+    # The React build to serve (set in the image). Unset in development, where Vite serves it.
+    frontend_dir: Path | None = None
 
     # Local only: every admin request is the fixed dev user, no token needed.
     auth_dev_bypass: bool = False

@@ -7,19 +7,19 @@ answer without an account. See [docs/architecture.md](docs/architecture.md).
 
 `main` is protected: every change goes through a pull request, CI must be green, and PRs are
 squash-merged (decision P13). CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the
-checks below and builds both images; merges to `main` push them to GHCR.
+checks below and builds the image; merges to `main` push it to GHCR.
 
 ## Local development
 
 Needs Docker, [uv](https://docs.astral.sh/uv/) and Node 20.19+ (CI uses 24).
 
 ```sh
-docker compose up --build    # Postgres, migrations, backend (:8000) and the nginx frontend (:8080)
+docker compose up --build    # Postgres, migrations and the app with its API on :8000
 ```
 
 Locally the admin API uses the dev bypass: every request is the same dev user, no login
 (decision A13). Hosts set up events, questions and invites, and keep an address book (with an
-import from Google Contacts exports), in the app at http://localhost:8080; the API docs are at
+import from Google Contacts exports), in the app at http://localhost:8000; the API docs are at
 http://localhost:8000/docs
 
 ### Frontend with hot reload
