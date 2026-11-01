@@ -15,8 +15,7 @@ flowchart LR
     host([Host / co-host<br/>Entra login])
 
     subgraph azure[Azure Container Apps · Germany West Central]
-        fe[frontend<br/>nginx + React build]
-        be[backend<br/>FastAPI · internal only]
+        app[app<br/>FastAPI + React build]
         jobs[jobs<br/>migrate · cleanup]
     end
 
@@ -25,22 +24,20 @@ flowchart LR
     ghcr[GHCR<br/>container images]
     gha[GitHub Actions]
 
-    guest --> fe
-    host --> fe
+    guest --> app
+    host --> app
     host -. login .-> entra
-    fe -- /api --> be
-    be --> db
+    app --> db
     jobs --> db
-    be -. validates tokens .-> entra
+    app -. validates tokens .-> entra
     gha -- build + push --> ghcr
     gha -- terraform + deploy --> azure
     ghcr -. pull .-> azure
 ```
 
-- **One domain.** nginx serves the React app and forwards `/api/*` to the backend, so there is
-  no CORS. The backend only accepts requests from inside the Container Apps environment.
-- **Two images.** `frontend` (nginx) and `backend` (FastAPI). Migrations and the daily cleanup
-  run as Container Apps Jobs from the **backend image** with a different command.
+- **One image, one domain.** FastAPI serves the React build and the API under `/api/*`, so there
+  is no CORS, and app and API always come from the same commit (A26). Migrations and the daily
+  cleanup run as Container Apps Jobs from the same image with a different command.
 - **Scales to zero.** Container Apps and Neon both sleep when idle. The first request after a
   quiet period takes a few seconds.
 
@@ -111,7 +108,7 @@ everything the backend sends.
   one invite. No login. The page sends it to the API in an `X-Invite-Token` header, so API URLs
   never contain it (A20). Because the secret sits in the page URL:
   - tokens are 44 random base58 characters (256 bits, A22)
-  - nginx sends `Referrer-Policy: no-referrer`, so the link never leaks to third-party sites
+  - the app sends `Referrer-Policy: no-referrer`, so the link never leaks to third-party sites
   - access logs mask the token part of `/i/<token>`
 - **Hosts:** log in through Entra External ID. The frontend uses `react-oidc-context`. The backend
   validates the JWT against the tenant's JWKS: issuer, audience = the API's app registration,
@@ -143,7 +140,9 @@ everything the backend sends.
 guestlist/
 ├── backend/                     FastAPI service (uv project)
 │   ├── app/
-│   │   ├── main.py              creates the FastAPI app, mounts routers
+│   │   ├── main.py              creates the FastAPI app, mounts routers, security headers
+│   │   ├── frontend.py          serves the React build next to the API
+│   │   ├── access_log.py        masks guest tokens in the access log
 │   │   ├── config.py            settings from environment variables
 │   │   ├── db.py                engine + session
 │   │   ├── auth/                OIDC token validation, current user
@@ -156,8 +155,7 @@ guestlist/
 │   ├── scripts/                 export_openapi.py
 │   ├── tests/
 │   ├── alembic.ini
-│   ├── pyproject.toml + uv.lock
-│   └── Dockerfile
+│   └── pyproject.toml + uv.lock
 ├── frontend/                    React + Vite
 │   ├── src/
 │   │   ├── api/                 schema.d.ts (generated) + client.ts
@@ -166,22 +164,21 @@ guestlist/
 │   │   ├── features/guest/      RSVP page behind the personal link
 │   │   ├── features/admin/      events, invites, address book, dashboard
 │   │   └── components/          shared UI
-│   ├── nginx.conf.template      serves the build, forwards /api to the backend
-│   ├── package.json
-│   └── Dockerfile
+│   └── package.json
 ├── contract/
 │   └── openapi.json             generated from the backend, committed
 ├── infra/                       Terraform
 │   ├── bootstrap/               one-time: storage account for Terraform state
 │   └── main/                    resource group, Container Apps env, apps, jobs, secrets
 ├── .github/workflows/
-│   ├── ci.yml                   lint, test, contract drift check, build images
+│   ├── ci.yml                   lint, test, contract drift check, build the image
 │   └── deploy.yml               push to GHCR, terraform apply, run migrations, deploy
 ├── docs/
 │   ├── architecture.md          this file
 │   ├── data-model.md
 │   └── decisions.md
-├── compose.yaml                 local dev: postgres + backend + frontend
+├── Dockerfile                   the one image: builds the frontend, adds the backend
+├── compose.yaml                 local dev: postgres + migrations + app
 └── README.md
 ```
 
@@ -193,4 +190,5 @@ guestlist/
   state before it can manage anything else. That storage is created once by hand, everything else
   by CI.
 - **Each top-level folder has one owner tool:** uv (`backend/`), npm (`frontend/`), Terraform
-  (`infra/`), GitHub (`.github/`). CI jobs map 1:1 to folders.
+  (`infra/`), GitHub (`.github/`). CI jobs map 1:1 to folders. The `Dockerfile` sits at the top
+  because the image needs both `backend/` and `frontend/`.

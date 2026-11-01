@@ -103,9 +103,6 @@ jobs:
   image:
     needs: [backend, frontend]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        app: [backend, frontend]
     permissions:
       contents: read
       packages: write
@@ -125,7 +122,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/${{ github.repository_owner }}/guestlist-${{ matrix.app }}
+          images: ghcr.io/${{ github.repository_owner }}/guestlist
           tags: |
             type=sha,format=long
             type=raw,value=main,enable={{is_default_branch}}
@@ -133,10 +130,10 @@ jobs:
       # Pull requests only build; main also pushes. Deploying waits until infra/ exists.
       - uses: docker/build-push-action@v7
         with:
-          context: ${{ matrix.app }}
+          context: .
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: GIT_SHA=${{ github.sha }}
-          cache-from: type=gha,scope=${{ matrix.app }}
-          cache-to: type=gha,scope=${{ matrix.app }},mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

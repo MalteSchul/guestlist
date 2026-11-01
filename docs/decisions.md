@@ -21,6 +21,7 @@ new one that replaces it, not by silently editing the old one.
 | P12 | Public repository | Branch protection is free on public repos. Nothing secret lives in the repo |
 | P13 | Every change goes through a pull request into `main`: green CI required, squash merge only, no bypass, branch deleted after merge | `main` is always tested, one commit per change |
 | P14 | CI pushes both images to GHCR on every merge to `main` (`sha-<commit>` + `main` tags); deploying comes with `infra/` | Images exist before the infrastructure does |
+| P15 | One image, `guestlist`, pushed by CI as in P14 and public on GHCR (replaces P14's two images) | One image (A26). Public: Azure pulls it without a token, the repository is public anyway and the image holds no secrets |
 
 ## Architecture
 
@@ -51,6 +52,7 @@ new one that replaces it, not by silently editing the old one.
 | A23 | Guest texts address one person with "du" and several with "ihr": i18next plurals counted by the invite's persons (`_one`/`_other`). A one-person invite shows no name heading on its card | "Eure Antwort" reads wrong for someone invited alone. English needs no difference but keeps both keys |
 | A24 | Light/dark: follows the system (live) until the switch in the header is used; that choice is kept in `localStorage` and wins from then on. An inline script in `index.html` applies it before the first paint. No "back to system" button | Same pattern as A21. Applying it before React loads avoids a flash in the wrong theme. Going back to the system's theme is rare enough not to be worth a third button |
 | A25 | Until the first deploy, one migration holds the whole schema: a schema change regenerates it and the local database is rebuilt. Alembic, the `migrate` step and the CI check stay as they will be in production | Nothing is deployed, so no database needs upgrading step by step. Hand-written upgrades for beta data were wasted work |
+| A26 | One image: FastAPI serves the React build next to `/api` and sets the security headers (`Referrer-Policy`, `nosniff`, `X-Frame-Options`); `/i/<token>` is masked in uvicorn's access log; API docs only locally (replaces A1, A2) | One app to run and pay for, one cold start instead of two after scaling to zero, and app and API always come from the same commit. Python serving the static files is plenty at this scale |
 
 ## Data model
 
@@ -97,10 +99,5 @@ new one that replaces it, not by silently editing the old one.
 - **`invites.last_opened_at`** ("has the guest seen it?"): later.
 - **Live import from Google** (People API, needs an OAuth client ID): only if the file import
   (D32) turns out to be too cumbersome.
-- **Slimmer platform (proposal, not decided):** one image (FastAPI serves the React build, no
-  nginx, no internal ingress; `Referrer-Policy` moves to middleware), migrations run from GitHub
-  Actions before deploy, cleanup stays a Container Apps Job (GitHub disables scheduled workflows
-  after 60 days of inactivity), one `az` CLI script instead of Terraform + bootstrap. Would replace
-  P10, A1, A2, A11.
-- **Image visibility on GHCR** (public or private + pull token), **Neon via Terraform or by hand**,
-  **domain name**.
+- **Terraform or one `az` CLI script** for the Azure resources (P10), **Neon via Terraform or by
+  hand**, **domain name**.

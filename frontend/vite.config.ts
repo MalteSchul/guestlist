@@ -4,8 +4,8 @@ import { execSync } from "node:child_process";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-// In development the backend runs on :8000 (compose or `uv run`). In production nginx forwards
-// /api; /docs and /openapi.json are only proxied here, for the API docs during development.
+// In development the backend runs on :8000 (compose or `uv run`). In production the backend
+// serves this build itself; /docs and /openapi.json exist only in development.
 const backend = "http://localhost:8000";
 
 /** The commit this is built from, for the settings page: GIT_SHA from the image build (the
