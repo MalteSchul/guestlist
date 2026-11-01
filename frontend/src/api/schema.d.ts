@@ -1065,6 +1065,8 @@ export interface components {
         };
         /** SignupOut */
         SignupOut: {
+            /** Name */
+            name: string;
             /** Token */
             token: string;
         };

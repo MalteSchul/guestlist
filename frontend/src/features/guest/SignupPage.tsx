@@ -36,7 +36,7 @@ export function SignupPage({ token }: { token: string }) {
       api.POST("/api/guest/signup", { params, body: { persons: names.map((name) => ({ name })) } }),
     );
     try {
-      localStorage.setItem(stored(token), JSON.stringify({ token: created.token, name: names[0] }));
+      localStorage.setItem(stored(token), JSON.stringify(created));
     } catch {
       // Not remembered then; the personal page itself says to keep its link.
     }

@@ -133,6 +133,8 @@ class SignupIn(Schema):
 class SignupOut(Schema):
     token: str
     """The new invite's own token: the guest goes on to their personal link with it."""
+    name: str
+    """The invite's name, e.g. "Lia & Tom": what the open link says on the next visit."""
 
 
 class AnswerIn(Schema):

@@ -1617,13 +1617,18 @@
       "SignupOut": {
         "additionalProperties": false,
         "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
           "token": {
             "title": "Token",
             "type": "string"
           }
         },
         "required": [
-          "token"
+          "token",
+          "name"
         ],
         "title": "SignupOut",
         "type": "object"

@@ -77,7 +77,7 @@
       "another": "Someone coming with you",
       "tooMany": "At most 10 people at once.",
       "submit": "Continue",
-      "earlier": "You already signed up on this device as {{name}}.",
+      "earlier": "“{{name}}” already signed up on this device.",
       "toEarlier": "To your answer"
     },
     "keepLink_one": "This page is just for you: save its link (as a bookmark, say) to change your answer later.",
