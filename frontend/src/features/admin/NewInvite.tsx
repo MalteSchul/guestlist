@@ -45,6 +45,9 @@ export function NewInvite({
   const contacts = useLoad(() => unwrap(api.GET("/api/admin/contacts")), []);
   // A contact gets at most one invite per event (D21).
   const invited = new Set(invites.flatMap((i) => i.persons.map((p) => p.contact_id)));
+  const invitedNames = new Set(
+    invites.flatMap((i) => i.persons.map((p) => p.name.trim().toLocaleLowerCase())),
+  );
 
   const done = (created: Invite[]) => {
     onCreated(created);
@@ -53,7 +56,9 @@ export function NewInvite({
   return kind === "persons" ? (
     <PersonsForm
       event={event}
-      contacts={(contacts.data ?? []).filter((contact) => !invited.has(contact.id))}
+      contacts={contacts.data ?? []}
+      invited={invited}
+      invitedNames={invitedNames}
       onCreated={(invite) => done([invite])}
       onCancel={onClose}
     />
@@ -74,12 +79,17 @@ type Row = { key: number; name: string; contactId?: string };
 function PersonsForm({
   event,
   contacts,
+  invited,
+  invitedNames,
   onCreated,
   onCancel,
 }: {
   event: Event;
-  /** Not invited yet, so they can be suggested. */
   contacts: Contact[];
+  /** Contacts with an invite to this event: suggested crossed out, as they can't get another. */
+  invited: Set<string | null>;
+  /** Everyone's names in this event, lower case: a typed-in one that matches gets a warning. */
+  invitedNames: Set<string>;
   onCreated: (invite: Invite) => void;
   onCancel: () => void;
 }) {
@@ -100,12 +110,20 @@ function PersonsForm({
   }, [focus]);
 
   const linked = new Set(rows.map((row) => row.contactId));
-  const suggestions = contacts.filter((contact) => !linked.has(contact.id));
-  const items = suggestions.map((contact) => ({
-    id: contact.id,
-    label: contact.name,
-    detail: contact.birth_year?.toString(), // tells two people of the same name apart
-  }));
+  const suggestions = contacts.filter(
+    (contact) => !linked.has(contact.id) && !invited.has(contact.id),
+  );
+  const items = contacts
+    .filter((contact) => !linked.has(contact.id))
+    .map((contact) => ({
+      id: contact.id,
+      label: contact.name,
+      detail: contact.birth_year?.toString(), // tells two people of the same name apart
+      disabled: invited.has(contact.id) ? t("admin.event.alreadyInvited") : undefined,
+    }));
+  /** Typed in, not linked, and someone of that name is invited already: maybe the same person. */
+  const twice = (row: Row) =>
+    !row.contactId && invitedNames.has(row.name.trim().toLocaleLowerCase());
   const names = rows.map((row) => row.name.trim()).filter(Boolean);
   // "Anna", "Anna & Tom", "Anna, Tom & Lea": used when no name is typed in.
   const suggested =
@@ -252,6 +270,7 @@ function PersonsForm({
               ) : (
                 rows.length > 1 && <span className="icon-space" />
               )}
+              {twice(row) && <span className="hint missing">{t("admin.event.invitedTwice")}</span>}
             </li>
           ))}
         </ul>

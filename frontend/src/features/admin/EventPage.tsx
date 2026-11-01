@@ -8,6 +8,7 @@ import { EventWhenWhere } from "../../components/EventWhenWhere";
 import { ExpandableText } from "../../components/ExpandableText";
 import { InfoTip } from "../../components/InfoTip";
 import { Layout, Loaded } from "../../components/Layout";
+import { CopyFailed, LinkButtons, useCopyLink } from "../../components/LinkButtons";
 import { searchList } from "../../components/search";
 import { SearchField } from "../../components/SearchField";
 import { SortMenu } from "../../components/SortMenu";
@@ -19,6 +20,7 @@ import { IconButton, useSave } from "./forms";
 import { AttendanceNames } from "./AttendanceNames";
 import { NewInvite, type NewInviteKind } from "./NewInvite";
 import { QuestionAnswers } from "./QuestionAnswers";
+import { SignupLink } from "./SignupLink";
 
 type Event = Schemas["EventOut"];
 type Invite = Schemas["InviteOut"];
@@ -29,7 +31,10 @@ const ALL_QUESTIONS = "all"; // the question filter's "no question"
 /** The overview: who is coming, what they chose, and the invites. Setup is on EventSetup. */
 export function EventPage({ eventId }: { eventId: string }) {
   const params = { path: { event_id: eventId } };
-  const event = useLoad(() => unwrap(api.GET("/api/admin/events/{event_id}", { params })), [eventId]);
+  const eventLoad = useLoad(
+    () => unwrap(api.GET("/api/admin/events/{event_id}", { params })),
+    [eventId],
+  );
   const invites = useLoad(
     () => unwrap(api.GET("/api/admin/events/{event_id}/invites", { params })),
     [eventId],
@@ -37,10 +42,17 @@ export function EventPage({ eventId }: { eventId: string }) {
 
   return (
     <Layout admin>
-      <Loaded {...event}>
+      <Loaded {...eventLoad}>
         {(event) => (
           <Loaded {...invites}>
-            {(list) => <EventDetails event={event} invites={list} onChange={invites.setData} />}
+            {(list) => (
+              <EventDetails
+                event={event}
+                invites={list}
+                onEventChange={eventLoad.setData}
+                onChange={invites.setData}
+              />
+            )}
           </Loaded>
         )}
       </Loaded>
@@ -51,10 +63,12 @@ export function EventPage({ eventId }: { eventId: string }) {
 function EventDetails({
   event,
   invites,
+  onEventChange,
   onChange,
 }: {
   event: Event;
   invites: Invite[];
+  onEventChange: (event: Event) => void;
   onChange: (invites: Invite[]) => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -65,6 +79,7 @@ function EventDetails({
   // Counts up each time the host asks to see the invites for a question; see showInInvites.
   const [jumps, setJumps] = useState(0);
   const [adding, setAdding] = useState<NewInviteKind>();
+  const signup = useSave();
   const groups = useLoad(() => unwrap(api.GET("/api/admin/groups")), []);
   const question = event.questions.find((q) => q.id === questionId);
   // A search finds invites by their name or by a person in them, best match first; equal
@@ -188,6 +203,26 @@ function EventDetails({
               onClick={() => setAdding("group")}
             />
           )}
+          {/* Once on, the link has its own card below. */}
+          {!adding && !event.signup_token && (
+            <IconButton
+              icon="link"
+              label={t("admin.event.signup.open")}
+              accent
+              disabled={signup.status === "saving"}
+              onClick={() =>
+                void signup.run(async () => {
+                  onEventChange(
+                    await unwrap(
+                      api.PUT("/api/admin/events/{event_id}/signup", {
+                        params: { path: { event_id: event.id } },
+                      }),
+                    ),
+                  );
+                })
+              }
+            />
+          )}
         </span>
       </div>
       {/* Where the deadline matters: who still has to answer, and until when. */}
@@ -196,6 +231,8 @@ function EventDetails({
           date: formatDateTime(answersCloseAt, i18n.language),
         })}
       </p>
+      {signup.error && <p className="error">{signup.error}</p>}
+      {event.signup_token && <SignupLink event={event} token={event.signup_token} onChange={onEventChange} />}
       {invites.length === 0 && <p className="muted">{t("admin.event.noInvites")}</p>}
       {invites.length > 0 && shown.length === 0 && (
         <p className="muted">
@@ -245,25 +282,8 @@ function InviteCard({
   onDeleted: () => void;
 }) {
   const { t, i18n } = useTranslation();
-  const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
+  const copy = useCopyLink(`${window.location.origin}/i/${invite.token}`);
   const action = useSave();
-  const link = `${window.location.origin}/i/${invite.token}`;
-
-  useEffect(() => {
-    if (copy !== "copied") return;
-    const timer = setTimeout(() => setCopy("idle"), 2000);
-    return () => clearTimeout(timer);
-  }, [copy]);
-
-  // The clipboard only exists on HTTPS and localhost; elsewhere `navigator.clipboard` is undefined.
-  async function copyLink() {
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopy("copied");
-    } catch {
-      setCopy("failed");
-    }
-  }
 
   function remove() {
     if (!window.confirm(t("admin.event.confirmDeleteInvite", { name: invite.name }))) return;
@@ -291,25 +311,7 @@ function InviteCard({
   );
   const actions = (
     <span className="card-actions">
-      <a
-        className="icon ghost"
-        href={link}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={t("admin.event.openLink")}
-        title={t("admin.event.openLink")}
-      >
-        <Icon name="open" />
-      </a>
-      <button
-        type="button"
-        className={copy === "copied" ? "icon ghost done" : "icon ghost"}
-        aria-label={t(`admin.event.copy.${copy === "copied" ? "copied" : "idle"}`)}
-        title={t(`admin.event.copy.${copy === "copied" ? "copied" : "idle"}`)}
-        onClick={() => void copyLink()}
-      >
-        <Icon name={copy === "copied" ? "check" : "copy"} />
-      </button>
+      <LinkButtons copy={copy} />
       <button
         type="button"
         className="icon ghost danger"
@@ -320,6 +322,17 @@ function InviteCard({
       >
         <Icon name="delete" />
       </button>
+    </span>
+  );
+  // Signed up through the event's open link rather than invited by a host (D36).
+  const selfRegistered = invite.self_registered && (
+    <span
+      className="signup-mark"
+      role="img"
+      aria-label={t("admin.event.signup.selfRegistered")}
+      title={t("admin.event.signup.selfRegistered")}
+    >
+      <Icon name="link" />
     </span>
   );
   const persons = (
@@ -344,6 +357,7 @@ function InviteCard({
               {event.guest_list_enabled && <GuestListIcon person={person} />}
               <span>
                 {single ? <strong>{person.name}</strong> : person.name}
+                {single && selfRegistered}
                 {answers && <span className="muted"> · {answers}</span>}
               </span>
             </li>
@@ -364,12 +378,15 @@ function InviteCard({
         <div className="row">
           <span className="invite-title">
             {progressIcon}
-            <strong>{invite.name}</strong>
+            <strong>
+              {invite.name}
+              {selfRegistered}
+            </strong>
           </span>
           {actions}
         </div>
       )}
-      {copy === "failed" && <p className="error">{t("admin.event.copy.failed")}</p>}
+      <CopyFailed copy={copy} />
       {action.error && <p className="error">{action.error}</p>}
       {!single && persons}
       {invite.comment && (

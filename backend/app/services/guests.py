@@ -8,9 +8,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Event, EventQuestion, Invite, Person, PersonAnswer, PersonAnswerOption
-from app.schemas.invites import AnswerIn, GuestListEntry, GuestResponseIn, PersonResponseIn
+from app.schemas.invites import (
+    AnswerIn,
+    GuestListEntry,
+    GuestResponseIn,
+    PersonResponseIn,
+    SignupIn,
+)
 from app.services.access import find
 from app.services.errors import Conflict, Invalid, NotFound
+from app.services.invites import new_token
 
 
 def get_invite(session: Session, token: str) -> Invite:
@@ -18,6 +25,38 @@ def get_invite(session: Session, token: str) -> Invite:
     if invite is None:
         raise NotFound("invite not found")
     return invite
+
+
+def get_signup_event(session: Session, token: str) -> Event:
+    """The event behind an open link (D36). A replaced or closed link is simply not found."""
+    event = session.scalar(select(Event).where(Event.signup_token == token))
+    if event is None:
+        raise NotFound("this link no longer works")
+    return event
+
+
+def sign_up(session: Session, token: str, data: SignupIn) -> Invite:
+    """Someone with the open link adds themselves and whoever comes with them. They get an
+    invite of their own, as if a host had made it, and answer through its link (D36)."""
+    event = get_signup_event(session, token)
+    if not event.answers_open:
+        raise Conflict("sign-up is closed")
+    names = [person.name for person in data.persons]
+    invite = Invite(
+        event_id=event.id,
+        name=_joined(names),
+        token=new_token(),
+        self_registered=True,
+        persons=[Person(name=name, position=i) for i, name in enumerate(names)],
+    )
+    session.add(invite)
+    session.commit()
+    return invite
+
+
+def _joined(names: list[str]) -> str:
+    """Like a host's invite without a name of its own: "Anna", "Anna & Tom", "Anna, Tom & Lea"."""
+    return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} & {names[-1]}"
 
 
 def guest_list(session: Session, event: Event) -> Sequence[Person] | None:

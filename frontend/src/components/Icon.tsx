@@ -178,6 +178,18 @@ const PATHS = {
       <path d="M12 17h.01" />
     </>
   ),
+  link: (
+    <>
+      <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" />
+      <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
+    </>
+  ),
+  replace: (
+    <>
+      <path d="M20 12a8 8 0 1 1-2.3-5.7L20 8.5" />
+      <path d="M20 3.5v5h-5" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof PATHS;

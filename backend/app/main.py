@@ -3,7 +3,7 @@ from collections.abc import Awaitable, Callable
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
-from app.access_log import mask_invite_tokens
+from app.access_log import mask_secret_links
 from app.config import get_settings
 from app.frontend import serve_frontend
 from app.routers import address_book, admin, guest, health
@@ -17,7 +17,7 @@ app = FastAPI(
     version="0.1.0",
     openapi_url="/openapi.json" if settings.environment == "local" else None,
 )
-mask_invite_tokens()
+mask_secret_links()
 
 SECURITY_HEADERS = {
     # Guest links carry a secret token: never pass it on to another site (A12).

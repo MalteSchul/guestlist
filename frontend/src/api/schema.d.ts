@@ -253,6 +253,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/events/{event_id}/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Open Signup
+         * @description Turns on the open link, or replaces it with a new one (D36).
+         */
+        put: operations["open_signup_api_admin_events__event_id__signup_put"];
+        post?: never;
+        /** Close Signup */
+        delete: operations["close_signup_api_admin_events__event_id__signup_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/events/{event_id}/stats": {
         parameters: {
             query?: never;
@@ -335,6 +356,24 @@ export interface paths {
         /** Save Response */
         put: operations["save_response_api_guest_invite_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guest/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Signup */
+        get: operations["get_signup_api_guest_signup_get"];
+        put?: never;
+        /** Sign Up */
+        post: operations["sign_up_api_guest_signup_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -567,6 +606,8 @@ export interface components {
             questions: components["schemas"]["QuestionOut"][];
             /** Rsvp Deadline */
             rsvp_deadline?: string | null;
+            /** Signup Token */
+            signup_token: string | null;
             /**
              * Starts At
              * Format: date-time
@@ -690,6 +731,8 @@ export interface components {
             name: string;
             /** Persons */
             persons: components["schemas"]["PersonOut"][];
+            /** Self Registered */
+            self_registered: boolean;
         };
         /**
          * GuestListEntry
@@ -748,6 +791,13 @@ export interface components {
             comment?: string | null;
             /** Persons */
             persons: components["schemas"]["PersonResponseIn"][];
+        };
+        /**
+         * GuestSignupOut
+         * @description What the open link shows before anyone signs up: the event, no guests (D36).
+         */
+        GuestSignupOut: {
+            event: components["schemas"]["GuestEvent"];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -840,6 +890,8 @@ export interface components {
             name: string;
             /** Persons */
             persons: components["schemas"]["HostPersonOut"][];
+            /** Self Registered */
+            self_registered: boolean;
             /** Token */
             token: string;
         };
@@ -1005,6 +1057,21 @@ export interface components {
              * @default false
              */
             required: boolean;
+        };
+        /** SignupIn */
+        SignupIn: {
+            /** Persons */
+            persons: components["schemas"]["SignupPersonIn"][];
+        };
+        /** SignupOut */
+        SignupOut: {
+            /** Token */
+            token: string;
+        };
+        /** SignupPersonIn */
+        SignupPersonIn: {
+            /** Name */
+            name: string;
         };
         /** UserOut */
         UserOut: {
@@ -1738,6 +1805,68 @@ export interface operations {
             };
         };
     };
+    open_signup_api_admin_events__event_id__signup_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_signup_api_admin_events__event_id__signup_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     event_stats_api_admin_events__event_id__stats_get: {
         parameters: {
             query?: {
@@ -1962,6 +2091,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GuestInviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_signup_api_guest_signup_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Signup-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuestSignupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sign_up_api_guest_signup_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Signup-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupOut"];
                 };
             };
             /** @description Validation Error */

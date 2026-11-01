@@ -25,5 +25,5 @@ def serve_frontend(app: FastAPI, build: Path) -> None:
         # not get the app back as JavaScript.
         if path == "api" or path.startswith(("api/", "assets/")):
             raise HTTPException(404)
-        # Client-side routes (/i/<token> and the host pages) all get the app.
+        # Client-side routes (/i/<token>, /r/<token> and the host pages) all get the app.
         return FileResponse(index, headers={"Cache-Control": "no-cache"})

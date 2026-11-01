@@ -110,6 +110,9 @@ everything the backend sends.
   - tokens are 44 random base58 characters (256 bits, A22)
   - the app sends `Referrer-Policy: no-referrer`, so the link never leaks to third-party sites
   - access logs mask the token part of `/i/<token>`
+
+  The event's open link (`/r/<token>`, D36) works the same way, with an `X-Signup-Token` header.
+  It only lets people sign up; each sign-up gets its own `/i/<token>`.
 - **Hosts:** log in through Entra External ID. The frontend uses `react-oidc-context`. The backend
   validates the JWT against the tenant's JWKS: issuer, audience = the API's app registration,
   scope.
@@ -142,7 +145,7 @@ guestlist/
 │   ├── app/
 │   │   ├── main.py              creates the FastAPI app, mounts routers, security headers
 │   │   ├── frontend.py          serves the React build next to the API
-│   │   ├── access_log.py        masks guest tokens in the access log
+│   │   ├── access_log.py        masks link tokens in the access log
 │   │   ├── config.py            settings from environment variables
 │   │   ├── db.py                engine + session
 │   │   ├── auth/                OIDC token validation, current user

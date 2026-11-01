@@ -25,6 +25,8 @@ class Invite(Timestamps, Base):
     name: Mapped[str]
     token: Mapped[str] = mapped_column(unique=True)
     comment: Mapped[str | None]
+    # Made by the guest through the event's open link, not by a host (D36).
+    self_registered: Mapped[bool] = mapped_column(server_default=false())
 
     event: Mapped[Event] = relationship()
     persons: Mapped[list["Person"]] = owned_children(lambda: [Person.position, Person.created_at])

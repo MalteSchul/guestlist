@@ -1,16 +1,17 @@
-"""Guest links carry a secret token: keep it out of the access log (A12)."""
+"""Guest links and the open sign-up link carry a secret token: keep it out of the access log
+(A12, D36)."""
 
 import logging
 import re
 
-_INVITE = re.compile(r"^/i/[^/?]+")
+_SECRET_LINK = re.compile(r"^/([ir])/[^/?]+")
 
 
 def mask(path: str) -> str:
-    return _INVITE.sub("/i/<token>", path)
+    return _SECRET_LINK.sub(r"/\1/<token>", path)
 
 
-class MaskInviteTokens(logging.Filter):
+class MaskSecretLinks(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         # uvicorn logs (client, method, path, HTTP version, status).
         if isinstance(record.args, tuple) and len(record.args) == 5:
@@ -19,5 +20,5 @@ class MaskInviteTokens(logging.Filter):
         return True
 
 
-def mask_invite_tokens() -> None:
-    logging.getLogger("uvicorn.access").addFilter(MaskInviteTokens())
+def mask_secret_links() -> None:
+    logging.getLogger("uvicorn.access").addFilter(MaskSecretLinks())
