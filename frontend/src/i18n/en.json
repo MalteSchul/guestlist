@@ -124,6 +124,7 @@
       "group": "Group",
       "groupMode": "For this event",
       "alreadyInvited": "already invited",
+      "invitedTwice": "Someone with this name is already invited; this adds a second person.",
       "skipped_one": "{{count}} person is already invited and will be skipped.",
       "skipped_other": "{{count}} people are already invited and will be skipped.",
       "onGuestList": "On the guest list",

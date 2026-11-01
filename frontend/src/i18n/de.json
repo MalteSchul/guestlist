@@ -124,6 +124,7 @@
       "group": "Gruppe",
       "groupMode": "Für dieses Event",
       "alreadyInvited": "bereits eingeladen",
+      "invitedTwice": "Jemand mit diesem Namen ist schon eingeladen; das legt eine zweite Person an.",
       "skipped_one": "{{count}} Person ist schon eingeladen und wird übersprungen.",
       "skipped_other": "{{count}} Personen sind schon eingeladen und werden übersprungen.",
       "onGuestList": "Steht auf der Gästeliste",
