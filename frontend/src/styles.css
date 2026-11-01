@@ -641,6 +641,12 @@ h3 {
   background: var(--surface);
 }
 
+/* A notice with an action, e.g. copying the link: the button stays next to the text. */
+.notice.row {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
 /* A gap shown after a save attempt. */
 .missing {
   color: var(--warn);
@@ -863,7 +869,8 @@ h3 {
   display: flex;
 }
 
-.name-input .combobox {
+.name-input .combobox,
+.name-input > input {
   flex: 1;
   min-width: 0;
 }
@@ -1476,6 +1483,22 @@ button.icon.accent:hover {
   align-items: flex-start;
   gap: 0.5rem;
   min-width: 0;
+}
+
+/* The event's open link, and after a name: signed up through it (D36). */
+.signup-mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 1.5em; /* one line, like the progress icon */
+  vertical-align: top;
+  color: var(--muted);
+  cursor: default;
+}
+
+strong > .signup-mark,
+.persons .signup-mark {
+  margin-left: 0.35rem;
 }
 
 /* A filter that is on or off, e.g. only the unfinished invites. */

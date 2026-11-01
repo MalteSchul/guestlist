@@ -4,7 +4,9 @@ import { useTranslation } from "react-i18next";
 import { ApiError, api, type Schemas, unwrap } from "../../api/client";
 import { AttendanceIcon } from "../../components/AttendanceIcon";
 import { EventWhenWhere } from "../../components/EventWhenWhere";
+import { Icon } from "../../components/Icon";
 import { Layout, Loaded } from "../../components/Layout";
+import { useCopyLink } from "../../components/LinkButtons";
 import { useLoad } from "../../components/useLoad";
 import { formatDateTime, sortedByName } from "../../i18n/text";
 import { openRequired, personProgress, summary } from "../answers";
@@ -137,6 +139,7 @@ export function Invitation({
       {invite.guest_list && <GuestList entries={invite.guest_list} />}
 
       <h2>{t("guest.yourAnswer", { name: invite.name, count })}</h2>
+      {invite.self_registered && !preview && <KeepLink count={count} />}
       <p className="muted">
         {event.answers_open
           ? t("guest.answerUntil", { date: formatDateTime(event.answers_close_at, lang), count })
@@ -235,6 +238,31 @@ export function Invitation({
         </fieldset>
       </form>
     </>
+  );
+}
+
+/** Signed up through the open link, so no host sent this page's link: it's the guest's only way
+ * back to change the answer (D36). */
+function KeepLink({ count }: { count: number }) {
+  const { t } = useTranslation();
+  const copy = useCopyLink(window.location.href);
+  const copied = copy.state === "copied";
+  return (
+    <div className="notice row">
+      <span>{t("guest.keepLink", { count })}</span>
+      {/* Only where the clipboard exists (HTTPS, localhost); otherwise the text says enough. */}
+      {navigator.clipboard && (
+        <button
+        type="button"
+        className={copied ? "icon ghost done" : "icon ghost"}
+        aria-label={t(`common.copy.${copied ? "copied" : "idle"}`)}
+        title={t(`common.copy.${copied ? "copied" : "idle"}`)}
+        onClick={() => void copy.copy()}
+      >
+        <Icon name={copied ? "check" : "copy"} />
+        </button>
+      )}
+    </div>
   );
 }
 
