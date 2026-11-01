@@ -139,34 +139,3 @@ def test_list_counts_attendance(client: TestClient):
     counts = {e["id"]: e["attendance"] for e in client.get(EVENTS).json()}
     assert counts[event["id"]] == {"yes": 0, "maybe": 0, "no": 0, "pending": 2}
     assert counts[empty["id"]] == {"yes": 0, "maybe": 0, "no": 0, "pending": 0}
-
-
-def test_duplicate_copies_setup_but_not_invites(client: TestClient):
-    event = create_event(
-        client, description="Parken\nIm Hof", location="Gartenstraße 1", guest_list_enabled=True
-    )
-    url = f"{EVENTS}/{event['id']}"
-    question = add_question(client, event["id"])
-    hidden = question["options"][1]
-    options = f"{url}/questions/{question['id']}/options"
-    client.put(f"{options}/{hidden['id']}", json={"label": hidden["label"], "active": False})
-    client.post(f"{url}/invites", json={"name": "Anna", "persons": [{"name": "Anna"}]})
-
-    response = client.post(f"{url}/duplicate")
-    assert response.status_code == 201
-    copy = response.json()
-    assert copy["id"] != event["id"]
-    assert (
-        copy["title"],
-        copy["description"],
-        copy["location"],
-        copy["guest_list_enabled"],
-    ) == (event["title"], "Parken\nIm Hof", "Gartenstraße 1", True)
-    assert [o["label"] for o in copy["questions"][0]["options"]] == ["Fleisch"]
-    assert client.get(f"{EVENTS}/{copy['id']}/invites").json() == []
-
-
-def test_duplicate_needs_access(client: TestClient, log_in_as):
-    event = create_event(client)
-    log_in_as("stranger@example.com")
-    assert client.post(f"{EVENTS}/{event['id']}/duplicate").status_code == 404

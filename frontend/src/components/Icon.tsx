@@ -62,13 +62,6 @@ const PATHS = {
       <circle cx="12" cy="12" r="3" />
     </>
   ),
-  duplicate: (
-    <>
-      <rect x="9" y="9" width="11" height="11" rx="2" />
-      <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
-      <path d="M14.5 12v5M12 14.5h5" />
-    </>
-  ),
   import: (
     <>
       <path d="M12 4v11M7 10l5 5 5-5" />
