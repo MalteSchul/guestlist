@@ -35,6 +35,7 @@ export function EventPreview({ eventId }: { eventId: string }) {
             invite={{
               name: t("admin.preview.guest"),
               comment: null,
+              self_registered: false,
               event: data.event,
               guest_list: data.guest_list,
               persons: [

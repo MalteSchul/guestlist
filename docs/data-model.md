@@ -105,6 +105,7 @@ erDiagram
 | *rsvp_deadline* | timestamp | answers close here, otherwise at `starts_at` |
 | keep_data | yes/no | default no: deleted 1 year after the event |
 | guest_list_enabled | yes/no | default no: show the attendance list to guests |
+| *signup_token* | text | the open link everyone may sign up with, unique; empty while it's off (D36) |
 
 **`event_questions`**: e.g. "Food", "Drinks", "Allergies"
 | column | type | note |
@@ -139,8 +140,10 @@ Answers are always private; only attendance can be made public.*
 | name | text | "Familie Müller" |
 | token | text | the secret part of the link, unique, stored as-is |
 | *comment* | text | from the guest |
+| self_registered | yes/no | default no: made by the guest through the open link (D36) |
 
-**`persons`**: the people in an invite (created by the admin, guests can't add any)
+**`persons`**: the people in an invite (created by the admin or, through the open link, by the
+guest when signing up; guests can't add any later)
 | column | type | note |
 |---|---|---|
 | 🔑 id | UUID | |

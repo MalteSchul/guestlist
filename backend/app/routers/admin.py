@@ -77,6 +77,17 @@ def update_event(
     return EventOut.model_validate(events.update_event(session, user, event_id, data))
 
 
+@router.put("/events/{event_id}/signup")
+def open_signup(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> EventOut:
+    """Turns on the open link, or replaces it with a new one (D36)."""
+    return EventOut.model_validate(invites.open_signup(session, user, event_id))
+
+
+@router.delete("/events/{event_id}/signup")
+def close_signup(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> EventOut:
+    return EventOut.model_validate(invites.close_signup(session, user, event_id))
+
+
 @router.delete("/events/{event_id}", **NO_CONTENT)
 def delete_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> None:
     events.delete_event(session, user, event_id)

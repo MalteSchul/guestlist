@@ -497,6 +497,17 @@
             ],
             "title": "Rsvp Deadline"
           },
+          "signup_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signup Token"
+          },
           "starts_at": {
             "format": "date-time",
             "title": "Starts At",
@@ -513,6 +524,7 @@
           "title",
           "starts_at",
           "id",
+          "signup_token",
           "questions"
         ],
         "title": "EventOut",
@@ -843,11 +855,16 @@
             },
             "title": "Persons",
             "type": "array"
+          },
+          "self_registered": {
+            "title": "Self Registered",
+            "type": "boolean"
           }
         },
         "required": [
           "name",
           "comment",
+          "self_registered",
           "event",
           "persons"
         ],
@@ -990,6 +1007,20 @@
           "persons"
         ],
         "title": "GuestResponseIn",
+        "type": "object"
+      },
+      "GuestSignupOut": {
+        "additionalProperties": false,
+        "description": "What the open link shows before anyone signs up: the event, no guests (D36).",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/GuestEvent"
+          }
+        },
+        "required": [
+          "event"
+        ],
+        "title": "GuestSignupOut",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1233,6 +1264,10 @@
             "title": "Persons",
             "type": "array"
           },
+          "self_registered": {
+            "title": "Self Registered",
+            "type": "boolean"
+          },
           "token": {
             "title": "Token",
             "type": "string"
@@ -1243,6 +1278,7 @@
           "name",
           "token",
           "comment",
+          "self_registered",
           "persons"
         ],
         "title": "InviteOut",
@@ -1557,6 +1593,55 @@
           "label"
         ],
         "title": "QuestionUpdate",
+        "type": "object"
+      },
+      "SignupIn": {
+        "additionalProperties": false,
+        "properties": {
+          "persons": {
+            "items": {
+              "$ref": "#/components/schemas/SignupPersonIn"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Persons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "persons"
+        ],
+        "title": "SignupIn",
+        "type": "object"
+      },
+      "SignupOut": {
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "SignupOut",
+        "type": "object"
+      },
+      "SignupPersonIn": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "SignupPersonIn",
         "type": "object"
       },
       "UserOut": {
@@ -2764,6 +2849,101 @@
         ]
       }
     },
+    "/api/admin/events/{event_id}/signup": {
+      "delete": {
+        "operationId": "close_signup_api_admin_events__event_id__signup_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Close Signup",
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "description": "Turns on the open link, or replaces it with a new one (D36).",
+        "operationId": "open_signup_api_admin_events__event_id__signup_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Open Signup",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/admin/events/{event_id}/stats": {
       "get": {
         "operationId": "event_stats_api_admin_events__event_id__stats_get",
@@ -3124,6 +3304,102 @@
           }
         },
         "summary": "Save Response",
+        "tags": [
+          "guest"
+        ]
+      }
+    },
+    "/api/guest/signup": {
+      "get": {
+        "operationId": "get_signup_api_guest_signup_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Signup-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "X-Signup-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestSignupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Signup",
+        "tags": [
+          "guest"
+        ]
+      },
+      "post": {
+        "operationId": "sign_up_api_guest_signup_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Signup-Token",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "X-Signup-Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sign Up",
         "tags": [
           "guest"
         ]

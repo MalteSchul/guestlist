@@ -25,6 +25,8 @@ class Event(Timestamps, Base):
     rsvp_deadline: Mapped[datetime | None]
     keep_data: Mapped[bool] = mapped_column(server_default=false())
     guest_list_enabled: Mapped[bool] = mapped_column(server_default=false())
+    # The open link everyone may sign up with (D36); none while the host hasn't turned it on.
+    signup_token: Mapped[str | None] = mapped_column(unique=True)
 
     questions: Mapped[list["EventQuestion"]] = owned_children(
         lambda: [EventQuestion.position, EventQuestion.created_at]
