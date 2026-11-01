@@ -1,9 +1,11 @@
 # Rendered to /etc/nginx/conf.d/default.conf at container start; only ${BACKEND_URL} is
 # substituted (the nginx image's envsubst only touches variables that are set).
 
-# Guest links carry a secret token: keep it out of the access log (A12).
+# Guest links and the open sign-up link carry a secret token: keep it out of the access log
+# (A12, D36).
 map $request_uri $loggable_uri {
     ~^/i/[^/?]+(?<rest>.*)$  /i/<token>$rest;
+    ~^/r/[^/?]+(?<rest>.*)$  /r/<token>$rest;
     default                  $request_uri;
 }
 
@@ -36,7 +38,7 @@ server {
         expires -1;
     }
 
-    # Client-side routes (/i/<token>, /admin/...) all serve the app.
+    # Client-side routes (/i/<token>, /r/<token>, /admin/...) all serve the app.
     location / {
         try_files $uri /index.html;
     }

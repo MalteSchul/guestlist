@@ -23,7 +23,13 @@
     "moreMatches_one": "{{count}} more match – keep typing",
     "moreMatches_other": "{{count}} more matches – keep typing",
     "showAll": "Show all",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "openLink": "Open",
+    "copy": {
+      "idle": "Copy link",
+      "copied": "Copied",
+      "failed": "Can't copy here – use “Open”"
+    }
   },
   "guest": {
     "closed": "Answers are closed.",
@@ -58,7 +64,24 @@
     "listComing_one": "Coming",
     "listComing_other": "Coming",
     "listMaybe_one": "Maybe",
-    "listMaybe_other": "Maybe"
+    "listMaybe_other": "Maybe",
+    "signup": {
+      "title": "Sign up",
+      "until": "You can sign up until {{date}}.",
+      "closed": "Sign-up is closed.",
+      "gone": "This link no longer works. Ask the hosts for the current one.",
+      "persons": "Who's coming?",
+      "personsHint": "You and everyone coming with you. Next you say whether you're coming and answer the hosts' questions.",
+      "personNumber": "Person {{number}}",
+      "yourName": "Your name",
+      "another": "Someone coming with you",
+      "tooMany": "At most 10 people at once.",
+      "submit": "Continue",
+      "earlier": "You already signed up on this device as {{name}}.",
+      "toEarlier": "To your answer"
+    },
+    "keepLink_one": "This page is just for you: save its link (as a bookmark, say) to change your answer later.",
+    "keepLink_other": "This page is just for you: save its link (as a bookmark, say) to change your answer later."
   },
   "admin": {
     "events": {
@@ -100,13 +123,7 @@
         "people-desc": "Most people first",
         "people-asc": "Fewest people first"
       },
-      "openLink": "Open",
       "comment": "“{{comment}}”",
-      "copy": {
-        "idle": "Copy link",
-        "copied": "Copied",
-        "failed": "Can't copy here – use “Open”"
-      },
       "newInvite": "New invite",
       "inviteName": "Name on the invite",
       "inviteNameHint": "Leave it empty to use the people's names.",
@@ -135,7 +152,17 @@
       "answersClosed": "Answers closed on {{date}}.",
       "search": "Search invites or people …",
       "noMatch": "No invites for “{{query}}”.",
-      "noAnswerTo": "Nobody has answered “{{question}}” yet."
+      "noAnswerTo": "Nobody has answered “{{question}}” yet.",
+      "signup": {
+        "open": "Create a link for everyone",
+        "title": "Link for everyone",
+        "hint": "Anyone with this link can sign up – handy for a group chat. Each sign-up appears below as an invite of its own, marked with the link icon.",
+        "replace": "Replace link",
+        "confirmReplace": "Replace the link for everyone? The current one stops working. People who already signed up keep their own link.",
+        "close": "Turn off link",
+        "confirmClose": "Turn off the link for everyone? Nobody can sign up with it any more. People who already signed up keep their own link.",
+        "selfRegistered": "Signed up through the link for everyone"
+      }
     },
     "stats": {
       "timeline": "Answers over time",

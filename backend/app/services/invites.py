@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Contact, Invite, Person, User
+from app.models import Contact, Event, Invite, Person, User
 from app.schemas.invites import GroupInviteIn, InviteIn
 from app.services.access import require_role
 from app.services.address_book import own_contacts, own_groups
@@ -107,6 +107,23 @@ def _invited(session: Session, event_id: uuid.UUID) -> set[uuid.UUID]:
             .where(Invite.event_id == event_id, Person.contact_id.is_not(None))
         )
     )
+
+
+def open_signup(session: Session, user: User, event_id: uuid.UUID) -> Event:
+    """Turns on the open link everyone may sign up with, or replaces it: the old one stops
+    working (D36)."""
+    event = require_role(session, user, event_id, "admin")
+    event.signup_token = new_token()
+    session.commit()
+    return event
+
+
+def close_signup(session: Session, user: User, event_id: uuid.UUID) -> Event:
+    """Nobody new can sign up; who already did keeps their own link."""
+    event = require_role(session, user, event_id, "admin")
+    event.signup_token = None
+    session.commit()
+    return event
 
 
 def delete_invite(session: Session, user: User, event_id: uuid.UUID, invite_id: uuid.UUID) -> None:

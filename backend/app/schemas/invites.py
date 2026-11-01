@@ -51,6 +51,8 @@ class InviteOut(Schema):
     name: str
     token: str
     comment: str | None
+    self_registered: bool
+    """The guest signed up through the event's open link (D36)."""
     persons: list[HostPersonOut]
 
 
@@ -99,6 +101,8 @@ class GuestListEntry(Schema):
 class GuestInviteOut(Schema):
     name: str
     comment: str | None
+    self_registered: bool
+    """Signed up through the open link: this page is their only way back, so they keep it."""
     event: GuestEvent
     persons: list[PersonOut]
     guest_list: list[GuestListEntry] | None = None
@@ -110,6 +114,25 @@ class GuestPreviewOut(Schema):
 
     event: GuestEvent
     guest_list: list[GuestListEntry] | None = None
+
+
+class GuestSignupOut(Schema):
+    """What the open link shows before anyone signs up: the event, no guests (D36)."""
+
+    event: GuestEvent
+
+
+class SignupPersonIn(Schema):
+    name: ShortText
+
+
+class SignupIn(Schema):
+    persons: Annotated[list[SignupPersonIn], Field(min_length=1, max_length=10)]
+
+
+class SignupOut(Schema):
+    token: str
+    """The new invite's own token: the guest goes on to their personal link with it."""
 
 
 class AnswerIn(Schema):

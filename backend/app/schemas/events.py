@@ -82,4 +82,6 @@ class EventSummary(Schema):
 
 class EventOut(EventIn):
     id: uuid.UUID
+    signup_token: str | None
+    """The open link everyone may sign up with, if the host turned it on (D36)."""
     questions: list[QuestionOut]

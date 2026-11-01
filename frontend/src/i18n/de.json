@@ -23,7 +23,13 @@
     "moreMatches_one": "{{count}} weiterer Treffer – weitertippen",
     "moreMatches_other": "{{count}} weitere Treffer – weitertippen",
     "showAll": "Alles anzeigen",
-    "showLess": "Weniger anzeigen"
+    "showLess": "Weniger anzeigen",
+    "openLink": "Öffnen",
+    "copy": {
+      "idle": "Link kopieren",
+      "copied": "Kopiert",
+      "failed": "Kopieren nicht möglich – nutze „Öffnen“"
+    }
   },
   "guest": {
     "closed": "Die Antwortfrist ist vorbei.",
@@ -58,7 +64,24 @@
     "listComing_one": "Kommt",
     "listComing_other": "Kommen",
     "listMaybe_one": "Vielleicht",
-    "listMaybe_other": "Vielleicht"
+    "listMaybe_other": "Vielleicht",
+    "signup": {
+      "title": "Anmelden",
+      "until": "Du kannst dich bis {{date}} anmelden.",
+      "closed": "Die Anmeldung ist vorbei.",
+      "gone": "Dieser Link funktioniert nicht mehr. Frag die Gastgeber nach dem aktuellen.",
+      "persons": "Wer kommt?",
+      "personsHint": "Du und alle, die mit dir kommen. Danach sagst du zu oder ab und beantwortest die Fragen der Gastgeber.",
+      "personNumber": "Person {{number}}",
+      "yourName": "Dein Name",
+      "another": "Wer noch mitkommt",
+      "tooMany": "Höchstens 10 Personen auf einmal.",
+      "submit": "Weiter",
+      "earlier": "Du hast dich auf diesem Gerät schon als {{name}} angemeldet.",
+      "toEarlier": "Zu deiner Antwort"
+    },
+    "keepLink_one": "Diese Seite ist nur für dich: Speichere ihren Link (etwa als Lesezeichen), um deine Antwort später zu ändern.",
+    "keepLink_other": "Diese Seite ist nur für euch: Speichert ihren Link (etwa als Lesezeichen), um eure Antwort später zu ändern."
   },
   "admin": {
     "events": {
@@ -100,13 +123,7 @@
         "people-desc": "Meiste Personen zuerst",
         "people-asc": "Wenigste Personen zuerst"
       },
-      "openLink": "Öffnen",
       "comment": "„{{comment}}“",
-      "copy": {
-        "idle": "Link kopieren",
-        "copied": "Kopiert",
-        "failed": "Kopieren nicht möglich – nutze „Öffnen“"
-      },
       "newInvite": "Neue Einladung",
       "inviteName": "Name auf der Einladung",
       "inviteNameHint": "Leer lassen, dann stehen die Namen der Personen darauf.",
@@ -135,7 +152,17 @@
       "answersClosed": "Antworten sind seit {{date}} geschlossen.",
       "search": "Einladungen oder Personen suchen …",
       "noMatch": "Keine Einladungen zu „{{query}}“.",
-      "noAnswerTo": "Noch niemand hat „{{question}}“ beantwortet."
+      "noAnswerTo": "Noch niemand hat „{{question}}“ beantwortet.",
+      "signup": {
+        "open": "Link für alle erstellen",
+        "title": "Link für alle",
+        "hint": "Wer diesen Link hat, kann sich selbst eintragen – praktisch für einen Gruppenchat. Jede Anmeldung erscheint unten als eigene Einladung, markiert mit dem Link-Symbol.",
+        "replace": "Neuen Link erstellen",
+        "confirmReplace": "Neuen Link für alle erstellen? Der bisherige funktioniert dann nicht mehr. Wer sich schon eingetragen hat, behält seinen eigenen Link.",
+        "close": "Link abschalten",
+        "confirmClose": "Link für alle abschalten? Dann kann sich niemand mehr darüber eintragen. Wer sich schon eingetragen hat, behält seinen eigenen Link.",
+        "selfRegistered": "Hat sich über den Link für alle eingetragen"
+      }
     },
     "stats": {
       "timeline": "Antworten im Verlauf",
