@@ -35,9 +35,9 @@ export function useReveal<T extends HTMLElement>() {
   return ref;
 }
 
-/** Scrolls `el` into view only as far as needed; smooth, unless the system asks for reduced
- * motion. */
-export function scrollIntoViewGently(el: Element) {
+/** Scrolls `el` into view, by default only as far as needed; smooth, unless the system asks for
+ * reduced motion. */
+export function scrollIntoViewGently(el: Element, block: ScrollLogicalPosition = "nearest") {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest" });
+  el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block });
 }

@@ -1044,12 +1044,12 @@ button.icon.ghost.done {
 
 /* The tint is its own layer behind the row, reaching the card's edges, so the row's box, and
    the dashed line on its top border, stay where they are in every row. */
-.rows > li.selected {
+.rows > li:is(.selected, .flash) {
   position: relative;
   isolation: isolate;
 }
 
-.rows > li.selected::before {
+.rows > li:is(.selected, .flash)::before {
   content: "";
   position: absolute;
   z-index: -1;
@@ -1057,14 +1057,29 @@ button.icon.ghost.done {
   background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
-.rows > li.selected:first-child::before {
+.rows > li:is(.selected, .flash):first-child::before {
   border-top-left-radius: calc(var(--radius) - 1px);
   border-top-right-radius: calc(var(--radius) - 1px);
 }
 
-.rows > li.selected:last-child::before {
+.rows > li:is(.selected, .flash):last-child::before {
   border-bottom-right-radius: calc(var(--radius) - 1px);
   border-bottom-left-radius: calc(var(--radius) - 1px);
+}
+
+/* A row a link led to (the address book's group and member names): the tint fades out. */
+.rows > li.flash::before {
+  animation: flash 1.6s ease-out forwards;
+}
+
+@keyframes flash {
+  0%,
+  40% {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  to {
+    background: transparent;
+  }
 }
 
 /* What is ticked in the address book and what to do with it, floating at the bottom of the
@@ -1370,6 +1385,17 @@ button.icon.accent:hover {
   visibility: hidden;
 }
 
+/* A name that leads to its row elsewhere on the page: looks like the text around it until
+   pointed at. Before .badge and .hit, which set their own colour. */
+.jump {
+  color: inherit;
+  text-decoration: none;
+}
+
+.jump:hover {
+  text-decoration: underline;
+}
+
 .badge {
   display: inline-block;
   font-size: 0.8rem;
@@ -1388,6 +1414,12 @@ button.icon.accent:hover {
 
 .badge.hit {
   border-color: var(--text);
+}
+
+.badge.jump:hover {
+  text-decoration: none;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* How far guests are: red nothing yet, yellow not finished, green nothing left to do. Only
