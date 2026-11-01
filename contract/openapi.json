@@ -2118,54 +2118,6 @@
         ]
       }
     },
-    "/api/admin/events/{event_id}/duplicate": {
-      "post": {
-        "operationId": "duplicate_event_api_admin_events__event_id__duplicate_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "event_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Event Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Duplicate Event",
-        "tags": [
-          "admin"
-        ]
-      }
-    },
     "/api/admin/events/{event_id}/invites": {
       "get": {
         "operationId": "list_invites_api_admin_events__event_id__invites_get",

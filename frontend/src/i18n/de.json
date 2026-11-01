@@ -64,8 +64,7 @@
     "events": {
       "title": "Deine Events",
       "empty": "Noch keine Events.",
-      "new": "Neues Event",
-      "duplicate": "Duplizieren"
+      "new": "Neues Event"
     },
     "event": {
       "back": "Alle Events",

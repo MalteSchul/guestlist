@@ -5,7 +5,6 @@ import { AttendanceCounts } from "../../components/AttendanceCounts";
 import { Icon } from "../../components/Icon";
 import { Layout, Loaded } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
-import { useSave } from "./forms";
 
 type Summary = Schemas["EventSummary"];
 
@@ -53,20 +52,7 @@ export function EventList() {
 }
 
 function EventCard({ event, past }: { event: Summary; past: boolean }) {
-  const { t, i18n } = useTranslation();
-  const action = useSave();
-
-  function duplicate() {
-    void action.run(async () => {
-      const copy = await unwrap(
-        api.POST("/api/admin/events/{event_id}/duplicate", {
-          params: { path: { event_id: event.id } },
-        }),
-      );
-      // Straight to editing: a copy needs a new date at least.
-      window.location.href = `/admin/events/${copy.id}/edit`;
-    });
-  }
+  const { i18n } = useTranslation();
 
   return (
     <li className={past ? "card event-card past" : "card event-card"}>
@@ -76,20 +62,7 @@ function EventCard({ event, past }: { event: Summary; past: boolean }) {
           <strong>{event.title}</strong>
         </a>
         <AttendanceCounts counts={event.attendance} />
-        {action.error && <span className="error">{action.error}</span>}
       </div>
-      <span className="card-actions">
-        <button
-          type="button"
-          className="icon ghost"
-          aria-label={t("admin.events.duplicate")}
-          title={t("admin.events.duplicate")}
-          disabled={action.status === "saving"}
-          onClick={duplicate}
-        >
-          <Icon name="duplicate" />
-        </button>
-      </span>
     </li>
   );
 }

@@ -1232,7 +1232,7 @@ button.icon.accent:hover {
   color: var(--accent-text);
 }
 
-/* An event in the list: its calendar sheet, then title, date and counts, then its actions. */
+/* An event in the list: its calendar sheet, then title, date and counts. */
 .card.event-card {
   flex-direction: row;
   align-items: flex-start;

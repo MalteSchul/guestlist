@@ -77,11 +77,6 @@ def update_event(
     return EventOut.model_validate(events.update_event(session, user, event_id, data))
 
 
-@router.post("/events/{event_id}/duplicate", **CREATED)
-def duplicate_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> EventOut:
-    return EventOut.model_validate(events.duplicate_event(session, user, event_id))
-
-
 @router.delete("/events/{event_id}", **NO_CONTENT)
 def delete_event(session: SessionDep, user: CurrentUser, event_id: uuid.UUID) -> None:
     events.delete_event(session, user, event_id)

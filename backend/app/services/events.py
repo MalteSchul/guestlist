@@ -76,34 +76,6 @@ def update_event(session: Session, user: User, event_id: uuid.UUID, data: EventI
     return event
 
 
-def duplicate_event(session: Session, user: User, event_id: uuid.UUID) -> Event:
-    """A new event with the same details and questions, for the next party of the same
-    kind. Invites and answers stay behind, and so do options nobody can pick any more. The user
-    becomes the copy's owner."""
-    original = require_role(session, user, event_id, "viewer")
-    copy = Event(**EventIn.model_validate(original).model_dump())
-    copy.questions = [
-        EventQuestion(
-            label=q.label,
-            kind=q.kind,
-            multiple=q.multiple,
-            required=q.required,
-            position=q.position,
-            options=[
-                EventQuestionOption(label=o.label, position=o.position)
-                for o in q.options
-                if o.active
-            ],
-        )
-        for q in original.questions
-    ]
-    session.add(copy)
-    session.flush()
-    session.add(EventRole(event_id=copy.id, user_id=user.id, role="owner"))
-    session.commit()
-    return copy
-
-
 def delete_event(session: Session, user: User, event_id: uuid.UUID) -> None:
     session.delete(require_role(session, user, event_id, "owner"))
     session.commit()
