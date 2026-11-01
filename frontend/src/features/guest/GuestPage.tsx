@@ -229,9 +229,6 @@ export function Invitation({
                   {t("guest.saved", { date: formatDateTime(event.answers_close_at, lang), count })}
                 </span>
               )}
-              {changed && status === "idle" && (
-                <span className="unsaved">{t("guest.unsaved")}</span>
-              )}
               {error && <span className="error">{error}</span>}
             </div>
           )}
