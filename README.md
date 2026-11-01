@@ -83,3 +83,7 @@ their own database on every run.
 After the first deploy, changes get their own migration instead:
 `uv run alembic revision --autogenerate -m "what changed"`. Autogenerate doesn't catch everything
 (e.g. renames, CHECK constraints on existing tables).
+
+## License
+
+[PolyForm Noncommercial 1.0.0](LICENSE.md): free for noncommercial use; commercial use needs my permission.
