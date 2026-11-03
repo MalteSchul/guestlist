@@ -7,6 +7,9 @@ OIDC = {
     "oidc_issuer": "https://issuer.example/v2.0",
     "oidc_audience": "api://guestlist",
     "oidc_jwks_url": "https://issuer.example/keys",
+    "oidc_authority": "https://login.example/tenant/v2.0",
+    "oidc_client_id": "web-app",
+    "oidc_client_scope": "api://guestlist/access",
 }
 
 
@@ -29,3 +32,10 @@ def test_oidc_required_without_bypass():
     with pytest.raises(ValidationError, match="OIDC_ISSUER"):
         make(environment="production")
     make(environment="production", **OIDC)
+
+
+def test_the_frontend_settings_are_required_too():
+    """The page can't log anyone in without them, so the app shouldn't start."""
+    without_client = {k: v for k, v in OIDC.items() if k != "oidc_client_id"}
+    with pytest.raises(ValidationError, match="OIDC_CLIENT_ID"):
+        make(environment="production", **without_client)

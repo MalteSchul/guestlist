@@ -344,6 +344,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Auth Config */
+        get: operations["auth_config_api_auth_config_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/guest/invite": {
         parameters: {
             query?: never;
@@ -507,6 +524,20 @@ export interface components {
             pending: number;
             /** Yes */
             yes: number;
+        };
+        /** AuthConfig */
+        AuthConfig: {
+            /** Authority */
+            authority?: string | null;
+            /** Client Id */
+            client_id?: string | null;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "dev" | "oidc";
+            /** Scope */
+            scope?: string | null;
         };
         /** ContactImport */
         ContactImport: {
@@ -2036,6 +2067,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"];
+                };
+            };
+        };
+    };
+    auth_config_api_auth_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthConfig"];
                 };
             };
         };

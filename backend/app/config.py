@@ -20,20 +20,35 @@ class Settings(BaseSettings):
     auth_dev_bypass: bool = False
 
     # OIDC (Entra External ID). Required unless the dev bypass is on.
+    # What the backend checks in an access token:
     oidc_issuer: str | None = None
     oidc_audience: str | None = None
     oidc_jwks_url: str | None = None
     oidc_required_scope: str | None = None
+    # What the frontend logs in with (sent to it by /api/auth/config, so one image fits every
+    # environment): the login service, the web app's client ID, and the API scope it asks for.
+    oidc_authority: str | None = None
+    oidc_client_id: str | None = None
+    oidc_client_scope: str | None = None
 
     @model_validator(mode="after")
     def check_auth(self) -> "Settings":
         if self.auth_dev_bypass:
             if self.environment != "local":
                 raise ValueError("AUTH_DEV_BYPASS is only allowed with ENVIRONMENT=local")
-        elif not (self.oidc_issuer and self.oidc_audience and self.oidc_jwks_url):
+        elif not all(
+            (
+                self.oidc_issuer,
+                self.oidc_audience,
+                self.oidc_jwks_url,
+                self.oidc_authority,
+                self.oidc_client_id,
+                self.oidc_client_scope,
+            )
+        ):
             raise ValueError(
-                "OIDC_ISSUER, OIDC_AUDIENCE and OIDC_JWKS_URL are required "
-                "unless AUTH_DEV_BYPASS is on"
+                "OIDC_ISSUER, OIDC_AUDIENCE, OIDC_JWKS_URL, OIDC_AUTHORITY, OIDC_CLIENT_ID and "
+                "OIDC_CLIENT_SCOPE are required unless AUTH_DEV_BYPASS is on"
             )
         return self
 

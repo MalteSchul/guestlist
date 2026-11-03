@@ -1,9 +1,26 @@
 import createClient from "openapi-fetch";
 
+import { accessToken, loginExpired } from "../auth/session";
 import type { components, paths } from "./schema";
 
 /** Every call is type-checked against contract/openapi.json (via the generated schema.d.ts). */
 export const api = createClient<paths>();
+
+// The host API needs the host's login; guest calls carry their link's token instead (A20).
+const forHosts = (request: Request) => new URL(request.url).pathname.startsWith("/api/admin/");
+
+api.use({
+  async onRequest({ request }) {
+    if (!forHosts(request)) return undefined;
+    const token = await accessToken();
+    if (token) request.headers.set("Authorization", `Bearer ${token}`);
+    return request;
+  },
+  async onResponse({ request, response }) {
+    if (forHosts(request) && response.status === 401) await loginExpired();
+    return undefined;
+  },
+});
 
 export type Schemas = components["schemas"];
 

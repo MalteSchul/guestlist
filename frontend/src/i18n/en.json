@@ -376,6 +376,14 @@
     "version": "Version",
     "unknown": "unknown",
     "dev": "development",
-    "built": "Built"
+    "built": "Built",
+    "account": "Account",
+    "signedInAs": "Signed in as {{email}}",
+    "signOut": "Sign out"
+  },
+  "auth": {
+    "signingIn": "Signing in …",
+    "failed": "Signing in didn't work.",
+    "retry": "Try again"
   }
 }

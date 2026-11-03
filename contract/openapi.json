@@ -213,6 +213,57 @@
         "title": "AttendanceStep",
         "type": "object"
       },
+      "AuthConfig": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Authority"
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "mode": {
+            "enum": [
+              "dev",
+              "oidc"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "title": "AuthConfig",
+        "type": "object"
+      },
       "ContactImport": {
         "additionalProperties": false,
         "properties": {
@@ -3215,6 +3266,27 @@
         "summary": "Me",
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/api/auth/config": {
+      "get": {
+        "operationId": "auth_config_api_auth_config_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthConfig"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Auth Config",
+        "tags": [
+          "auth"
         ]
       }
     },

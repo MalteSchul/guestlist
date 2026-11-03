@@ -376,6 +376,14 @@
     "version": "Version",
     "unknown": "unbekannt",
     "dev": "Entwicklung",
-    "built": "Gebaut"
+    "built": "Gebaut",
+    "account": "Konto",
+    "signedInAs": "Angemeldet als {{email}}",
+    "signOut": "Abmelden"
+  },
+  "auth": {
+    "signingIn": "Anmeldung …",
+    "failed": "Die Anmeldung hat nicht geklappt.",
+    "retry": "Nochmal versuchen"
   }
 }
