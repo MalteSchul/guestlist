@@ -382,8 +382,8 @@
     "signOut": "Abmelden"
   },
   "auth": {
-    "signingIn": "Anmeldung …",
-    "failed": "Die Anmeldung hat nicht geklappt.",
-    "retry": "Nochmal versuchen"
+    "title": "Anmelden",
+    "google": "Weiter mit Google",
+    "failed": "Die Anmeldung hat nicht geklappt."
   }
 }

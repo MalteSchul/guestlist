@@ -1,6 +1,7 @@
 """1. Who manages: people who log in and what they may do. Guests never appear here."""
 
 import uuid
+from datetime import datetime
 from typing import Literal, get_args
 
 from sqlalchemy import ForeignKey, Index, UniqueConstraint, func
@@ -50,3 +51,16 @@ class EventRole(Timestamps, Base):
     role: Mapped[str]
 
     __table_args__ = (check_in("role", get_args(Role)),)
+
+
+class LoginSession(Timestamps, Base):
+    """A browser a user is logged in with (A28). Its cookie holds a token; only the token's hash
+    is stored."""
+
+    __tablename__ = "login_sessions"
+
+    token_hash: Mapped[str] = mapped_column(primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    expires_at: Mapped[datetime] = mapped_column(index=True)

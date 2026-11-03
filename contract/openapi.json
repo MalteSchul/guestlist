@@ -216,46 +216,13 @@
       "AuthConfig": {
         "additionalProperties": false,
         "properties": {
-          "authority": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Authority"
-          },
-          "client_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Client Id"
-          },
           "mode": {
             "enum": [
               "dev",
-              "oidc"
+              "google"
             ],
             "title": "Mode",
             "type": "string"
-          },
-          "scope": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scope"
           }
         },
         "required": [
@@ -1767,9 +1734,10 @@
       }
     },
     "securitySchemes": {
-      "HTTPBearer": {
-        "scheme": "bearer",
-        "type": "http"
+      "APIKeyCookie": {
+        "in": "cookie",
+        "name": "session",
+        "type": "apiKey"
       }
     }
   },
@@ -1816,7 +1784,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Delete Selection",
@@ -1846,7 +1814,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "List Contacts",
@@ -1890,7 +1858,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Create Contact",
@@ -1936,7 +1904,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Import Contacts",
@@ -1977,7 +1945,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Delete Contact",
@@ -2033,7 +2001,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Update Contact",
@@ -2063,7 +2031,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "List Events",
@@ -2107,7 +2075,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Create Event",
@@ -2148,7 +2116,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Delete Event",
@@ -2194,7 +2162,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Get Event",
@@ -2250,7 +2218,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Update Event",
@@ -2302,7 +2270,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "List Invites",
@@ -2358,7 +2326,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Create Invite",
@@ -2416,7 +2384,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Invite Group",
@@ -2467,7 +2435,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Delete Invite",
@@ -2516,7 +2484,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Preview Event",
@@ -2574,7 +2542,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Add Question",
@@ -2625,7 +2593,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Delete Question",
@@ -2691,7 +2659,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Update Question",
@@ -2759,7 +2727,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Add Option",
@@ -2820,7 +2788,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Delete Option",
@@ -2896,7 +2864,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Update Option",
@@ -2944,7 +2912,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Close Signup",
@@ -2991,7 +2959,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Open Signup",
@@ -3063,7 +3031,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Event Stats",
@@ -3093,7 +3061,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "List Groups",
@@ -3137,7 +3105,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Create Group",
@@ -3178,7 +3146,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Delete Group",
@@ -3234,7 +3202,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Update Group",
@@ -3260,7 +3228,7 @@
         },
         "security": [
           {
-            "HTTPBearer": []
+            "APIKeyCookie": []
           }
         ],
         "summary": "Me",
@@ -3285,6 +3253,25 @@
           }
         },
         "summary": "Auth Config",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "logout_api_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "summary": "Logout",
         "tags": [
           "auth"
         ]

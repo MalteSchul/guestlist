@@ -1,64 +1,67 @@
-import type { User, UserManager } from "oidc-client-ts";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AuthProvider, useAuth } from "react-oidc-context";
 
+import { api, unwrap } from "../api/client";
 import { Layout } from "../components/Layout";
 import { useLoad } from "../components/useLoad";
-import { loginSession, type ReturnTo, signIn } from "./session";
+import { loginUrl, onLoginNeeded } from "./session";
 
-/** Host pages need a login (A7); guest pages never come here. Without one the host goes straight
- * to the login service and comes back to the page they opened. `page` is read only after that,
- * because the address it routes by is then the page they wanted. With the dev bypass there's
- * no login at all. */
+/** Host pages need a login (A28); guest pages never come here. Without one, or when it ran out,
+ * the host sees the login page, and Google brings them back to the page they opened. With the
+ * dev bypass everyone is logged in. */
 export function HostAuth({ page }: { page: () => ReactNode }) {
   const { t } = useTranslation();
-  const session = useLoad(loginSession, []);
+  const [loggedOut, setLoggedOut] = useState(false);
+  // Before the check below starts, so its "not logged in" isn't missed.
+  useEffect(() => onLoginNeeded(() => setLoggedOut(true)), []);
+  const me = useLoad(() => unwrap(api.GET("/api/admin/me")), []);
 
-  if (session.error) return <Waiting text={t("common.error")} error />;
-  if (session.data === undefined) return <Waiting text={t("common.loading")} />;
-  if (session.data === null) return <>{page()}</>;
+  if (loggedOut) return <Login />;
+  if (me.error) return <Waiting text={t("common.error")} error />;
+  if (!me.data) return <Waiting text={t("common.loading")} />;
+  return <>{page()}</>;
+}
+
+function Login() {
+  const { t } = useTranslation();
+  const failed = new URLSearchParams(window.location.search).get("login") === "failed";
+
   return (
-    <AuthProvider userManager={session.data} onSigninCallback={backToPage}>
-      <RequireLogin manager={session.data} page={page} />
-    </AuthProvider>
+    <Layout>
+      <h1>{t("auth.title")}</h1>
+      {failed && <p className="error">{t("auth.failed")}</p>}
+      <div className="actions">
+        <a className="button google-login" href={loginUrl()}>
+          <GoogleLogo />
+          {t("auth.google")}
+        </a>
+      </div>
+    </Layout>
   );
 }
 
-/** Back from the login service: the address loses the login's parameters and becomes the page
- * the host had opened. */
-function backToPage(user: User | undefined) {
-  const to = (user?.state as ReturnTo | undefined)?.path ?? "/";
-  window.history.replaceState({}, document.title, to);
-}
-
-function RequireLogin({ manager, page }: { manager: UserManager; page: () => ReactNode }) {
-  const { t } = useTranslation();
-  const auth = useAuth();
-  const started = useRef(false);
-  const loggedOut = !auth.isLoading && !auth.isAuthenticated && !auth.error;
-
-  // Once per page: if the login service sends them back without a login, they choose to retry.
-  useEffect(() => {
-    if (!loggedOut || started.current) return;
-    started.current = true;
-    void signIn(manager);
-  }, [loggedOut, manager]);
-
-  if (auth.isAuthenticated) return <>{page()}</>;
-  if (auth.error) {
-    return (
-      <Layout>
-        <p className="error">{t("auth.failed")}</p>
-        <div className="actions">
-          <button type="button" className="primary" onClick={() => void signIn(manager)}>
-            {t("auth.retry")}
-          </button>
-        </div>
-      </Layout>
-    );
-  }
-  return <Waiting text={t("auth.signingIn")} />;
+/** Google's "G", as their sign-in button guidelines ask for. */
+function GoogleLogo() {
+  return (
+    <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+      />
+    </svg>
+  );
 }
 
 function Waiting({ text, error = false }: { text: string; error?: boolean }) {

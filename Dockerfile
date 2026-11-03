@@ -37,4 +37,6 @@ USER app
 
 EXPOSE 8000
 # Migrations and the cleanup job use this image with a different command (A11).
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+# Only the platform's ingress reaches the container, so its X-Forwarded-Proto is trusted: the
+# app then knows it's served over https, for the login's redirect URI.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers",      "--forwarded-allow-ips", "*"]

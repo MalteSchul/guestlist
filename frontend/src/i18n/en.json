@@ -382,8 +382,8 @@
     "signOut": "Sign out"
   },
   "auth": {
-    "signingIn": "Signing in …",
-    "failed": "Signing in didn't work.",
-    "retry": "Try again"
+    "title": "Sign in",
+    "google": "Continue with Google",
+    "failed": "Signing in didn't work."
   }
 }

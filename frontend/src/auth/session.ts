@@ -1,74 +1,40 @@
-import { UserManager, WebStorageStateStore } from "oidc-client-ts";
-
 import type { components } from "../api/schema";
 
-type AuthConfig = components["schemas"]["AuthConfig"];
+type AuthMode = components["schemas"]["AuthConfig"]["mode"];
 
-/** Where to go once the login service sends the host back: the page they wanted. */
-export type ReturnTo = { path: string };
+let mode: Promise<AuthMode> | undefined;
 
-let session: Promise<UserManager | null> | undefined;
-
-/** How hosts log in, asked from the backend once per page load (the same image runs everywhere).
- * `null` means no login: the local dev bypass, every request is the dev user (A13). Plain
- * `fetch`, not the API client: the client asks this for its tokens. */
-export function loginSession(): Promise<UserManager | null> {
-  session ??= fetch("/api/auth/config")
+/** Whether hosts log in at all, asked from the backend once per page load (the same image runs
+ * everywhere): "dev" is the local bypass, every request is the dev user (A13). Plain `fetch`, as
+ * the API client reports to this module. */
+export function authMode(): Promise<AuthMode> {
+  mode ??= fetch("/api/auth/config")
     .then((response) => {
       if (!response.ok) throw new Error(`auth config: ${response.status}`);
-      return response.json() as Promise<AuthConfig>;
+      return response.json() as Promise<{ mode: AuthMode }>;
     })
-    .then((config) => (config.mode === "oidc" ? userManager(config) : null));
+    .then((config) => config.mode);
   // A failed load is tried again next time instead of failing every later call.
-  session.catch(() => (session = undefined));
-  return session;
+  mode.catch(() => (mode = undefined));
+  return mode;
 }
 
-function userManager(config: AuthConfig): UserManager {
-  const home = `${window.location.origin}/`; // the one redirect URI the login service knows
-  return new UserManager({
-    authority: config.authority!,
-    client_id: config.client_id!,
-    redirect_uri: home,
-    post_logout_redirect_uri: home,
-    // offline_access: a refresh token, so the login is renewed without the page leaving.
-    scope: `openid profile email offline_access ${config.scope}`,
-    // In localStorage rather than per tab, so a host stays logged in in every tab.
-    userStore: new WebStorageStateStore({ store: window.localStorage }),
-  });
+const listeners = new Set<() => void>();
+
+/** Called when the host API answers "not logged in" (A28); returns the unsubscribe. */
+export function onLoginNeeded(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
 }
 
-/** The access token for the host API, renewed first if it ran out; none without a login. */
-export async function accessToken(): Promise<string | undefined> {
-  const manager = await loginSession();
-  if (!manager) return undefined;
-  let user = await manager.getUser();
-  if (user?.expired) user = await manager.signinSilent().catch(() => null);
-  return user?.access_token;
+export function loginNeeded(): void {
+  listeners.forEach((listener) => listener());
 }
 
-/** What the login service adds to the address when it sends the host back. */
-const LOGIN_PARAMS = ["code", "state", "session_state", "error", "error_description", "error_uri"];
-
-/** Off to the login service, and back to this page afterwards; without the parameters of a
- * login that failed, when this is the retry. */
-export async function signIn(manager: UserManager): Promise<void> {
+/** Google's login page via the backend, then back to this page; without the mark of a login
+ * that failed, when this is the retry. */
+export function loginUrl(): string {
   const url = new URL(window.location.href);
-  LOGIN_PARAMS.forEach((param) => url.searchParams.delete(param));
-  const returnTo: ReturnTo = { path: url.pathname + url.search };
-  await manager.signinRedirect({ state: returnTo });
-}
-
-/** The logged-in host's login service account, if any: for the settings page. */
-export async function signedIn(): Promise<UserManager | null> {
-  const manager = await loginSession();
-  return manager && (await manager.getUser()) ? manager : null;
-}
-
-/** The API refused the token (expired for good, or revoked): log in again. */
-export async function loginExpired(): Promise<void> {
-  const manager = await loginSession();
-  if (!manager) return;
-  await manager.removeUser();
-  await signIn(manager);
+  url.searchParams.delete("login");
+  return `/api/auth/google?${new URLSearchParams({ to: url.pathname + url.search })}`;
 }

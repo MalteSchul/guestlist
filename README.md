@@ -22,8 +22,8 @@ Locally the admin API uses the dev bypass: every request is the same dev user, n
 import from Google Contacts exports), in the app at http://localhost:8000; the API docs are at
 http://localhost:8000/docs
 
-To try the real host login (Entra External ID, A27) locally, run the backend with the `OIDC_*`
-values from [backend/.env.example](backend/.env.example) and `AUTH_DEV_BYPASS=false`. A real
+To try the real host login (Google, A28) locally, run the backend with `AUTH_DEV_BYPASS=false`
+and the `GOOGLE_*` values described in [backend/.env.example](backend/.env.example). A real
 login is a new user, so it doesn't see the dev user's events.
 
 ### Frontend with hot reload

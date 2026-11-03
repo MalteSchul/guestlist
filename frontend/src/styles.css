@@ -395,6 +395,17 @@ input[type="datetime-local"] {
   outline-offset: 2px;
 }
 
+/* The way to Google's login page: Google's "G" in front, as tall as a primary button. */
+.button.google-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.4rem;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
 /* SearchField: the magnifier sits in the box, where a placeholder would be. */
 .search {
   position: relative;
