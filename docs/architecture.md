@@ -12,24 +12,24 @@ allergies, …). Guests never create an account.
 ```mermaid
 flowchart LR
     guest([Guest<br/>personal link])
-    host([Host / co-host<br/>Entra login])
+    host([Host / co-host<br/>Google login])
 
     subgraph azure[Azure Container Apps · Germany West Central]
         app[app<br/>FastAPI + React build]
         jobs[jobs<br/>migrate · cleanup]
     end
 
-    entra[Entra External ID]
+    google[Google]
     db[(Neon Postgres<br/>Frankfurt)]
     ghcr[GHCR<br/>container images]
     gha[GitHub Actions]
 
     guest --> app
     host --> app
-    host -. login .-> entra
+    host -. login .-> google
     app --> db
     jobs --> db
-    app -. validates tokens .-> entra
+    app -. swaps code, checks ID token .-> google
     gha -- build + push --> ghcr
     gha -- terraform + deploy --> azure
     ghcr -. pull .-> azure
@@ -51,7 +51,7 @@ flowchart LR
 | Frontend | React + Vite + TypeScript |
 | i18n | react-i18next with `de.json` / `en.json` for the app's own texts; host-written text is plain text (D16) |
 | API contract | OpenAPI from FastAPI → openapi-typescript → openapi-fetch |
-| Auth | Microsoft Entra External ID (OIDC) for hosts; personal token links for guests |
+| Auth | Google login and our own session cookie for hosts; personal token links for guests |
 | Database | PostgreSQL 17: Neon in production, Docker locally |
 | Hosting | Azure Container Apps (consumption plan) |
 | Registry | GitHub Container Registry (GHCR) |
@@ -113,13 +113,15 @@ everything the backend sends.
 
   The event's open link (`/r/<token>`, D36) works the same way, with an `X-Signup-Token` header.
   It only lets people sign up; each sign-up gets its own `/i/<token>`.
-- **Hosts:** log in through Entra External ID (A27): Entra's own page, email code, no password.
-  The frontend uses `react-oidc-context` (code flow with PKCE); it asks `GET /api/auth/config` how
-  to log in, so the image carries no environment's settings. Only host pages ask for a login, and
-  only `/api/admin/` calls carry the token. The backend validates the JWT against the tenant's
-  JWKS: issuer, audience = the API's app registration, scope.
-- **Code stays provider-agnostic** (standard OIDC, not MSAL-specific). Switching providers means
-  changing configuration, not code.
+- **Hosts:** log in with Google on the app's own login page (A28), no password. The backend runs
+  the authorization code flow with PKCE: `GET /api/auth/google?to=<page>` sends the browser to
+  Google, and `/api/auth/google/callback` swaps the code (with the client secret, which never
+  leaves the backend), checks the ID token, and sets a session cookie before going back to the
+  page. The cookie is HttpOnly, SameSite=Lax, Secure in production, and lasts 90 days, extended
+  while in use; `login_sessions` stores only the token's hash, and `POST /api/auth/logout` deletes
+  it. Only host pages ask for a login: a 401 from `/api/admin/` shows the login page.
+  `GET /api/auth/config` tells the frontend whether there is a login at all (`dev` with the
+  bypass).
 - **Roles are per event and live in Postgres** (`event_roles`: owner / admin / viewer). Login
   identities are mapped to our own users via `identities`.
 
@@ -137,7 +139,7 @@ everything the backend sends.
 |---|---|---|
 | Database | Postgres 17 in Docker (`compose.yaml`) | Neon, Frankfurt |
 | Backend / frontend | `compose.yaml` or `uv run` / `npm run dev` | Azure Container Apps |
-| Auth | dev bypass (`AUTH_DEV_BYPASS=true`, A13) | Entra External ID |
+| Auth | dev bypass (`AUTH_DEV_BYPASS=true`, A13) | Google login, session cookie |
 
 ## Repository layout
 
@@ -150,7 +152,7 @@ guestlist/
 │   │   ├── access_log.py        masks link tokens in the access log
 │   │   ├── config.py            settings from environment variables
 │   │   ├── db.py                engine + session
-│   │   ├── auth/                OIDC token validation, current user
+│   │   ├── auth/                Google login, current user from the session cookie
 │   │   ├── models/              ③ SQLAlchemy tables
 │   │   ├── schemas/             ① Pydantic request/response models = the API contract
 │   │   ├── services/            ② business rules and role checks, one module per area
@@ -164,7 +166,7 @@ guestlist/
 ├── frontend/                    React + Vite
 │   ├── src/
 │   │   ├── api/                 schema.d.ts (generated) + client.ts
-│   │   ├── auth/                OIDC setup
+│   │   ├── auth/                login page, "not logged in" signal
 │   │   ├── i18n/                de.json, en.json
 │   │   ├── features/guest/      RSVP page behind the personal link
 │   │   ├── features/admin/      events, invites, address book, dashboard

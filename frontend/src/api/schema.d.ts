@@ -361,6 +361,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout_api_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/guest/invite": {
         parameters: {
             query?: never;
@@ -527,17 +544,11 @@ export interface components {
         };
         /** AuthConfig */
         AuthConfig: {
-            /** Authority */
-            authority?: string | null;
-            /** Client Id */
-            client_id?: string | null;
             /**
              * Mode
              * @enum {string}
              */
-            mode: "dev" | "oidc";
-            /** Scope */
-            scope?: string | null;
+            mode: "dev" | "google";
         };
         /** ContactImport */
         ContactImport: {
@@ -2088,6 +2099,24 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AuthConfig"];
                 };
+            };
+        };
+    };
+    logout_api_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

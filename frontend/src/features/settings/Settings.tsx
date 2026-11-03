@@ -2,7 +2,7 @@ import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { api, unwrap } from "../../api/client";
-import { signedIn } from "../../auth/session";
+import { authMode } from "../../auth/session";
 import { Icon } from "../../components/Icon";
 import { Layout } from "../../components/Layout";
 import { useLoad } from "../../components/useLoad";
@@ -144,19 +144,23 @@ export function Settings({ admin = false }: { admin?: boolean }) {
 /** The host's login, with the way out. Nothing without one: not logged in, or the dev bypass. */
 function Account() {
   const { t } = useTranslation();
-  const account = useLoad(async () => {
-    const manager = await signedIn();
-    return manager && { manager, me: await unwrap(api.GET("/api/admin/me")) };
-  }, []);
-  if (!account.data) return null;
-  const { manager, me } = account.data;
+  const me = useLoad(
+    async () => ((await authMode()) === "google" ? unwrap(api.GET("/api/admin/me")) : null),
+    [],
+  );
+  if (!me.data) return null;
+
+  async function signOut() {
+    await api.POST("/api/auth/logout");
+    window.location.assign("/");
+  }
 
   return (
     <section className="card">
       <h2>{t("settings.account")}</h2>
       <div className="row">
-        <span>{t("settings.signedInAs", { email: me.email })}</span>
-        <button type="button" onClick={() => void manager.signoutRedirect()}>
+        <span>{t("settings.signedInAs", { email: me.data.email })}</span>
+        <button type="button" onClick={() => void signOut()}>
           {t("settings.signOut")}
         </button>
       </div>

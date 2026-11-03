@@ -1,6 +1,6 @@
 # Data model
 
-13 tables in 4 areas. Source of truth: `backend/app/models/`. This page explains them.
+14 tables in 4 areas. Source of truth: `backend/app/models/`. This page explains them.
 
 **Every table has `created_at` and `updated_at`** (filled in automatically), so they're left out
 below. 🔑 = primary key, → = foreign key, *italic* = optional. All IDs are UUIDs.
@@ -10,7 +10,7 @@ below. 🔑 = primary key, → = foreign key, *italic* = optional. All IDs are U
  users                  contacts                      events                         invites
  identities             contact_groups                event_questions                persons
  event_roles            contact_group_members         event_question_options         person_answers
-                                                                                     person_answer_options
+ login_sessions                                                                      person_answer_options
 
  logins + rights        per user, kept forever        what the host sets up          what guests answer
                                                                                      (deleted 1 year after the event)
@@ -19,6 +19,7 @@ below. 🔑 = primary key, → = foreign key, *italic* = optional. All IDs are U
 ```mermaid
 erDiagram
     users ||--o{ identities : "logs in via"
+    users ||--o{ login_sessions : "is logged in with"
     users ||--o{ event_roles : has
     events ||--o{ event_roles : grants
     users ||--o{ contacts : owns
@@ -54,6 +55,13 @@ erDiagram
 | user_id | → users | |
 | issuer | text | which login provider |
 | subject | text | the user's ID there; issuer + subject is unique |
+
+**`login_sessions`**: a browser the user is logged in with (A28)
+| column | type | note |
+|---|---|---|
+| 🔑 token_hash | text | SHA-256 of the token in the session cookie; the token itself is never stored |
+| user_id | → users | |
+| expires_at | timestamp | 90 days after login, extended while in use |
 
 **`event_roles`**
 | column | type | note |

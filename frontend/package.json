@@ -11,12 +11,10 @@
   },
   "dependencies": {
     "i18next": "^26.5.11",
-    "oidc-client-ts": "^3.5.0",
     "openapi-fetch": "^0.17.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-i18next": "^17.1.9",
-    "react-oidc-context": "^3.3.1"
+    "react-i18next": "^17.1.9"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
