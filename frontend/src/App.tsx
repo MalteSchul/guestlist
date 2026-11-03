@@ -1,3 +1,4 @@
+import { HostAuth } from "./auth/HostAuth";
 import { EventList } from "./features/admin/EventList";
 import { AddressBook } from "./features/contacts/AddressBook";
 import { EventPage } from "./features/admin/EventPage";
@@ -10,6 +11,7 @@ import { SignupPage } from "./features/guest/SignupPage";
 import { Settings } from "./features/settings/Settings";
 
 // Routing by hand while there are only a few pages; full page loads between them are fine (A18).
+// Guests and the settings page need no login; every other page is the host's (HostAuth).
 export function App() {
   const path = window.location.pathname;
 
@@ -22,6 +24,13 @@ export function App() {
   if (/^\/settings\/?$/.test(path)) return <Settings />;
 
   if (/^\/admin\/settings\/?$/.test(path)) return <Settings admin />;
+
+  return <HostAuth page={hostPage} />;
+}
+
+/** Routed by the address at the time it's called: after a login, the page the host wanted. */
+function hostPage() {
+  const path = window.location.pathname;
 
   if (/^\/admin\/contacts\/?$/.test(path)) return <AddressBook />;
 

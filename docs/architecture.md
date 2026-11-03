@@ -113,9 +113,11 @@ everything the backend sends.
 
   The event's open link (`/r/<token>`, D36) works the same way, with an `X-Signup-Token` header.
   It only lets people sign up; each sign-up gets its own `/i/<token>`.
-- **Hosts:** log in through Entra External ID. The frontend uses `react-oidc-context`. The backend
-  validates the JWT against the tenant's JWKS: issuer, audience = the API's app registration,
-  scope.
+- **Hosts:** log in through Entra External ID (A27): Entra's own page, email code, no password.
+  The frontend uses `react-oidc-context` (code flow with PKCE); it asks `GET /api/auth/config` how
+  to log in, so the image carries no environment's settings. Only host pages ask for a login, and
+  only `/api/admin/` calls carry the token. The backend validates the JWT against the tenant's
+  JWKS: issuer, audience = the API's app registration, scope.
 - **Code stays provider-agnostic** (standard OIDC, not MSAL-specific). Switching providers means
   changing configuration, not code.
 - **Roles are per event and live in Postgres** (`event_roles`: owner / admin / viewer). Login

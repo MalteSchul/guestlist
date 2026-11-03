@@ -1,8 +1,11 @@
 import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import { api, unwrap } from "../../api/client";
+import { signedIn } from "../../auth/session";
 import { Icon } from "../../components/Icon";
 import { Layout } from "../../components/Layout";
+import { useLoad } from "../../components/useLoad";
 import { chooseLanguage, type Language, LANGUAGES, useLanguageChoice } from "../../i18n";
 import { chooseProgressMark, PROGRESS_MARKS, useProgressMark } from "../../progressMark";
 import { chooseTheme, type ThemeChoice, useThemeChoice } from "../../theme";
@@ -13,7 +16,7 @@ const THEME_CHOICES: ThemeChoice[] = ["light", "dark", "system"];
 const LANGUAGE_NAMES: Record<Language, string> = { de: "Deutsch", en: "English" };
 
 /** For hosts and guests alike, so it asks for no login: theme, language and which build runs; the
- * host also chooses how an invite's progress shows.
+ * host also chooses how an invite's progress shows, and sees whom they're logged in as.
  * Behind the host's gear (`admin`) it has the host's header, with the way back to the events. */
 export function Settings({ admin = false }: { admin?: boolean }) {
   const { t, i18n } = useTranslation();
@@ -95,6 +98,8 @@ export function Settings({ admin = false }: { admin?: boolean }) {
         </fieldset>
       </section>
 
+      {admin && <Account />}
+
       {admin && (
         <section className="card">
           <h2>{t("settings.host")}</h2>
@@ -133,5 +138,28 @@ export function Settings({ admin = false }: { admin?: boolean }) {
         </dl>
       </section>
     </Layout>
+  );
+}
+
+/** The host's login, with the way out. Nothing without one: not logged in, or the dev bypass. */
+function Account() {
+  const { t } = useTranslation();
+  const account = useLoad(async () => {
+    const manager = await signedIn();
+    return manager && { manager, me: await unwrap(api.GET("/api/admin/me")) };
+  }, []);
+  if (!account.data) return null;
+  const { manager, me } = account.data;
+
+  return (
+    <section className="card">
+      <h2>{t("settings.account")}</h2>
+      <div className="row">
+        <span>{t("settings.signedInAs", { email: me.email })}</span>
+        <button type="button" onClick={() => void manager.signoutRedirect()}>
+          {t("settings.signOut")}
+        </button>
+      </div>
+    </section>
   );
 }
