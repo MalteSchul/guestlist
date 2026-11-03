@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from app.access_log import mask_secret_links
 from app.config import get_settings
 from app.frontend import serve_frontend
-from app.routers import address_book, admin, guest, health
+from app.routers import address_book, admin, auth, guest, health
 from app.services.errors import ServiceError
 
 settings = get_settings()
@@ -37,7 +37,7 @@ async def security_headers(
 
 
 # The app and the API share one domain (A26), so the API lives under /api.
-for router in (health.router, admin.router, address_book.router, guest.router):
+for router in (health.router, auth.router, admin.router, address_book.router, guest.router):
     app.include_router(router, prefix="/api")
 
 if settings.frontend_dir:

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.auth import dependencies, tokens
 from app.config import Settings
 from app.models import Identity, User
+from app.routers import auth
 from app.services.users import get_or_create_user_for_login
 
 ISSUER = "https://issuer.example/v2.0"
@@ -45,8 +46,12 @@ def oidc(monkeypatch):
         oidc_audience=AUDIENCE,
         oidc_jwks_url="https://issuer.example/keys",
         oidc_required_scope=SCOPE,
+        oidc_authority="https://login.example/tenant/v2.0",
+        oidc_client_id="web-app",
+        oidc_client_scope="api://guestlist/guestlist.admin",
     )
     monkeypatch.setattr(dependencies, "get_settings", lambda: settings)
+    monkeypatch.setattr(auth, "get_settings", lambda: settings)
     monkeypatch.setattr(tokens, "get_settings", lambda: settings)
     signing_key = SimpleNamespace(key=_private_key.public_key())
     jwks = SimpleNamespace(get_signing_key_from_jwt=lambda token: signing_key)
@@ -100,3 +105,21 @@ def test_new_login_with_known_email_joins_existing_user(session: Session):
     assert same.id == user.id
     assert session.scalar(select(func.count()).select_from(User)) == 1
     assert session.scalar(select(func.count()).select_from(Identity)) == 2
+
+
+def test_the_frontend_learns_how_to_log_in(client: TestClient, oidc):
+    assert client.get("/api/auth/config").json() == {
+        "mode": "oidc",
+        "authority": "https://login.example/tenant/v2.0",
+        "client_id": "web-app",
+        "scope": "api://guestlist/guestlist.admin",
+    }
+
+
+def test_no_login_with_the_dev_bypass(client: TestClient):
+    assert client.get("/api/auth/config").json() == {
+        "mode": "dev",
+        "authority": None,
+        "client_id": None,
+        "scope": None,
+    }
